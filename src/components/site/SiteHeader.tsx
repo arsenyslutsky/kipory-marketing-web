@@ -1,0 +1,31 @@
+import Link from 'next/link';
+import { BrandMark } from './BrandMark';
+
+const navigation = [
+  { href: '/product', label: 'Product' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+] as const;
+
+export function SiteHeader() {
+  return (
+    <header className="site-header">
+      <div className="site-container site-header__inner">
+        <Link className="brand" href="/" aria-label="Kipory home">
+          <BrandMark className="brand__mark" />
+          <span>KIPORY</span>
+        </Link>
+
+        <nav className="site-nav" aria-label="Primary navigation">
+          {navigation.map((item) => (
+            <Link key={item.href} href={item.href}>{item.label}</Link>
+          ))}
+        </nav>
+
+        <Link className="button button--compact button--light" href="/contact">
+          Request access
+        </Link>
+      </div>
+    </header>
+  );
+}

@@ -1,0 +1,46 @@
+{
+  "root": "core",
+  "nodes": [
+    { "id": "core", "position": [0, -5.0], "label": "CONTROL", "svg": "control.svg", "size": [4.3, 2.2], "tier": 0 },
+    { "id": "vault", "position": [-4.3, -1.4], "label": "DATA VAULT", "svg": "vault.svg", "size": [3.2, 1.8], "tier": 1 },
+    { "id": "library", "position": [4.3, -1.4], "label": "LIBRARY", "svg": "library.svg", "size": [3.2, 1.8], "tier": 1 },
+    { "id": "metrics", "position": [-6.4, 2.2], "label": "METRICS", "svg": "metrics.svg", "size": [2.6, 1.5], "tier": 2 },
+    { "id": "stack", "position": [-2.1, 2.2], "label": "STACK", "svg": "stack.svg", "size": [2.6, 1.5], "tier": 2 },
+    { "id": "secure", "position": [2.1, 2.2], "label": "SECURE", "svg": "secure.svg", "size": [2.6, 1.5], "tier": 2 },
+    { "id": "labels", "position": [6.4, 2.2], "label": "LABELS", "svg": "labels.svg", "size": [2.6, 1.5], "tier": 2 },
+    { "id": "insight", "position": [-7.5, 5.7], "label": "INSIGHT", "svg": "insight.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "records", "position": [-5.2, 5.7], "label": "RECORDS", "svg": "records.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "graph", "position": [-2.7, 5.7], "label": "GRAPH", "svg": "graph.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "code", "position": [-0.4, 5.7], "label": "CODE", "svg": "code.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "profile", "position": [2.0, 5.7], "label": "PROFILE", "svg": "profile.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "teams", "position": [4.4, 5.7], "label": "TEAMS", "svg": "teams.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "calendar", "position": [6.8, 5.7], "label": "CALENDAR", "svg": "calendar.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "places", "position": [9.2, 5.7], "label": "PLACES", "svg": "places.svg", "size": [2.15, 1.25], "tier": 3 },
+    { "id": "pipeline", "position": [-2.7, 9.2], "label": "PIPELINE", "svg": "graph.svg", "size": [2.15, 1.25], "tier": 4 },
+    { "id": "policy", "position": [2.0, 9.2], "label": "POLICY", "svg": "secure.svg", "size": [2.15, 1.25], "tier": 4 },
+    { "id": "schedule", "position": [6.8, 9.2], "label": "SCHEDULE", "svg": "calendar.svg", "size": [2.15, 1.25], "tier": 4 },
+    { "id": "regions", "position": [9.2, 9.2], "label": "REGIONS", "svg": "places.svg", "size": [2.15, 1.25], "tier": 4 },
+    { "id": "access", "position": [2.0, 12.7], "label": "ACCESS", "svg": "profile.svg", "size": [2.15, 1.25], "tier": 5 },
+    { "id": "events", "position": [6.8, 12.7], "label": "EVENTS", "svg": "records.svg", "size": [2.15, 1.25], "tier": 5 },
+    { "id": "routes", "position": [9.2, 12.7], "label": "ROUTES", "svg": "graph.svg", "size": [2.15, 1.25], "tier": 5 }
+  ],
+  "branches": {
+    "core": ["vault", "library"],
+    "vault": ["metrics", "stack"],
+    "library": ["secure", "labels"],
+    "metrics": ["insight", "records"],
+    "stack": ["graph", "code"],
+    "secure": ["profile", "teams"],
+    "labels": ["calendar", "places"],
+    "graph": ["pipeline"],
+    "profile": ["policy"],
+    "calendar": ["schedule"],
+    "places": ["regions"],
+    "policy": ["access"],
+    "schedule": ["events"],
+    "regions": ["routes"]
+  },
+  "variants": {
+    "variant-2": { "hiddenNodes": ["insight", "records", "code"] }
+  }
+}

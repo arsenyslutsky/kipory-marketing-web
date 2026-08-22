@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 300">
+  <g fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round">
+    <rect x="190" y="61" width="132" height="112"/><path d="M190 93h132M218 50v24M294 50v24"/>
+  </g>
+  <path fill="#fff" d="M205 108h10v10h-10zm28 0h10v10h-10zm28 0h10v10h-10zm28 0h10v10h-10zm-84 27h10v10h-10zm28 0h10v10h-10zm28 0h10v10h-10zm28 0h10v10h-10z"/>
+  <text x="256" y="246" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" letter-spacing="4" text-anchor="middle">CALENDAR</text>
+  <path d="M208 263h96" stroke="#fff" stroke-width="3" opacity=".58"/>
+</svg>

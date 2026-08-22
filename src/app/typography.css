@@ -1,0 +1,47 @@
+:root {
+  --type-display-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  --type-accent-family: var(--font-ovo), Georgia, 'Times New Roman', serif;
+  --type-body-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  --type-control-family: var(--mono);
+  --type-display-weight: 300;
+  --type-accent-weight: 400;
+  --type-body-weight: 200;
+  --type-control-weight: 700;
+  --type-display-tracking: 0;
+  --type-accent-tracking: 0;
+  --type-body-tracking: 0;
+  --type-body-leading: 1.55;
+}
+
+:where(h1, h2, h3) {
+  font-family: var(--type-display-family);
+  font-weight: var(--type-display-weight);
+  letter-spacing: var(--type-display-tracking);
+}
+
+.type-display {
+  font-family: var(--type-display-family);
+  font-weight: var(--type-display-weight);
+  letter-spacing: var(--type-display-tracking);
+}
+
+.type-accent {
+  font-family: var(--type-accent-family);
+  font-style: normal;
+  font-weight: var(--type-accent-weight);
+  letter-spacing: var(--type-accent-tracking);
+}
+
+.type-body {
+  font-family: var(--type-body-family);
+  font-weight: var(--type-body-weight);
+  letter-spacing: var(--type-body-tracking);
+  line-height: var(--type-body-leading);
+}
+
+.type-control {
+  font-family: var(--type-control-family);
+  font-weight: var(--type-control-weight);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}

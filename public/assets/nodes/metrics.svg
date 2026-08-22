@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 300">
+  <path fill="#fff" d="M184 130h24v36h-24zm39-31h24v67h-24zm39-35h24v102h-24zm39 46h24v56h-24z"/>
+  <text x="256" y="246" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" letter-spacing="4" text-anchor="middle">METRICS</text>
+  <path d="M208 263h96" stroke="#fff" stroke-width="3" opacity=".58"/>
+</svg>
