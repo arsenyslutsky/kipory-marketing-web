@@ -1,22 +1,26 @@
 import Link from 'next/link';
+import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { heroSignalFlowProps, SignalFlowIllustration } from '@/features/signal-flow';
 import styles from './marketing.module.css';
 
 const capabilities = [
   {
     number: '01',
-    title: 'Trace every handoff',
-    body: 'Follow work from its first signal to its final outcome. Every transition stays visible, connected, and ready to inspect.',
+    titlePrimary: 'ONE HYBRID DATA PLATFORM',
+    titleSecondary: 'for your domain',
+    body: 'Push or connect your datasets, documents and media containing domain data. Data records and relations are schema-validated, with built-in structural features that keep your knowledge consistent as it grows.',
   },
   {
     number: '02',
-    title: 'Find friction early',
-    body: 'See where flow slows, loops, or disappears before a local issue becomes a system-wide problem.',
+    titlePrimary: 'DETERMINISTIC AND AI AGENTIC',
+    titleSecondary: 'flows work in concert',
+    body: 'One hybrid flow engine for deterministic and AI agentic flows allows next-gen processing. This combines both reliability and deep intelligence enrichment. Fully governed, metered and auditable by design.',
   },
   {
     number: '03',
-    title: 'Move with context',
-    body: 'Give every team the same live picture so decisions start with shared evidence instead of reconstructed history.',
+    titlePrimary: 'KNOWLEDGE DELIVERED',
+    titleSecondary: 'where your business runs',
+    body: 'Access and stream data with flexible APIs, MCPs or event hooks. Keep knowledge fresh with scheduled or event-triggered jobs. Production-ready and built with reliability and scale in mind. Your systems consume knowledge, not raw data.',
   },
 ] as const;
 
@@ -24,7 +28,7 @@ const useCases = ['Product operations', 'Service delivery', 'Customer journeys',
 
 export default function HomePage() {
   return (
-    <main id="main-content" className={styles.main}>
+    <HeroScrollEffects id="main-content" className={styles.main} scrollRange={700}>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroVisual} aria-hidden="true">
           <SignalFlowIllustration {...heroSignalFlowProps} />
@@ -47,23 +51,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.lightSection} ${styles.movementSection}`}>
+      <section className={`${styles.section} ${styles.lightSection} ${styles.gridSurfaceSection} ${styles.movementSection}`}>
         <div className="site-container">
-          <div className={styles.sectionHeader}>
-            <p className="eyebrow">From movement to meaning</p>
-            <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Your system already tells a story. Kipory makes it readable.</h2>
-          </div>
           <div className={styles.capabilityLayout}>
-            <div className={styles.capabilityList}>
-              {capabilities.map((capability) => (
-                <article key={capability.number} className={styles.capabilityCard}>
-                  <span>{capability.number}</span>
-                  <div className={styles.capabilityCardCopy}>
-                    <h3>{capability.title}</h3>
-                    <p>{capability.body}</p>
-                  </div>
-                </article>
-              ))}
+            <div className={styles.capabilityContent}>
+              <div className={styles.sectionHeader}>
+                <p className="eyebrow">From movement to meaning</p>
+                <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Our Pillars</h2>
+              </div>
+              <div className={styles.capabilityList}>
+                {capabilities.map((capability) => (
+                  <article key={capability.number} className={styles.capabilityCard}>
+                    <span>{capability.number}</span>
+                    <div className={styles.capabilityCardCopy}>
+                      <h3>
+                        <span className={styles.capabilityTitlePrimary}>{capability.titlePrimary}</span>{' '}
+                        <span className={styles.capabilityTitleSecondary}>{capability.titleSecondary}</span>
+                      </h3>
+                      <p>{capability.body}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
             <div className={styles.capabilityVisualPlaceholder} role="img" aria-label="Illustration placeholder">
               <span aria-hidden="true">Illustration placeholder</span>
@@ -72,53 +81,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.systemSection}`}>
-        <div className={`site-container ${styles.systemGrid}`}>
-          <div className={styles.systemCopy}>
-            <p className="eyebrow">A model that stays alive</p>
-            <h2 className={styles.sectionTitle}>Not another dashboard. A view of how the whole system moves.</h2>
-            <p>Kipory keeps signals attached to their path, owners, and outcomes. The result is a view that explains both what happened and where to look next.</p>
-            <Link className="button button--outline" href="/product">See how it works</Link>
-          </div>
-          <div className={styles.systemPanel} aria-label="Example live trace">
-            <div className={styles.panelHeader}><span>LIVE TRACE</span><span>#024</span></div>
-            <div className={styles.traceRoute}>CONTROL <i /> LIBRARY <i /> SECURE <i /> PROFILE</div>
-            <div className={styles.traceLine}><b /></div>
-            <div className={styles.panelMeta}>
-              <div><span>4</span><small>systems crossed</small></div>
-              <div><span>1.8s</span><small>flow duration</small></div>
-              <div><span>Live</span><small>trace status</small></div>
+      <section className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}>
+        <div className="site-container">
+          <div className={styles.capabilityLayout}>
+            <div className={styles.capabilityContent}>
+              <div className={styles.sectionHeader}>
+                <p className="eyebrow">Designed around real flow</p>
+                <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
+                  One language for work that crosses every boundary.
+                </h2>
+              </div>
+              <p className={styles.useCaseIntro}>
+                Use Kipory wherever outcomes depend on more than one team, tool, or moment.
+              </p>
+              <div className={styles.useCaseList}>
+                {useCases.map((item, index) => (
+                  <Link href="/product" key={item}>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{item}</strong>
+                    <i>↗</i>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className={styles.capabilityVisualPlaceholder} role="img" aria-label="Illustration placeholder">
+              <span aria-hidden="true">Illustration placeholder</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.useCaseSection}`}>
-        <div className="site-container">
-          <p className="eyebrow">Designed around real flow</p>
-          <div className={styles.useCaseHeader}>
-            <h2 className={styles.sectionTitle}>One language for work that crosses every boundary.</h2>
-            <p>Use Kipory wherever outcomes depend on more than one team, tool, or moment.</p>
-          </div>
-          <div className={styles.useCaseList}>
-            {useCases.map((item, index) => (
-              <Link href="/product" key={item}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <strong>{item}</strong>
-                <i>↗</i>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.ctaSection}>
-        <div className="site-container">
-          <p className="eyebrow">Make the invisible actionable</p>
-          <h2>Follow the pulse.<br /><em>Improve the system.</em></h2>
-          <Link className="button button--accent" href="/contact">Start a conversation <span>↗</span></Link>
-        </div>
-      </section>
-    </main>
+    </HeroScrollEffects>
   );
 }

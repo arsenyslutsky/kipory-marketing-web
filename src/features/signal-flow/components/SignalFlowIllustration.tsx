@@ -11,8 +11,6 @@ const content = {
   title: 'Follow the pulse',
   accent: 'through the network.',
   description: 'A live system view built for continuous monitoring. Every path is traceable and never quite the same twice.',
-  routeLabel: 'LIVE TRACE',
-  action: 'GENERATE NEW TRACE',
   status: 'NETWORK ACTIVE',
   hint: 'DRAG TO ORBIT',
 } as const;
@@ -29,25 +27,51 @@ export function SignalFlowIllustration({
   assetBasePath = '/assets/nodes',
   className,
   showInterface = true,
+  interactive = false,
   gridOpacity,
+  fogEnabled = true,
   gridDensity = 30,
+  gridMaskRadius = 320,
+  gridMaskBlur = 240,
   connectorOpacity = mode === 'dark' ? 0.92 : 0.82,
   connectorStroke = 'solid',
   connectorWidth = 2,
+  showContinuationConnectors = true,
   pathCurve = 0,
   outlineOpacity = 1,
   outlineWidth = 3,
+  nodeScale = 1,
   nodeDepth = 12,
+  nodeDepthRandom = 0,
+  nodeShape = 'rectangle',
   nodeCornerRadius = 10,
+  nodeIconOpacity = mode === 'dark' ? 0.94 : 0.9,
+  nodeFrontGradientAngle = 32,
+  nodeSideXGradientAngle = 18,
+  nodeSideZGradientAngle = 18,
+  nodeFrontGradientStartColor,
+  nodeFrontGradientMidColor,
+  nodeFrontGradientEndColor,
+  nodeSideXGradientStartColor,
+  nodeSideXGradientMidColor,
+  nodeSideXGradientEndColor,
+  nodeSideZGradientStartColor,
+  nodeSideZGradientMidColor,
+  nodeSideZGradientEndColor,
   perspectiveEffect = 0,
   cameraPitch = 45,
   cameraYaw,
   cameraZoom = 1,
+  emitterX = 0.45,
+  emitterY = -4.25,
   scrollTilt = 0,
   scrollZoom,
   scrollRange = 700,
   minDelay = 0,
   maxDelay = 0,
+  speed = 1,
+  nodeProgressMode = 'bar',
+  progressPadding = 1,
   progressBarHeight = 8,
   concurrentBeams = 1,
   minEmitDelay = 0,
@@ -58,9 +82,6 @@ export function SignalFlowIllustration({
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
-  const routeLineRef = useRef<HTMLDivElement>(null);
-  const routeIdRef = useRef<HTMLSpanElement>(null);
-  const progressBarRef = useRef<HTMLElement>(null);
   const controllerRef = useRef<SignalFlowSceneController | null>(null);
   const [error, setError] = useState('');
   const theme = colors[mode];
@@ -84,22 +105,48 @@ export function SignalFlowIllustration({
         flow,
         theme,
         assetBasePath,
+        interactive,
         gridOpacity: resolvedGridOpacity,
+        fogEnabled,
         gridDensity,
+        gridMaskRadius,
+        gridMaskBlur,
         connectorOpacity,
         connectorStroke,
         connectorWidth,
+        showContinuationConnectors,
         pathCurve,
         outlineOpacity,
         outlineWidth,
+        nodeScale,
         nodeDepth,
+        nodeDepthRandom,
+        nodeShape,
         nodeCornerRadius,
+        nodeIconOpacity,
+        nodeFrontGradientAngle,
+        nodeSideXGradientAngle,
+        nodeSideZGradientAngle,
+        nodeFrontGradientStartColor,
+        nodeFrontGradientMidColor,
+        nodeFrontGradientEndColor,
+        nodeSideXGradientStartColor,
+        nodeSideXGradientMidColor,
+        nodeSideXGradientEndColor,
+        nodeSideZGradientStartColor,
+        nodeSideZGradientMidColor,
+        nodeSideZGradientEndColor,
         perspectiveEffect,
         cameraPitch,
         cameraYaw,
         cameraZoom,
+        emitterX,
+        emitterY,
         minDelay,
         maxDelay,
+        speed,
+        nodeProgressMode,
+        progressPadding,
         progressBarHeight,
         concurrentBeams,
         minEmitDelay,
@@ -109,9 +156,6 @@ export function SignalFlowIllustration({
           container: containerRef.current,
           canvas: canvasRef.current,
           cssLayer: cssLayerRef.current,
-          routeLine: routeLineRef.current,
-          routeId: routeIdRef.current,
-          progressBar: progressBarRef.current,
         },
       });
     } catch (sceneError) {
@@ -123,7 +167,7 @@ export function SignalFlowIllustration({
       controllerRef.current?.destroy();
       controllerRef.current = null;
     };
-  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, flow, gridDensity, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, reducedMotion, resolvedGridOpacity, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolvedGridOpacity, showContinuationConnectors, speed, theme, variant]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -155,13 +199,11 @@ export function SignalFlowIllustration({
 
       const eased = displayedProgress * displayedProgress * (3 - 2 * displayedProgress);
       const tilt = scrollTilt * eased;
-      const roll = -1.2 * eased;
-      const lift = -42 * eased;
       const resolvedScrollZoom = scrollZoom === undefined
         ? cameraZoom
         : cameraZoom + (scrollZoom - cameraZoom) * eased;
 
-      element.style.transform = `perspective(1400px) rotateX(${tilt}deg) rotateZ(${roll}deg) translate3d(0, ${lift}px, 0)`;
+      element.style.transform = `perspective(1400px) rotateX(${tilt}deg)`;
       controllerRef.current?.setCameraZoom(resolvedScrollZoom);
 
       if (displayedProgress !== targetProgress) {
@@ -204,10 +246,11 @@ export function SignalFlowIllustration({
   return (
     <section
       ref={containerRef}
-      className={joinClasses(styles.root, styles.variant2, modeClass, className)}
+      className={joinClasses(styles.root, styles.variant2, modeClass, !interactive && styles.passive, className)}
       style={cssVariables}
       data-variant={variant}
       data-mode={mode}
+      data-interactive={interactive}
       aria-label={`Signal flow ${variant.replace('-', ' ')}, ${mode} mode`}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
@@ -245,21 +288,8 @@ export function SignalFlowIllustration({
             <p className={styles.lede}>{copy.description}</p>
           </section>
 
-          <aside className={styles.routeCard} aria-live="polite">
-            <div className={styles.routeHead}>
-              <span>{copy.routeLabel}</span>
-              <span ref={routeIdRef}>#001</span>
-            </div>
-            <div ref={routeLineRef} className={styles.routeLine}>LOADING ROUTE</div>
-            <div className={styles.routeProgress}><i ref={progressBarRef} /></div>
-            <button type="button" className={styles.reroute} onClick={() => controllerRef.current?.reroute()}>
-              <span>{copy.action}</span>
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5a6 6 0 0 1 10.5-1.2L17 8M15 12.5a6 6 0 0 1-10.5 1.2L3 12M17 4v4h-4M3 16v-4h4" /></svg>
-            </button>
-          </aside>
-
           <div className={styles.status}><span>{nodeCount} NODES</span><span>{edgeCount} EDGES</span><span>24 FPS+</span></div>
-          <div className={styles.hint}><span className={styles.mouse} /> {copy.hint}</div>
+          {interactive && <div className={styles.hint}><span className={styles.mouse} /> {copy.hint}</div>}
           <div className={styles.cornerIndex}>02</div>
         </>
       )}

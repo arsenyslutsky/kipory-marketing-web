@@ -1,0 +1,126 @@
+.root {
+  position: relative;
+  width: var(--pillars-width);
+  height: var(--pillars-height);
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--pillars-color);
+  background: transparent;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--pillars-grid-opacity);
+  background-image:
+    linear-gradient(to right, var(--pillars-grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--pillars-grid-color) 1px, transparent 1px);
+  background-size: var(--pillars-grid-density) var(--pillars-grid-density);
+}
+
+.composition {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+}
+
+.surroundingLayer {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+}
+
+.card {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+}
+
+.card:nth-child(1) { left: 50%; top: 38%; }
+.card:nth-child(2) { left: 29%; top: 50%; }
+.card:nth-child(3) { left: 71%; top: 50%; }
+.card:nth-child(4) { left: 50%; top: 62%; }
+
+.icon {
+  width: var(--pillars-icon-size);
+  height: var(--pillars-icon-size);
+  overflow: visible;
+  filter: drop-shadow(0 0 1.75rem color-mix(in srgb, var(--pillars-color) 24%, transparent));
+}
+
+.surroundingIcon {
+  position: absolute;
+  left: var(--surrounding-x);
+  top: var(--surrounding-y);
+  width: 1.5rem;
+  height: 1.75rem;
+  color: var(--pillars-color);
+  fill: none;
+  opacity: .72;
+  transform: translate(-50%, -50%);
+}
+
+.connectors {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.connector {
+  stroke-dasharray: .35rem .3rem;
+}
+
+.beamGlow,
+.beamCore {
+  opacity: 0;
+  stroke-dashoffset: 1;
+  stroke-dasharray: .001 .999;
+  animation: pillars-beam-travel var(--beam-duration) linear var(--beam-delay) infinite;
+}
+
+.beamGlow {
+  mix-blend-mode: screen;
+}
+
+@keyframes pillars-beam-travel {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+
+  4% { opacity: 1; }
+  78% { opacity: 1; }
+
+  86%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beamGlow,
+  .beamCore {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .root { max-width: 100%; }
+}

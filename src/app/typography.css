@@ -41,7 +41,7 @@
   --type-body-weight: 200;
   --type-control-weight: 700;
   --type-display-tracking: 0;
-  --type-accent-tracking: 0;
+  --type-accent-tracking: .03rem;
   --type-body-tracking: 0;
   --type-control-tracking: .1em;
   --type-control-tracking-wide: .16em;

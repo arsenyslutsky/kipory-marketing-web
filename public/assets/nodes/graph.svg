@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 300">
-  <g stroke="#fff" stroke-width="9" stroke-linecap="round">
-    <path d="m210 86 86-21m-86 21 65 65m21-86-21 86" fill="none"/>
-    <circle cx="210" cy="86" r="16" fill="#fff" stroke="none"/><circle cx="296" cy="65" r="16" fill="#fff" stroke="none"/><circle cx="275" cy="151" r="16" fill="#fff" stroke="none"/>
-  </g>
-  <text x="256" y="246" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" letter-spacing="4" text-anchor="middle">GRAPH</text>
-  <path d="M208 263h96" stroke="#fff" stroke-width="3" opacity=".58"/>
-</svg>
