@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
 import { SignalFlowIllustration } from '../components/SignalFlowIllustration';
+import { heroSignalFlowProps } from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/Signal Flow',
@@ -21,6 +22,10 @@ const meta = {
     mode: { control: 'inline-radio', options: ['light', 'dark'] },
     showInterface: { control: 'boolean' },
     gridOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    gridDensity: {
+      control: { type: 'range', min: 8, max: 160, step: 1 },
+      description: 'Target grid-cell spacing in CSS pixels.',
+    },
     connectorOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
     connectorStroke: { control: 'inline-radio', options: ['solid', 'dotted', 'dashed'] },
     connectorWidth: { control: { type: 'range', min: 0, max: 5, step: 0.25 } },
@@ -43,6 +48,7 @@ const meta = {
   },
   args: {
     showInterface: true,
+    gridDensity: 30,
     connectorStroke: 'solid',
     connectorWidth: 2,
     pathCurve: 0,
@@ -80,7 +86,7 @@ export const Variant2Light: Story = {
 
 export const Variant2Dark: Story = {
   name: 'Variant 2 / Dark',
-  args: { mode: 'dark', gridOpacity: 0.68, connectorOpacity: 0.92 },
+  args: heroSignalFlowProps,
 };
 
 export const IllustrationOnly: Story = {

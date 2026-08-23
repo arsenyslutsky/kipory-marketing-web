@@ -74,6 +74,8 @@ export interface SignalFlowIllustrationProps {
   className?: string;
   showInterface?: boolean;
   gridOpacity?: number;
+  /** Target grid-cell spacing in CSS pixels at the initial camera framing. */
+  gridDensity?: number;
   connectorOpacity?: number;
   connectorStroke?: ConnectorStrokeType;
   connectorWidth?: number;

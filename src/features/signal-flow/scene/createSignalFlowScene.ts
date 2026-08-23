@@ -25,6 +25,7 @@ interface SceneOptions {
   theme: SignalFlowTheme;
   assetBasePath: string;
   gridOpacity: number;
+  gridDensity: number;
   connectorOpacity: number;
   connectorStroke: ConnectorStrokeType;
   connectorWidth: number;
@@ -279,6 +280,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     theme,
     assetBasePath,
     gridOpacity,
+    gridDensity,
     connectorOpacity,
     connectorStroke,
     connectorWidth,
@@ -486,10 +488,22 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   scene.add(ground);
 
   const resolvedGridOpacity = THREE.MathUtils.clamp(gridOpacity, 0, 1);
+  const resolvedGridDensity = Number.isFinite(gridDensity)
+    ? THREE.MathUtils.clamp(gridDensity, 8, 160)
+    : 30;
   if (resolvedGridOpacity > 0) {
+    const gridSize = 40;
+    const viewportHeight = Math.max(container.clientHeight, 1);
+    const visibleWorldHeight = initialCameraBase * 2 / resolvedCameraZoom;
+    const pixelsPerWorldUnit = viewportHeight / visibleWorldHeight;
+    const gridDivisions = THREE.MathUtils.clamp(
+      Math.round(gridSize * pixelsPerWorldUnit / resolvedGridDensity),
+      4,
+      160,
+    );
     const gridLayer = new THREE.Group();
     gridLayer.renderOrder = -100;
-    const grid = new THREE.GridHelper(40, 40, palette.gridMajor, palette.gridMinor);
+    const grid = new THREE.GridHelper(gridSize, gridDivisions, palette.gridMajor, palette.gridMinor);
     grid.position.y = -0.14;
     const gridMaterials = Array.isArray(grid.material) ? grid.material : [grid.material];
     gridMaterials.forEach((material) => {

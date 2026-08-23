@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SignalFlowIllustration } from '@/features/signal-flow';
+import { heroSignalFlowProps, SignalFlowIllustration } from '@/features/signal-flow';
 import styles from './marketing.module.css';
 
 const capabilities = [
@@ -27,32 +27,7 @@ export default function HomePage() {
     <main id="main-content" className={styles.main}>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroVisual} aria-hidden="true">
-          <SignalFlowIllustration
-            mode="dark"
-            showInterface={false}
-            gridOpacity={1}
-            connectorOpacity={0.62}
-            connectorStroke="dashed"
-            connectorWidth={1.25}
-            pathCurve={86}
-            outlineOpacity={0.25}
-            outlineWidth={1}
-            nodeDepth={18}
-            nodeCornerRadius={14}
-            perspectiveEffect={82}
-            cameraPitch={45}
-            cameraYaw={15}
-            cameraZoom={0.8}
-            scrollTilt={45}
-            scrollZoom={1.2}
-            scrollRange={700}
-            minDelay={500}
-            maxDelay={1800}
-            progressBarHeight={8}
-            concurrentBeams={10}
-            minEmitDelay={500}
-            maxEmitDelay={1400}
-          />
+          <SignalFlowIllustration {...heroSignalFlowProps} />
         </div>
         <div className={styles.heroShade} />
         <div className={`site-container ${styles.heroInner}`}>

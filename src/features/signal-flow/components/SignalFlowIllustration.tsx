@@ -30,6 +30,7 @@ export function SignalFlowIllustration({
   className,
   showInterface = true,
   gridOpacity,
+  gridDensity = 30,
   connectorOpacity = mode === 'dark' ? 0.92 : 0.82,
   connectorStroke = 'solid',
   connectorWidth = 2,
@@ -84,6 +85,7 @@ export function SignalFlowIllustration({
         theme,
         assetBasePath,
         gridOpacity: resolvedGridOpacity,
+        gridDensity,
         connectorOpacity,
         connectorStroke,
         connectorWidth,
@@ -121,7 +123,7 @@ export function SignalFlowIllustration({
       controllerRef.current?.destroy();
       controllerRef.current = null;
     };
-  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, flow, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, reducedMotion, resolvedGridOpacity, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, flow, gridDensity, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, reducedMotion, resolvedGridOpacity, theme, variant]);
 
   useEffect(() => {
     const element = containerRef.current;
