@@ -10,7 +10,7 @@
   background:
     radial-gradient(circle at 70% 45%, var(--ui-experience-glow), transparent 33%),
     linear-gradient(120deg, var(--ui-experience-start) 0%, var(--ui-experience-middle) 48%, var(--ui-experience-end) 100%);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--type-body-family);
 }
 
 .root.dark {
@@ -51,8 +51,8 @@
   color: var(--ui-brand);
   font-family: var(--type-control-family);
   font-size: var(--type-control-size-lg);
-  font-weight: 700;
-  letter-spacing: .14em;
+  font-weight: var(--type-control-weight);
+  letter-spacing: var(--type-control-tracking-wide);
 }
 
 .brandMark {
@@ -84,8 +84,8 @@
   color: var(--ui-nav-active-text);
   background: var(--ui-nav-active-background);
   box-shadow: inset 0 0 0 1px var(--ui-nav-active-inset), 0 0 18px var(--ui-nav-active-glow);
-  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
-  letter-spacing: .11em;
+  font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
 }
 
 .variantLabel span { color: var(--green); margin-right: 5px; }
@@ -104,8 +104,8 @@
   padding: 6px 8px;
   color: var(--ui-nav-text);
   background: transparent;
-  font: 500 var(--type-control-size-2xs)/1 var(--type-control-family);
-  letter-spacing: .1em;
+  font: var(--type-control-weight) var(--type-control-size-2xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
   cursor: pointer;
 }
 
@@ -121,8 +121,8 @@
   gap: 28px;
   align-items: center;
   color: var(--ui-top-meta);
-  font: 500 var(--type-control-size-sm)/1 var(--type-control-family);
-  letter-spacing: .12em;
+  font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking-wide);
 }
 
 .live { display: flex; align-items: center; gap: 8px; }
@@ -151,8 +151,8 @@
   align-items: center;
   gap: 12px;
   color: var(--ui-eyebrow);
-  font: 500 var(--type-control-size-sm)/1 var(--type-control-family);
-  letter-spacing: .13em;
+  font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking-wide);
 }
 .eyebrow span { color: var(--green); }
 .eyebrow::before {
@@ -166,15 +166,15 @@
 .intro h1 {
   margin: 0;
   color: var(--ui-heading);
-  font-size: clamp(42px, 4.4vw, 72px);
-  line-height: .98;
-  letter-spacing: -.055em;
-  font-weight: 500;
+  font-family: var(--type-display-family);
+  font-size: var(--type-display-size-section);
+  line-height: var(--type-display-leading-section);
+  letter-spacing: var(--type-display-tracking);
+  font-weight: var(--type-display-weight);
   text-shadow: 0 0 40px var(--ui-heading-shadow);
 }
-.variant2 .intro h1 { font-size: clamp(46px, 4.8vw, 76px); }
-.intro h1 em { color: var(--ui-heading-accent); font-family: Georgia, serif; font-weight: 400; }
-.lede { max-width: 380px; margin: 25px 0 0; color: var(--ui-lede); font-size: 14px; line-height: 1.65; }
+.intro h1 em { color: var(--ui-heading-accent); font-family: var(--type-accent-family); font-style: normal; font-weight: var(--type-accent-weight); }
+.lede { max-width: 380px; margin: 25px 0 0; color: var(--ui-lede); font-size: var(--type-body-size-xs); line-height: var(--type-body-leading-relaxed); }
 .variant2 .lede { max-width: 430px; }
 
 .routeCard {
@@ -196,12 +196,12 @@
   display: flex;
   justify-content: space-between;
   color: var(--ui-route-head);
-  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
-  letter-spacing: .13em;
+  font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking-wide);
 }
 .routeLine {
   margin: 15px 0 14px;
-  font: 500 var(--type-control-size-lg)/1.3 var(--type-control-family);
+  font: var(--type-control-weight) var(--type-control-size-lg)/var(--type-body-leading) var(--type-control-family);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -218,8 +218,8 @@
   justify-content: space-between;
   color: var(--ui-button-text);
   background: var(--ui-button-background);
-  font: 600 var(--type-control-size-sm)/1 var(--type-control-family);
-  letter-spacing: .11em;
+  font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
   cursor: pointer;
   transition: background .25s ease, transform .25s ease;
 }
@@ -235,8 +235,8 @@
   display: flex;
   gap: 20px;
   color: var(--ui-status);
-  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
-  letter-spacing: .12em;
+  font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking-wide);
 }
 .status span { display: flex; gap: 8px; align-items: center; }
 .status span::before {
@@ -257,8 +257,8 @@
   gap: 10px;
   align-items: center;
   color: var(--ui-hint);
-  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
-  letter-spacing: .13em;
+  font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking-wide);
   pointer-events: none;
 }
 .mouse { width: 15px; height: 21px; border: 1px solid var(--ui-hint); border-radius: 8px; position: relative; }
@@ -278,8 +278,8 @@
   right: 42px;
   top: 103px;
   color: var(--ui-corner);
-  font: 500 var(--type-control-size-md)/1 var(--type-control-family);
-  letter-spacing: .1em;
+  font: var(--type-control-weight) var(--type-control-size-md)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
 }
 .cornerIndex span { color: var(--ui-corner-muted); padding: 0 4px; }
 .fallback {
@@ -291,7 +291,9 @@
   color: var(--ui-page-text);
   background: var(--ui-route-background);
   border: 1px solid var(--ui-route-border);
-  font-size: 14px;
+  font-family: var(--type-body-family);
+  font-size: var(--type-body-size-xs);
+  line-height: var(--type-body-leading);
 }
 
 @keyframes breathe {
@@ -310,11 +312,10 @@
   .brand > span:last-child { display: none; }
   .variantLabel { left: 76px; translate: 0 -50%; padding: 9px 10px; }
   .intro { top: 92px; left: 20px; width: calc(100vw - 40px); }
-  .intro h1 { font-size: 43px; }
-  .lede { max-width: 310px; font-size: 12px; }
+  .intro h1 { font-size: var(--type-display-size-hero-mobile); }
+  .lede { max-width: 310px; font-size: var(--type-body-size-2xs); }
   .routeCard { left: 20px; right: 20px; bottom: 20px; width: auto; }
   .variant2 .intro { left: 20px; bottom: 202px; width: calc(100vw - 40px); }
-  .variant2 .intro h1 { font-size: 41px; }
   .variant2 .routeCard { left: 20px; right: 20px; top: auto; bottom: 20px; width: auto; }
   .status { top: 84px; left: 20px; }
   .status span:nth-child(3), .hint, .cornerIndex { display: none; }

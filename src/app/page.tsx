@@ -78,15 +78,21 @@ export default function HomePage() {
             <p className="eyebrow">From movement to meaning</p>
             <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Your system already tells a story. Kipory makes it readable.</h2>
           </div>
-          <div className={styles.capabilityGrid}>
-            {capabilities.map((capability) => (
-              <article key={capability.number} className={styles.capabilityCard}>
-                <span>{capability.number}</span>
-                <div className={styles.cardGlyph} aria-hidden="true"><i /><i /><i /></div>
-                <h3>{capability.title}</h3>
-                <p>{capability.body}</p>
-              </article>
-            ))}
+          <div className={styles.capabilityLayout}>
+            <div className={styles.capabilityList}>
+              {capabilities.map((capability) => (
+                <article key={capability.number} className={styles.capabilityCard}>
+                  <span>{capability.number}</span>
+                  <div className={styles.capabilityCardCopy}>
+                    <h3>{capability.title}</h3>
+                    <p>{capability.body}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className={styles.capabilityVisualPlaceholder} role="img" aria-label="Illustration placeholder">
+              <span aria-hidden="true">Illustration placeholder</span>
+            </div>
           </div>
         </div>
       </section>

@@ -1,0 +1,50 @@
+.sheet {
+  min-height: 100vh;
+  padding: clamp(2.5rem, 6vw, 5.5rem);
+  color: var(--type-color-primary);
+  background: var(--ink);
+}
+
+.header {
+  max-width: 53.75rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.header h1 { margin: 1.125rem 0 0; }
+.header p { max-width: 42.5rem; margin: 1.5rem 0 0; }
+.rootToken { display: inline-block; margin-top: 1.25rem; color: var(--type-color-control); font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-body-leading) var(--type-control-family); }
+
+.section { padding: 3rem 0; border-bottom: 1px solid var(--line); }
+.sectionTitle { margin: 0 0 1.75rem; }
+.specimenList { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.specimen { padding: 1.75rem; display: grid; grid-template-columns: minmax(11.25rem, .35fr) minmax(0, 1fr); gap: 2rem; align-items: baseline; background: var(--ink); }
+.specimenMeta { display: grid; gap: .5rem; }
+.specimenMeta code { color: var(--type-color-muted); font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-body-leading) var(--type-control-family); }
+.specimenText { margin: 0; }
+.accentHero { font-size: var(--type-accent-size-hero); }
+.bodyScale { display: grid; gap: 1.25rem; }
+.bodySample { max-width: 47.5rem; margin: 0; }
+
+.controlScale { display: flex; flex-wrap: wrap; gap: 1rem; }
+.controlSample { padding: .875rem 1rem; border: 1px solid var(--line); }
+.controlXs { font-size: var(--type-control-size-xs); }
+.controlSm { font-size: var(--type-control-size-sm); }
+.controlMd { font-size: var(--type-control-size-md); }
+.controlLg { font-size: var(--type-control-size-lg); }
+
+.colorGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.colorCard { min-height: 9.375rem; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--line); }
+.colorCard span { font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking); text-transform: uppercase; }
+.colorCard code { color: currentColor; font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-body-leading) var(--type-control-family); opacity: .72; }
+.primary { color: var(--type-color-primary); }
+.secondary { color: var(--type-color-secondary); }
+.muted { color: var(--type-color-muted); }
+.accent { color: var(--type-color-accent); }
+.control { color: var(--type-color-control); }
+.alternate { color: var(--type-color-alternate-secondary); background: var(--surface-alternate); }
+
+@media (max-width: 760px) {
+  .specimen { grid-template-columns: 1fr; gap: 1.25rem; }
+  .colorGrid { grid-template-columns: 1fr; }
+}
