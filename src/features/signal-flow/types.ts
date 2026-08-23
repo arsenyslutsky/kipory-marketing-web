@@ -84,7 +84,11 @@ export interface SignalFlowIllustrationProps {
   nodeCornerRadius?: number;
   perspectiveEffect?: number;
   cameraPitch?: number;
+  cameraYaw?: number;
   cameraZoom?: number;
+  scrollTilt?: number;
+  scrollZoom?: number;
+  scrollRange?: number;
   minDelay?: number;
   maxDelay?: number;
   progressBarHeight?: number;

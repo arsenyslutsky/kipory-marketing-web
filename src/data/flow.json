@@ -20,6 +20,8 @@
     { "id": "policy", "position": [2.0, 9.2], "label": "POLICY", "svg": "secure.svg", "size": [2.15, 1.25], "tier": 4 },
     { "id": "schedule", "position": [6.8, 9.2], "label": "SCHEDULE", "svg": "calendar.svg", "size": [2.15, 1.25], "tier": 4 },
     { "id": "regions", "position": [9.2, 9.2], "label": "REGIONS", "svg": "places.svg", "size": [2.15, 1.25], "tier": 4 },
+    { "id": "build", "position": [-4.0, 12.7], "label": "BUILD", "svg": "code.svg", "size": [2.15, 1.25], "tier": 5 },
+    { "id": "release", "position": [-1.4, 12.7], "label": "RELEASE", "svg": "stack.svg", "size": [2.15, 1.25], "tier": 5 },
     { "id": "access", "position": [2.0, 12.7], "label": "ACCESS", "svg": "profile.svg", "size": [2.15, 1.25], "tier": 5 },
     { "id": "events", "position": [6.8, 12.7], "label": "EVENTS", "svg": "records.svg", "size": [2.15, 1.25], "tier": 5 },
     { "id": "routes", "position": [9.2, 12.7], "label": "ROUTES", "svg": "graph.svg", "size": [2.15, 1.25], "tier": 5 }
@@ -36,11 +38,12 @@
     "profile": ["policy"],
     "calendar": ["schedule"],
     "places": ["regions"],
+    "pipeline": ["build", "release"],
     "policy": ["access"],
     "schedule": ["events"],
     "regions": ["routes"]
   },
   "variants": {
-    "variant-2": { "hiddenNodes": ["insight", "records", "code"] }
+    "variant-2": { "hiddenNodes": ["insight", "records", "code", "metrics"] }
   }
 }

@@ -30,7 +30,7 @@ export default function HomePage() {
           <SignalFlowIllustration
             mode="dark"
             showInterface={false}
-            gridOpacity={0.92}
+            gridOpacity={1}
             connectorOpacity={0.62}
             connectorStroke="dashed"
             connectorWidth={1.25}
@@ -40,8 +40,12 @@ export default function HomePage() {
             nodeDepth={18}
             nodeCornerRadius={14}
             perspectiveEffect={82}
-            cameraPitch={32}
-            cameraZoom={0.7}
+            cameraPitch={45}
+            cameraYaw={15}
+            cameraZoom={0.8}
+            scrollTilt={45}
+            scrollZoom={1.2}
+            scrollRange={700}
             minDelay={500}
             maxDelay={1800}
             progressBarHeight={8}
@@ -68,21 +72,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={styles.signalStrip} aria-label="Platform qualities">
-        <div className="site-container">
-          <span>One live map</span><i />
-          <span>Every handoff</span><i />
-          <span>Continuous context</span><i />
-          <span>Built for change</span>
-        </div>
-      </section>
-
-      <section className={`${styles.section} ${styles.lightSection}`}>
+      <section className={`${styles.section} ${styles.lightSection} ${styles.movementSection}`}>
         <div className="site-container">
           <div className={styles.sectionHeader}>
             <p className="eyebrow">From movement to meaning</p>
-            <h2 className={styles.sectionTitle}>Your system already tells a story. Kipory makes it readable.</h2>
-            <p className={styles.sectionIntro}>A shared operational model connects the activity teams see with the dependencies they usually do not.</p>
+            <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Your system already tells a story. Kipory makes it readable.</h2>
           </div>
           <div className={styles.capabilityGrid}>
             {capabilities.map((capability) => (

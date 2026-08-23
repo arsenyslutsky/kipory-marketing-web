@@ -2,7 +2,12 @@
   --type-display-family: var(--font-outfit), Arial, Helvetica, sans-serif;
   --type-accent-family: var(--font-ovo), Georgia, 'Times New Roman', serif;
   --type-body-family: var(--font-outfit), Arial, Helvetica, sans-serif;
-  --type-control-family: var(--mono);
+  --type-control-family: var(--font-datatype), var(--mono);
+  --type-control-size-2xs: 10px;
+  --type-control-size-xs: 11px;
+  --type-control-size-sm: 12px;
+  --type-control-size-md: 13px;
+  --type-control-size-lg: 14px;
   --type-display-weight: 300;
   --type-accent-weight: 400;
   --type-body-weight: 200;
@@ -10,7 +15,7 @@
   --type-display-tracking: 0;
   --type-accent-tracking: 0;
   --type-body-tracking: 0;
-  --type-body-leading: 1.55;
+  --type-body-leading: 1.3;
 }
 
 :where(h1, h2, h3) {
@@ -41,6 +46,7 @@
 
 .type-control {
   font-family: var(--type-control-family);
+  font-size: var(--type-control-size-sm);
   font-weight: var(--type-control-weight);
   letter-spacing: .1em;
   text-transform: uppercase;

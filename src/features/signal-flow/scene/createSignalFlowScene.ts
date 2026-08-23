@@ -35,6 +35,7 @@ interface SceneOptions {
   nodeCornerRadius: number;
   perspectiveEffect: number;
   cameraPitch: number;
+  cameraYaw?: number;
   cameraZoom: number;
   minDelay: number;
   maxDelay: number;
@@ -48,6 +49,7 @@ interface SceneOptions {
 
 export interface SignalFlowSceneController {
   reroute: () => void;
+  setCameraZoom: (zoom: number) => void;
   destroy: () => void;
 }
 
@@ -287,6 +289,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     nodeCornerRadius,
     perspectiveEffect,
     cameraPitch,
+    cameraYaw,
     cameraZoom,
     minDelay,
     maxDelay,
@@ -306,8 +309,10 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const nodeHeight = nodeDepthPixels * (0.22 / 12);
   const nodeCornerRadiusPixels = THREE.MathUtils.clamp(nodeCornerRadius, 0, 50);
   const perspectiveAmount = THREE.MathUtils.clamp(perspectiveEffect, 0, 100) / 100;
-  const resolvedCameraPitch = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(cameraPitch, 20, 65));
+  const resolvedCameraPitch = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(cameraPitch, 0, 65));
   const resolvedCameraZoom = THREE.MathUtils.clamp(cameraZoom, 0.25, 2);
+  let currentCameraZoom = resolvedCameraZoom;
+  let targetCameraZoom = resolvedCameraZoom;
   const resolvedConnectorOpacity = THREE.MathUtils.clamp(connectorOpacity, 0, 1);
   const resolvedConnectorWidth = THREE.MathUtils.clamp(connectorWidth, 0, 5);
   const resolvedPathCurve = THREE.MathUtils.clamp(pathCurve, 0, 100) / 100;
@@ -409,7 +414,13 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     0,
     (flowNear + flowFar) * 0.5 + 1.2,
   );
-  const cameraHeading = new THREE.Vector3(14 - cameraTarget.x, 0, 18 - cameraTarget.z).normalize();
+  const cameraHeading = cameraYaw === undefined
+    ? new THREE.Vector3(14 - cameraTarget.x, 0, 18 - cameraTarget.z).normalize()
+    : new THREE.Vector3(
+      Math.sin(THREE.MathUtils.degToRad(THREE.MathUtils.clamp(cameraYaw, -180, 180))),
+      0,
+      Math.cos(THREE.MathUtils.degToRad(THREE.MathUtils.clamp(cameraYaw, -180, 180))),
+    );
   const cameraDirection = new THREE.Vector3(
     cameraHeading.x * Math.cos(resolvedCameraPitch),
     Math.sin(resolvedCameraPitch),
@@ -426,7 +437,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   } else {
     camera.position.copy(cameraTarget).addScaledVector(cameraDirection, 24);
   }
-  camera.zoom = resolvedCameraZoom;
+  camera.zoom = currentCameraZoom;
   camera.lookAt(cameraTarget);
 
   const controls = new OrbitControls(camera, canvas);
@@ -442,7 +453,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     controls.maxZoom = 1.35;
   }
   controls.minPolarAngle = Math.PI * 0.14;
-  controls.maxPolarAngle = Math.PI * 0.43;
+  controls.maxPolarAngle = Math.PI * 0.5;
   controls.minAzimuthAngle = -0.25;
   controls.maxAzimuthAngle = 1.42;
 
@@ -1541,6 +1552,11 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       card.position.y = THREE.MathUtils.lerp(card.position.y, targetY, 0.08);
     });
 
+    if (currentCameraZoom !== targetCameraZoom) {
+      currentCameraZoom = targetCameraZoom;
+      camera.zoom = currentCameraZoom;
+      camera.updateProjectionMatrix();
+    }
     controls.update();
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
@@ -1571,10 +1587,14 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       camera.top = base;
       camera.bottom = -base;
     }
-    camera.zoom = resolvedCameraZoom;
+    camera.zoom = currentCameraZoom;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     cssRenderer.setSize(width, height);
+  }
+
+  function setCameraZoom(nextZoom: number) {
+    targetCameraZoom = THREE.MathUtils.clamp(nextZoom, 0.25, 2);
   }
 
   const resizeObserver = new ResizeObserver(resize);
@@ -1584,6 +1604,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
 
   return {
     reroute: resetBeams,
+    setCameraZoom,
     destroy() {
       destroyed = true;
       cancelAnimationFrame(frameId);

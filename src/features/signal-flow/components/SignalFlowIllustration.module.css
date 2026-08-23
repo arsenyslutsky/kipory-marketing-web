@@ -49,7 +49,8 @@
   align-items: center;
   gap: 13px;
   color: var(--ui-brand);
-  font-size: 12px;
+  font-family: var(--type-control-family);
+  font-size: var(--type-control-size-lg);
   font-weight: 700;
   letter-spacing: .14em;
 }
@@ -83,7 +84,7 @@
   color: var(--ui-nav-active-text);
   background: var(--ui-nav-active-background);
   box-shadow: inset 0 0 0 1px var(--ui-nav-active-inset), 0 0 18px var(--ui-nav-active-glow);
-  font: 500 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
   letter-spacing: .11em;
 }
 
@@ -103,7 +104,7 @@
   padding: 6px 8px;
   color: var(--ui-nav-text);
   background: transparent;
-  font: 500 8px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-2xs)/1 var(--type-control-family);
   letter-spacing: .1em;
   cursor: pointer;
 }
@@ -120,7 +121,7 @@
   gap: 28px;
   align-items: center;
   color: var(--ui-top-meta);
-  font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-sm)/1 var(--type-control-family);
   letter-spacing: .12em;
 }
 
@@ -150,7 +151,7 @@
   align-items: center;
   gap: 12px;
   color: var(--ui-eyebrow);
-  font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-sm)/1 var(--type-control-family);
   letter-spacing: .13em;
 }
 .eyebrow span { color: var(--green); }
@@ -195,12 +196,12 @@
   display: flex;
   justify-content: space-between;
   color: var(--ui-route-head);
-  font: 500 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
   letter-spacing: .13em;
 }
 .routeLine {
   margin: 15px 0 14px;
-  font: 500 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-lg)/1.3 var(--type-control-family);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -217,7 +218,7 @@
   justify-content: space-between;
   color: var(--ui-button-text);
   background: var(--ui-button-background);
-  font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 600 var(--type-control-size-sm)/1 var(--type-control-family);
   letter-spacing: .11em;
   cursor: pointer;
   transition: background .25s ease, transform .25s ease;
@@ -234,7 +235,7 @@
   display: flex;
   gap: 20px;
   color: var(--ui-status);
-  font: 500 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
   letter-spacing: .12em;
 }
 .status span { display: flex; gap: 8px; align-items: center; }
@@ -256,7 +257,7 @@
   gap: 10px;
   align-items: center;
   color: var(--ui-hint);
-  font: 500 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-xs)/1 var(--type-control-family);
   letter-spacing: .13em;
   pointer-events: none;
 }
@@ -277,7 +278,7 @@
   right: 42px;
   top: 103px;
   color: var(--ui-corner);
-  font: 500 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font: 500 var(--type-control-size-md)/1 var(--type-control-family);
   letter-spacing: .1em;
 }
 .cornerIndex span { color: var(--ui-corner-muted); padding: 0 4px; }

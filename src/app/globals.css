@@ -3,6 +3,11 @@
   --ink-soft: #151916;
   --paper: #f3f5ef;
   --paper-soft: #e7ebe2;
+  --surface-alternate: #0b1b0a;
+  --surface-alternate-raised: #10270f;
+  --surface-alternate-text: #edf2eb;
+  --surface-alternate-muted: #a4afa6;
+  --surface-alternate-line: rgba(220, 237, 219, 0.16);
   --muted: #9ca69e;
   --line: rgba(255, 255, 255, 0.13);
   --accent: #449c40;
@@ -52,7 +57,7 @@ canvas { touch-action: none; }
   backdrop-filter: blur(18px);
 }
 .site-header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; font: var(--type-control-weight) 12px/1 var(--type-control-family); letter-spacing: .18em; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font: var(--type-control-weight) var(--type-control-size-lg)/1 var(--type-control-family); letter-spacing: .18em; }
 .brand__mark { width: 25px; height: 25px; color: var(--accent); }
 .site-nav { display: flex; align-items: center; gap: 34px; color: #b6beb8; font-family: var(--type-display-family); font-size: 13px; font-weight: var(--type-display-weight); letter-spacing: var(--type-display-tracking); text-transform: uppercase; }
 .site-nav a { transition: color .2s ease; }
@@ -66,13 +71,13 @@ canvas { touch-action: none; }
   justify-content: center;
   gap: 10px;
   border: 1px solid transparent;
-  font: var(--type-control-weight) 11px/1 var(--type-control-family);
+  font: var(--type-control-weight) var(--type-control-size-md)/1 var(--type-control-family);
   letter-spacing: .1em;
   text-transform: uppercase;
   transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
 }
 .button:hover { transform: translateY(-2px); }
-.button--compact { min-height: 38px; padding: 0 16px; font-size: 10px; }
+.button--compact { min-height: 38px; padding: 0 16px; font-size: var(--type-control-size-sm); }
 .button--accent { color: var(--ink); background: var(--accent); }
 .button--light { color: var(--ink); background: var(--paper); }
 .button--outline { color: var(--paper); border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.03); }
@@ -84,7 +89,7 @@ canvas { touch-action: none; }
   align-items: center;
   gap: 12px;
   color: var(--accent);
-  font: var(--type-control-weight) 10px/1 var(--type-control-family);
+  font: var(--type-control-weight) var(--type-control-size-sm)/1 var(--type-control-family);
   letter-spacing: .16em;
   text-transform: uppercase;
 }
@@ -95,9 +100,9 @@ canvas { touch-action: none; }
 .site-footer__statement { max-width: 330px; margin: 28px 0 0; color: var(--paper); font-family: var(--type-display-family); font-size: 23px; font-weight: var(--type-display-weight); letter-spacing: var(--type-display-tracking); line-height: 1.28; }
 .site-footer__links { display: flex; gap: clamp(60px, 10vw, 140px); }
 .site-footer__links div { min-width: 100px; display: flex; flex-direction: column; gap: 14px; font-size: 13px; }
-.site-footer__links span { margin-bottom: 7px; color: #69716b; font: var(--type-control-weight) 9px/1 var(--type-control-family); letter-spacing: .15em; text-transform: uppercase; }
+.site-footer__links span { margin-bottom: 7px; color: #69716b; font: var(--type-control-weight) var(--type-control-size-xs)/1 var(--type-control-family); letter-spacing: .15em; text-transform: uppercase; }
 .site-footer__links a:hover { color: var(--paper); }
-.site-footer__bottom { margin-top: 70px; padding-top: 22px; display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); color: #69716b; font: var(--type-control-weight) 9px/1.4 var(--type-control-family); letter-spacing: .1em; text-transform: uppercase; }
+.site-footer__bottom { margin-top: 70px; padding-top: 22px; display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); color: #69716b; font: var(--type-control-weight) var(--type-control-size-xs)/1.4 var(--type-control-family); letter-spacing: .1em; text-transform: uppercase; }
 
 @media (max-width: 760px) {
   .site-container { width: min(100% - 28px, 1180px); }

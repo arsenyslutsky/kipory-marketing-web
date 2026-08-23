@@ -40,7 +40,11 @@ export function SignalFlowIllustration({
   nodeCornerRadius = 10,
   perspectiveEffect = 0,
   cameraPitch = 45,
+  cameraYaw,
   cameraZoom = 1,
+  scrollTilt = 0,
+  scrollZoom,
+  scrollRange = 700,
   minDelay = 0,
   maxDelay = 0,
   progressBarHeight = 8,
@@ -90,6 +94,7 @@ export function SignalFlowIllustration({
         nodeCornerRadius,
         perspectiveEffect,
         cameraPitch,
+        cameraYaw,
         cameraZoom,
         minDelay,
         maxDelay,
@@ -116,7 +121,77 @@ export function SignalFlowIllustration({
       controllerRef.current?.destroy();
       controllerRef.current = null;
     };
-  }, [assetBasePath, cameraPitch, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, flow, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, reducedMotion, resolvedGridOpacity, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, flow, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, reducedMotion, resolvedGridOpacity, theme, variant]);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || (scrollTilt === 0 && scrollZoom === undefined)) return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frameId = 0;
+    let lastFrameTime = 0;
+    const readProgress = () => Math.min(Math.max(window.scrollY / Math.max(scrollRange, 1), 0), 1);
+    let targetProgress = readProgress();
+    let displayedProgress = targetProgress;
+
+    const renderScrollTransform = (frameTime: number) => {
+      frameId = 0;
+
+      if (reducedMotion ?? reducedMotionQuery.matches) {
+        displayedProgress = 0;
+        targetProgress = 0;
+        element.style.transform = 'none';
+        controllerRef.current?.setCameraZoom(cameraZoom);
+        return;
+      }
+
+      const elapsed = lastFrameTime === 0 ? 1 / 60 : Math.min((frameTime - lastFrameTime) / 1000, 0.05);
+      const damping = 1 - Math.exp(-14 * elapsed);
+      displayedProgress += (targetProgress - displayedProgress) * damping;
+      if (Math.abs(targetProgress - displayedProgress) < 0.0005) displayedProgress = targetProgress;
+      lastFrameTime = frameTime;
+
+      const eased = displayedProgress * displayedProgress * (3 - 2 * displayedProgress);
+      const tilt = scrollTilt * eased;
+      const roll = -1.2 * eased;
+      const lift = -42 * eased;
+      const resolvedScrollZoom = scrollZoom === undefined
+        ? cameraZoom
+        : cameraZoom + (scrollZoom - cameraZoom) * eased;
+
+      element.style.transform = `perspective(1400px) rotateX(${tilt}deg) rotateZ(${roll}deg) translate3d(0, ${lift}px, 0)`;
+      controllerRef.current?.setCameraZoom(resolvedScrollZoom);
+
+      if (displayedProgress !== targetProgress) {
+        frameId = window.requestAnimationFrame(renderScrollTransform);
+      } else {
+        lastFrameTime = 0;
+      }
+    };
+
+    const updateScrollTarget = () => {
+      targetProgress = readProgress();
+      if (!frameId) frameId = window.requestAnimationFrame(renderScrollTransform);
+    };
+
+    element.style.transformOrigin = '62% 42%';
+    element.style.willChange = 'transform';
+    updateScrollTarget();
+    window.addEventListener('scroll', updateScrollTarget, { passive: true });
+    window.addEventListener('resize', updateScrollTarget);
+    reducedMotionQuery.addEventListener('change', updateScrollTarget);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener('scroll', updateScrollTarget);
+      window.removeEventListener('resize', updateScrollTarget);
+      reducedMotionQuery.removeEventListener('change', updateScrollTarget);
+      controllerRef.current?.setCameraZoom(cameraZoom);
+      element.style.removeProperty('transform');
+      element.style.removeProperty('transform-origin');
+      element.style.removeProperty('will-change');
+    };
+  }, [cameraZoom, reducedMotion, scrollRange, scrollTilt, scrollZoom]);
 
   const selectMode = (nextMode: SignalFlowMode) => {
     if (nextMode !== mode) onModeChange?.(nextMode);
