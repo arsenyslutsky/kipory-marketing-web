@@ -51,23 +51,34 @@ export default function HomePage() {
               <em>In Days. Not Quarters.</em>
             </h1>
             <p className={styles.heroLead}>
-              Kipory turns complex business processes into production-grade software in days, not quarters. An agentic AI engine, composable data operators and flexible workflows do the work, with identity and security integrated at every layer — so what ships fast also holds up at scale.
+              Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
             </p>
             <div className={styles.heroActions}>
               <Link className="button button--accent" href="/contact">Request access <span>↗</span></Link>
               <Link className="button button--outline" href="/product">Explore the product</Link>
             </div>
+            <p className={styles.heroProof}>
+              <span>Learn More</span>
+              <span className={styles.heroProofChevron} aria-hidden="true">
+                <svg viewBox="0 0 16 18" focusable="false">
+                  <path d="M3 3.5 8 8.5l5-5M3 9.5l5 5 5-5" />
+                </svg>
+              </span>
+            </p>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.lightSection} ${styles.gridSurfaceSection} ${styles.movementSection}`}>
+      <section
+        className={`${styles.section} ${styles.lightSection} ${styles.gridSurfaceSection} ${styles.movementSection}`}
+        aria-labelledby="pillars-title"
+      >
         <div className="site-container">
           <div className={styles.capabilityLayout}>
             <div className={styles.capabilityContent}>
               <div className={styles.sectionHeader}>
                 <p className="eyebrow">From movement to meaning</p>
-                <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Our Pillars</h2>
+                <h2 id="pillars-title" className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Our Pillars</h2>
               </div>
               <div className={styles.capabilityList}>
                 {capabilities.map((capability) => (
@@ -94,13 +105,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}>
+      <section
+        className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}
+        aria-labelledby="delivery-title"
+      >
         <div className="site-container">
           <div className={`${styles.capabilityLayout} ${styles.useCaseLayout}`}>
             <div className={styles.capabilityContent}>
               <div className={styles.sectionHeader}>
                 <p className="eyebrow">Designed around real flow</p>
-                <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
+                <h2 id="delivery-title" className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
                   Everything your team needs to run ahead without compromises.
                 </h2>
               </div>
