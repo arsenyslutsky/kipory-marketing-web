@@ -25,7 +25,16 @@ const capabilities = [
   },
 ] as const;
 
-const useCases = ['Product operations', 'Service delivery', 'Customer journeys', 'Data workflows'] as const;
+const useCases = [
+  'Velocity with flexibility',
+  'Evolves continuously',
+  'Integrity by default',
+  'Bold delivery with lean team',
+] as const;
+
+function CountBox({ value }: { value: string }) {
+  return <span className={styles.countBox}>{value}</span>;
+}
 
 export default function HomePage() {
   return (
@@ -63,7 +72,7 @@ export default function HomePage() {
               <div className={styles.capabilityList}>
                 {capabilities.map((capability) => (
                   <article key={capability.number} className={styles.capabilityCard}>
-                    <span>{capability.number}</span>
+                    <CountBox value={capability.number} />
                     <div className={styles.capabilityCardCopy}>
                       <h3>
                         <span className={styles.capabilityTitlePrimary}>{capability.titlePrimary}</span>{' '}
@@ -92,7 +101,7 @@ export default function HomePage() {
               <div className={styles.sectionHeader}>
                 <p className="eyebrow">Designed around real flow</p>
                 <h2 className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
-                  One language for work that crosses every boundary.
+                  Everything your team needs to run ahead without compromises.
                 </h2>
               </div>
               <p className={styles.useCaseIntro}>
@@ -101,9 +110,11 @@ export default function HomePage() {
               <div className={styles.useCaseList}>
                 {useCases.map((item, index) => (
                   <Link href="/product" key={item}>
-                    <span>{String(index + 1).padStart(2, '0')}</span>
-                    <strong>{item}</strong>
-                    <i>↗</i>
+                    <CountBox value={String(index + 1).padStart(2, '0')} />
+                    <span className={styles.useCaseCopy}>
+                      <strong>{item}</strong>
+                      <span className={styles.capabilityTitleSecondary}>where your business runs</span>
+                    </span>
                   </Link>
                 ))}
               </div>

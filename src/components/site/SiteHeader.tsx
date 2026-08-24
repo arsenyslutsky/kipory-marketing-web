@@ -23,7 +23,7 @@ export function SiteHeader() {
         </nav>
 
         <Link className="button button--compact button--light" href="/contact">
-          Request access
+          Sign-in
         </Link>
       </div>
     </header>

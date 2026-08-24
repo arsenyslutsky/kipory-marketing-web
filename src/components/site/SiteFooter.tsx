@@ -10,16 +10,16 @@ export function SiteFooter() {
             <BrandMark className="brand__mark" />
             <span>KIPORY</span>
           </Link>
-          <p className="site-footer__statement">A clearer way to understand how work moves.</p>
+          <p className="site-footer__statement">Complex processes made to be simple.</p>
         </div>
         <div className="site-footer__links">
           <div>
-            <span>Explore</span>
+            <span className="site-footer__link-heading">Explore</span>
             <Link href="/product">Product</Link>
             <Link href="/about">About</Link>
           </div>
           <div>
-            <span>Connect</span>
+            <span className="site-footer__link-heading">Connect</span>
             <Link href="/contact">Contact</Link>
             <Link href="/contact">Request access</Link>
           </div>
@@ -27,7 +27,6 @@ export function SiteFooter() {
       </div>
       <div className="site-container site-footer__bottom">
         <span>© {new Date().getFullYear()} Kipory</span>
-        <span>Built for systems that never stand still.</span>
       </div>
     </footer>
   );
