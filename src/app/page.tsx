@@ -104,9 +104,6 @@ export default function HomePage() {
                   Everything your team needs to run ahead without compromises.
                 </h2>
               </div>
-              <p className={styles.useCaseIntro}>
-                Use Kipory wherever outcomes depend on more than one team, tool, or moment.
-              </p>
               <div className={styles.useCaseList}>
                 {useCases.map((item, index) => (
                   <Link href="/product" key={item}>

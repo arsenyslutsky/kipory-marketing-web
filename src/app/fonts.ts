@@ -1,4 +1,4 @@
-import { Datatype, Outfit, Ovo } from 'next/font/google';
+import { Chakra_Petch, Crimson_Pro, Outfit } from 'next/font/google';
 
 export const outfit = Outfit({
   subsets: ['latin'],
@@ -6,16 +6,17 @@ export const outfit = Outfit({
   variable: '--font-outfit',
 });
 
-export const ovo = Ovo({
+export const chakraPetch = Chakra_Petch({
   subsets: ['latin'],
-  weight: '400',
-  variable: '--font-ovo',
+  weight: ['300', '700'],
+  variable: '--font-chakra-petch',
 });
 
-export const datatype = Datatype({
+export const crimsonPro = Crimson_Pro({
   subsets: ['latin'],
-  weight: 'variable',
-  variable: '--font-datatype',
+  weight: '200',
+  style: 'normal',
+  variable: '--font-crimson-pro',
 });
 
-export const fontVariables = `${outfit.variable} ${ovo.variable} ${datatype.variable}`;
+export const fontVariables = `${outfit.variable} ${chakraPetch.variable} ${crimsonPro.variable}`;

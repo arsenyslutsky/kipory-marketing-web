@@ -1,9 +1,9 @@
 :root {
   --root-size: 16px;
   --type-display-family: var(--font-outfit), Arial, Helvetica, sans-serif;
-  --type-accent-family: var(--font-ovo), Georgia, 'Times New Roman', serif;
-  --type-body-family: var(--font-outfit), Arial, Helvetica, sans-serif;
-  --type-control-family: var(--font-datatype), var(--mono);
+  --type-accent-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
+  --type-body-family: var(--font-crimson-pro), Georgia, serif;
+  --type-control-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
   --type-display-size-hero: 3.5rem;
   --type-display-size-hero-mobile: clamp(2.1875rem, 10.5vw, 3.125rem);
   --type-display-size-page: clamp(3.75rem, 8vw, 7.25rem);
@@ -15,9 +15,11 @@
   --type-display-size-card-sm: 1.5rem;
   --type-display-size-data: 1.75rem;
   --type-display-size-data-mobile: 1.3125rem;
-  --type-accent-size-hero: 2.5rem;
-  --type-body-size-lg: 1.25rem;
-  --type-body-size-md: 1.125rem;
+  --type-accent-size-hero: 1.5rem;
+  --type-accent-size-card: 1.375rem;
+  --type-accent-size-supporting: 1.125rem;
+  --type-body-size-lg: 1.4rem;
+  --type-body-size-md: 1.3rem;
   --type-body-size-sm: 1rem;
   --type-body-size-xs: .875rem;
   --type-body-size-2xs: .75rem;
@@ -37,8 +39,10 @@
   --type-control-leading: 1;
   --type-display-weight: 300;
   --type-display-weight-light: 100;
-  --type-accent-weight: 400;
+  --type-accent-weight: 300;
   --type-body-weight: 200;
+  --type-body-style: normal;
+  --type-body-opacity: .8;
   --type-control-weight: 700;
   --type-display-tracking: 0;
   --type-accent-tracking: .03rem;
@@ -61,7 +65,13 @@
   text-wrap: balance;
 }
 
-:where(p) { text-wrap: pretty; }
+:where(p:not(.eyebrow)) {
+  font-family: var(--type-body-family);
+  font-style: var(--type-body-style);
+  font-weight: var(--type-body-weight);
+  opacity: var(--type-body-opacity);
+  text-wrap: pretty;
+}
 
 .type-display {
   color: var(--type-color-primary);
@@ -91,9 +101,11 @@
   color: var(--type-color-secondary);
   font-family: var(--type-body-family);
   font-size: var(--type-body-size-md);
+  font-style: var(--type-body-style);
   font-weight: var(--type-body-weight);
   letter-spacing: var(--type-body-tracking);
   line-height: var(--type-body-leading);
+  opacity: var(--type-body-opacity);
   text-wrap: pretty;
 }
 

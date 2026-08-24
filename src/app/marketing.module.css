@@ -8,7 +8,7 @@
 .heroCopy { width: min(660px, 62vw); padding-top: 15svh; transform: perspective(1300px) translate3d(calc(-5rem * var(--hero-scroll-progress, 0)), calc(-7rem * var(--hero-scroll-progress, 0)), calc(5rem * var(--hero-scroll-progress, 0))); transform-origin: left center; will-change: transform; }
 .heroTitle { margin: 0; max-width: 700px; font-family: var(--type-display-family); font-size: var(--type-display-size-hero); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
 .heroTitle em, .ctaSection h2 em, .pageTitle em { color: var(--accent); font-family: var(--type-accent-family); font-style: normal; font-weight: var(--type-accent-weight); letter-spacing: var(--type-accent-tracking); }
-.heroTitle em { font-size: var(--type-accent-size-hero); line-height: var(--type-accent-leading); }
+.heroTitle em { font-size: var(--type-accent-size-hero); line-height: var(--type-accent-leading); text-transform: uppercase; }
 .heroLead { width: min(580px, 100%); margin: 30px 0 0; color: var(--type-color-secondary); font-family: var(--type-body-family); font-size: var(--type-body-size-lg); font-weight: var(--type-body-weight); letter-spacing: var(--type-body-tracking); line-height: var(--type-body-leading); text-wrap: pretty; }
 .heroActions { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; }
 .section { padding: clamp(100px, 12vw, 170px) 0; }
@@ -25,32 +25,33 @@
 .capabilityContent { min-width: 0; }
 .capabilityContent .sectionHeader { display: block; }
 .capabilityContent .sectionTitle { width: 700px; max-width: none; }
-.capabilityList { margin-top: 80px; border-top: 1px dashed var(--surface-alternate-line); }
+.capabilityList { margin-top: 80px; border-top: 0; }
 .capabilityCard { min-height: 132px; padding: 28px 0; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 22px; border-bottom: 1px dashed var(--surface-alternate-line); }
+.capabilityCard:first-child { border-top: 0; }
+.capabilityCard:last-child { border-bottom: 0; }
 .countBox { width: 1.875rem; height: 1.875rem; padding: 0; display: inline-grid; place-items: center; align-self: start; justify-self: start; color: var(--paper); background: var(--ink); font: var(--type-control-weight) 1rem/1 var(--type-control-family); }
-.capabilityCardCopy h3 { margin: 0; color: var(--paper); font-family: var(--type-accent-family); font-size: var(--type-display-size-card); font-style: normal; font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-wrap: balance; }
+.capabilityCardCopy h3 { margin: 0; color: var(--paper); font-family: var(--type-accent-family); font-size: var(--type-accent-size-card); font-style: normal; font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-wrap: balance; }
 .capabilityTitlePrimary, .capabilityTitleSecondary { display: block; }
 .capabilityTitlePrimary { transition: color .35s ease; }
 .capabilityCard:hover .capabilityTitlePrimary { color: var(--accent); }
-.capabilityTitleSecondary { margin-top: .15em; color: var(--type-color-accent); font-family: var(--type-accent-family); font-size: var(--type-body-size-lg); font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-transform: lowercase; }
+.capabilityTitleSecondary { margin-top: .15em; color: var(--type-color-accent); font-family: var(--type-accent-family); font-size: var(--type-accent-size-supporting); font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-transform: lowercase; }
 .capabilityCardCopy p { max-width: 520px; margin: 12px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
 .capabilityVisual, .capabilityVisualPlaceholder { min-height: 100%; display: grid; place-items: center; color: var(--type-color-control); background: rgba(255,255,255,.015); border: 1px solid var(--surface-alternate-line); }
 .capabilityVisual { overflow: hidden; background: transparent; border: 0; }
-.capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 100%; height: 100%; max-width: 600px; margin-inline: 0; }
+.capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 100%; height: calc(100% - 10rem); max-width: 600px; margin-inline: 0; }
 .capabilityVisualPlaceholder span { font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); text-transform: uppercase; }
 .systemSection { background: var(--ink); }
 .useCaseSection { padding-block: 60px; color: var(--type-color-alternate-primary); }
-.useCaseLayout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.useCaseLayout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
 .useCaseLayout .capabilityContent { grid-column: 2; grid-row: 1; }
 .useCaseLayout .capabilityContent .sectionTitle { width: 100%; }
 .useCaseLayout .capabilityVisualPlaceholder { grid-column: 1; grid-row: 1; }
-.useCaseIntro { max-width: 520px; margin: 24px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
-.useCaseList { margin-top: 80px; border-top: 1px dashed var(--surface-alternate-line); }
-.useCaseList a { min-height: 4rem; padding-block: 12px; display: grid; grid-template-columns: 52px 1fr; gap: 0; align-items: center; border-bottom: 1px dashed var(--surface-alternate-line); transition: color .35s ease; }
+.useCaseList { margin-top: 80px; }
+.useCaseList a { min-height: 4rem; padding-block: 12px; display: grid; grid-template-columns: 52px 1fr; gap: 0; align-items: center; border-bottom: 1px dashed var(--surface-alternate-line); }
+.useCaseList a:last-child { border-bottom: 0; }
 .useCaseList .countBox { align-self: center; }
-.useCaseList a:hover { color: var(--accent); }
 .useCaseCopy { min-width: 0; }
-.useCaseList strong { color: inherit; font-family: var(--type-accent-family); font-size: var(--type-display-size-card); font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-transform: uppercase; text-wrap: balance; }
+.useCaseList strong { color: inherit; font-family: var(--type-accent-family); font-size: var(--type-accent-size-card); font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-transform: uppercase; text-wrap: balance; }
 .ctaSection { padding: clamp(120px, 14vw, 200px) 0; text-align: center; background: radial-gradient(circle at 50% 60%, rgba(210,238,103,.1), transparent 34%), #080a08; }
 .ctaSection > div > :first-child { justify-content: center; }
 .ctaSection h2 { margin: 0; font-family: var(--type-display-family); font-size: var(--type-display-size-page); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
@@ -107,7 +108,7 @@
   .capabilityCard { min-height: auto; }
   .capabilityVisual, .capabilityVisualPlaceholder { min-height: 360px; }
   .capabilityVisual { position: relative; }
-  .capabilityVisual .pillarsIllustration { inset: 0; max-width: 100%; }
+  .capabilityVisual .pillarsIllustration { inset: 0; height: 100%; max-width: 100%; }
   .featureGrid { grid-template-columns: 1fr; }
   .feature, .feature:nth-child(even) { min-height: auto; padding: 32px 0 40px; border-right: 0; }
   .feature h2 { margin-top: 60px; }
