@@ -18,6 +18,7 @@ const profilePaths = (
 );
 
 export function PillarSurroundingIcon({
+  fill = 'none',
   name,
   title,
   strokeWidth = 1.25,
@@ -34,7 +35,7 @@ export function PillarSurroundingIcon({
       {...props}
     >
       <g
-        fill="none"
+        fill={fill}
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"

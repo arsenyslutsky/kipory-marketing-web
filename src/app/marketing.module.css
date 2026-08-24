@@ -33,10 +33,15 @@
 .capabilityTitlePrimary, .capabilityTitleSecondary { display: block; }
 .capabilityTitleSecondary { margin-top: .15em; color: var(--type-color-accent); font-size: var(--type-body-size-lg); text-transform: lowercase; }
 .capabilityCardCopy p { max-width: 520px; margin: 12px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
-.capabilityVisualPlaceholder { min-height: 100%; display: grid; place-items: center; color: var(--type-color-control); background: rgba(255,255,255,.015); border: 1px solid var(--surface-alternate-line); }
+.capabilityVisual, .capabilityVisualPlaceholder { min-height: 100%; display: grid; place-items: center; color: var(--type-color-control); background: rgba(255,255,255,.015); border: 1px solid var(--surface-alternate-line); }
+.capabilityVisual { overflow: hidden; background: transparent; border: 0; }
+.capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 100%; height: 100%; max-width: 600px; margin-inline: 0; }
 .capabilityVisualPlaceholder span { font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); text-transform: uppercase; }
 .systemSection { background: var(--ink); }
-.useCaseSection { color: var(--type-color-alternate-primary); }
+.useCaseSection { padding-block: 60px; color: var(--type-color-alternate-primary); }
+.useCaseLayout .capabilityContent { grid-column: 2; grid-row: 1; }
+.useCaseLayout .capabilityContent .sectionTitle { width: 100%; }
+.useCaseLayout .capabilityVisualPlaceholder { grid-column: 1; grid-row: 1; }
 .useCaseIntro { max-width: 520px; margin: 24px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
 .useCaseList { margin-top: 80px; border-top: 1px dashed var(--surface-alternate-line); }
 .useCaseList a { min-height: 96px; display: grid; grid-template-columns: 52px 1fr auto; gap: 22px; align-items: center; border-bottom: 1px dashed var(--surface-alternate-line); transition: padding .25s ease, color .25s ease; }
@@ -92,9 +97,13 @@
   .heroShade { background: linear-gradient(90deg, rgba(7,9,7,.97), rgba(7,9,7,.68) 65%, rgba(7,9,7,.18)); }
   .sectionHeader, .useCaseHeader, .pageHeroGrid, .proseGrid, .contactGrid { grid-template-columns: 1fr; gap: 32px; }
   .capabilityLayout { grid-template-columns: 1fr; }
+  .useCaseLayout .capabilityContent,
+  .useCaseLayout .capabilityVisualPlaceholder { grid-column: auto; grid-row: auto; }
   .capabilityContent .sectionTitle { width: 100%; }
   .capabilityCard { min-height: auto; }
-  .capabilityVisualPlaceholder { min-height: 360px; }
+  .capabilityVisual, .capabilityVisualPlaceholder { min-height: 360px; }
+  .capabilityVisual { position: relative; }
+  .capabilityVisual .pillarsIllustration { inset: 0; max-width: 100%; }
   .featureGrid { grid-template-columns: 1fr; }
   .feature, .feature:nth-child(even) { min-height: auto; padding: 32px 0 40px; border-right: 0; }
   .feature h2 { margin-top: 60px; }

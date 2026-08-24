@@ -1,51 +1,148 @@
 'use client';
 
-import { useCallback, useId, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import styles from './PillarsIllustration.module.css';
 
 export type PillarPoint = readonly [x: number, y: number];
 
 export type PillarsConnectorsProps = {
   beamColor?: string;
+  beamEmissionRandomness?: number;
   beamEnabled?: boolean;
+  beamHeadGlowBlur?: number;
+  beamHeadGlowOpacity?: number;
+  beamHeadGlowRadius?: number;
   beamHighlightColor?: string;
   beamSpeed?: number;
+  beamTrailLength?: number;
+  burstFadeTime?: number;
+  burstRadius?: number;
+  burstStrength?: number;
   color?: string;
   connectorRadius?: number;
   maxConcurrentBeams?: number;
   opacity?: number;
   satellitePoints: PillarPoint[];
+  showContinuationConnectors?: boolean;
   width?: number;
 };
 
-type BeamStyle = CSSProperties & {
-  '--beam-delay': string;
-  '--beam-duration': string;
+type BeamOrbStyle = CSSProperties & {
+  '--beam-color': string;
+  '--beam-glow-large': string;
+  '--beam-glow-small': string;
+  '--beam-head-glow-blur': string;
+  '--beam-head-glow-opacity': string;
+  '--beam-head-glow-radius': string;
+  '--beam-highlight': string;
+  '--beam-size': string;
+};
+
+type BurstStyle = CSSProperties & {
+  '--burst-delay': string;
+  '--burst-color': string;
+  '--burst-core-fade-time': string;
+  '--burst-fade-time': string;
+  '--burst-highlight': string;
+  '--burst-radius': string;
+  '--burst-strength': string;
+  '--burst-x': string;
+  '--burst-y': string;
 };
 
 type CentralNode = keyof typeof coloredPoints;
 
 type BeamTrace = {
-  direction: -1 | 1;
+  generation: number;
   sourceIndex: number;
   targetIndex: number;
 };
 
+type BeamRun = {
+  arrivals: PillarPoint[];
+  duration: number;
+  initialDelay: number;
+  route: PillarPoint[];
+  trace: BeamTrace;
+};
+
+type BeamState = {
+  activeRun: BeamRun;
+  burstRuns: BeamRun[];
+};
+
+type PillarsBeamProps = {
+  beamColor: string;
+  beamEmissionRandomness: number;
+  beamHeadGlowBlur: number;
+  beamHeadGlowOpacity: number;
+  beamHeadGlowRadius: number;
+  beamHighlightColor: string;
+  beamTrailLength: number;
+  burstFadeTime: number;
+  burstRadius: number;
+  burstStrength: number;
+  connectorRadius: number;
+  satellitePoints: PillarPoint[];
+  slot: number;
+  sourceIndexes: number[];
+  speed: number;
+  targetIndexes: number[];
+  showContinuationConnectors: boolean;
+  width: number;
+};
+
 const coloredPoints = {
-  server: [50, 38] as PillarPoint,
-  graph: [29, 50] as PillarPoint,
-  vector: [71, 50] as PillarPoint,
-  intelligence: [50, 62] as PillarPoint,
+  server: [20, 50] as PillarPoint,
+  graph: [40, 50] as PillarPoint,
+  vector: [60, 50] as PillarPoint,
+  intelligence: [80, 50] as PillarPoint,
 };
 
 const coloredRoutes: PillarPoint[][] = [
-  [[47, 40], [41, 40], [41, 47], [32, 47], [32, 49]],
-  [[53, 40], [59, 40], [59, 47], [68, 47], [68, 49]],
-  [[32, 51], [39, 51], [39, 59], [47, 59], [47, 60]],
-  [[68, 51], [61, 51], [61, 59], [53, 59], [53, 60]],
+  [[26, 50], [34, 50]],
+  [[46, 50], [54, 50]],
+  [[66, 50], [74, 50]],
 ];
 
-const centralCycle: CentralNode[] = ['server', 'graph', 'intelligence', 'vector'];
+const centralOrder: CentralNode[] = ['server', 'graph', 'vector', 'intelligence'];
+const continuationFadeBoundary = 12;
+const minimumEmissionPause = 0.12;
+const emissionPauseVariation = 1.08;
+
+function seededEmissionUnit(slot: number) {
+  let seed = Math.imul(slot + 1, 0x9e3779b1) >>> 0;
+  seed ^= seed >>> 16;
+  seed = Math.imul(seed, 0x85ebca6b) >>> 0;
+  seed ^= seed >>> 13;
+
+  return (seed >>> 0) / 0x1_0000_0000;
+}
+
+function emissionDelay(
+  trace: BeamTrace,
+  slot: number,
+  randomnessPercentage: number,
+) {
+  const randomness = Math.min(1, Math.max(0, randomnessPercentage / 100));
+  const deterministicDelay = trace.generation === 0 ? slot * 0.28 : 0;
+
+  if (randomness === 0) return deterministicDelay;
+
+  const randomUnit = trace.generation === 0
+    ? seededEmissionUnit(slot)
+    : Math.random();
+  const randomizedDelay = minimumEmissionPause + randomUnit * emissionPauseVariation;
+
+  return deterministicDelay + (randomizedDelay - deterministicDelay) * randomness;
+}
 
 function distance(a: PillarPoint, b: PillarPoint) {
   return Math.hypot(b[0] - a[0], b[1] - a[1]);
@@ -96,45 +193,37 @@ function roundedPolylinePath(rawPoints: PillarPoint[], cornerRadius: number) {
   return `${path} L ${last[0]} ${last[1]}`;
 }
 
-function perimeterEdge(point: PillarPoint) {
-  const distances = [point[1], 100 - point[0], 100 - point[1], point[0]];
-  return distances.indexOf(Math.min(...distances));
+function routeToSatellite(point: PillarPoint): PillarPoint[] {
+  const parent = satelliteParent(point);
+  const parentPoint = coloredPoints[parent];
+  const direction = point[1] < parentPoint[1] ? -1 : 1;
+  const junctionY = (parentPoint[1] + point[1]) / 2;
+
+  return [
+    [parentPoint[0], parentPoint[1] + direction * 3],
+    [parentPoint[0], junctionY],
+    [point[0], junctionY],
+    [point[0], point[1] - direction * 2.5],
+  ];
 }
 
-function routeToSatellite(point: PillarPoint): PillarPoint[] {
-  const edge = perimeterEdge(point);
-  const normalizedX = Math.min(1, Math.max(0, (point[0] - 8) / 84));
-  const normalizedY = Math.min(1, Math.max(0, (point[1] - 8) / 84));
+function continuationRoute(point: PillarPoint): PillarPoint[] {
+  const isTopNode = point[1] < coloredPoints.server[1];
+  const nodeEdgeY = point[1] + (isTopNode ? -2.5 : 2.5);
+  const canvasEdgeY = isTopNode ? 0 : 100;
 
-  if (edge === 0) {
-    const start: PillarPoint = [46 + normalizedX * 8, coloredPoints.server[1] - 2];
-    const laneY = 18 + normalizedX * 10;
-    return [start, [start[0], laneY], [point[0], laneY], [point[0], point[1] + 2.5]];
-  }
-
-  if (edge === 2) {
-    const start: PillarPoint = [46 + normalizedX * 8, coloredPoints.intelligence[1] + 2];
-    const laneY = 72 + normalizedX * 10;
-    return [start, [start[0], laneY], [point[0], laneY], [point[0], point[1] - 2.5]];
-  }
-
-  if (edge === 3) {
-    const start: PillarPoint = [coloredPoints.graph[0] - 3, 46 + normalizedY * 8];
-    const laneX = 20 - normalizedY * 10;
-    return [start, [laneX, start[1]], [laneX, point[1]], [point[0] + 2.5, point[1]]];
-  }
-
-  const start: PillarPoint = [coloredPoints.vector[0] + 3, 46 + normalizedY * 8];
-  const laneX = 80 + normalizedY * 10;
-  return [start, [laneX, start[1]], [laneX, point[1]], [point[0] - 2.5, point[1]]];
+  return isTopNode
+    ? [[point[0], canvasEdgeY], [point[0], nodeEdgeY]]
+    : [[point[0], nodeEdgeY], [point[0], canvasEdgeY]];
 }
 
 function satelliteParent(point: PillarPoint): CentralNode {
-  const edge = perimeterEdge(point);
-  if (edge === 0) return 'server';
-  if (edge === 1) return 'vector';
-  if (edge === 2) return 'intelligence';
-  return 'graph';
+  return centralOrder.reduce((nearest, node) => (
+    Math.abs(coloredPoints[node][0] - point[0])
+      < Math.abs(coloredPoints[nearest][0] - point[0])
+      ? node
+      : nearest
+  ));
 }
 
 function appendRoute(target: PillarPoint[], route: PillarPoint[]) {
@@ -143,202 +232,524 @@ function appendRoute(target: PillarPoint[], route: PillarPoint[]) {
   });
 }
 
-function routeBetweenCentralNodes(from: CentralNode, to: CentralNode): PillarPoint[] {
-  const edgeIndex = (
-    (from === 'server' && to === 'graph') || (from === 'graph' && to === 'server') ? 0
-      : (from === 'server' && to === 'vector') || (from === 'vector' && to === 'server') ? 1
-        : (from === 'graph' && to === 'intelligence')
-          || (from === 'intelligence' && to === 'graph') ? 2
-          : 3
-  );
-  const canonicalFrom: CentralNode[] = ['server', 'server', 'graph', 'vector'];
-  const route = [coloredPoints[canonicalFrom[edgeIndex]], ...coloredRoutes[edgeIndex]];
-  const canonicalTo: CentralNode[] = ['graph', 'vector', 'intelligence', 'intelligence'];
-  route.push(coloredPoints[canonicalTo[edgeIndex]]);
-
-  return canonicalFrom[edgeIndex] === from ? route : [...route].reverse();
-}
-
-function centralTraversal(
-  source: CentralNode,
-  target: CentralNode,
-  direction: -1 | 1,
-) {
+function centralTraversal(source: CentralNode, target: CentralNode) {
+  const sourceIndex = centralOrder.indexOf(source);
+  const targetIndex = centralOrder.indexOf(target);
+  const direction = sourceIndex <= targetIndex ? 1 : -1;
   const route: PillarPoint[] = [coloredPoints[source]];
-  let currentIndex = centralCycle.indexOf(source);
+  let currentIndex = sourceIndex;
 
-  // Visit every pillar once before exiting through the pillar that owns the target.
-  for (let step = 0; step < centralCycle.length - 1; step += 1) {
-    const nextIndex = (currentIndex + direction + centralCycle.length) % centralCycle.length;
-    appendRoute(route, routeBetweenCentralNodes(centralCycle[currentIndex], centralCycle[nextIndex]));
-    currentIndex = nextIndex;
-  }
-
-  while (centralCycle[currentIndex] !== target) {
-    const nextIndex = (currentIndex + direction + centralCycle.length) % centralCycle.length;
-    appendRoute(route, routeBetweenCentralNodes(centralCycle[currentIndex], centralCycle[nextIndex]));
-    currentIndex = nextIndex;
+  while (currentIndex !== targetIndex) {
+    currentIndex += direction;
+    appendRoute(route, [coloredPoints[centralOrder[currentIndex]]]);
   }
 
   return route;
 }
 
-function completeBeamRoute(trace: BeamTrace, satellitePoints: PillarPoint[]) {
-  const sourcePoint = satellitePoints[trace.sourceIndex];
+function completeBeamRoute(
+  trace: BeamTrace,
+  satellitePoints: PillarPoint[],
+  showContinuationConnectors: boolean,
+) {
   const targetPoint = satellitePoints[trace.targetIndex];
-  const sourceParent = satelliteParent(sourcePoint);
   const targetParent = satelliteParent(targetPoint);
-  const route: PillarPoint[] = [sourcePoint];
+  const sourcePoint = satellitePoints[trace.sourceIndex];
+  const sourceParent = satelliteParent(sourcePoint);
+  const route: PillarPoint[] = [];
 
+  if (showContinuationConnectors) {
+    appendRoute(route, continuationRoute(sourcePoint));
+  }
+  appendRoute(route, [sourcePoint]);
   appendRoute(route, [...routeToSatellite(sourcePoint)].reverse());
   appendRoute(route, [coloredPoints[sourceParent]]);
-  appendRoute(route, centralTraversal(sourceParent, targetParent, trace.direction));
+  appendRoute(route, centralTraversal(sourceParent, targetParent));
   appendRoute(route, [coloredPoints[targetParent]]);
   appendRoute(route, routeToSatellite(targetPoint));
   appendRoute(route, [targetPoint]);
+  if (showContinuationConnectors) {
+    appendRoute(route, continuationRoute(targetPoint));
+  }
 
   return route;
 }
 
-function initialBeamTrace(slot: number, total: number): BeamTrace {
-  const sourceIndex = (slot * 7) % total;
-  const targetIndex = (sourceIndex + 5 + slot * 3) % total;
-  return {
-    direction: slot % 2 === 0 ? 1 : -1,
-    sourceIndex,
-    targetIndex: targetIndex === sourceIndex ? (targetIndex + 1) % total : targetIndex,
-  };
+function beamArrivalPoints(
+  trace: BeamTrace,
+  satellitePoints: PillarPoint[],
+  showContinuationConnectors: boolean,
+) {
+  const sourcePoint = satellitePoints[trace.sourceIndex];
+  const sourceParent = satelliteParent(sourcePoint);
+  const targetPoint = satellitePoints[trace.targetIndex];
+  const targetParent = satelliteParent(targetPoint);
+
+  return [
+    ...(showContinuationConnectors ? [sourcePoint] : []),
+    ...centralTraversal(sourceParent, targetParent),
+    targetPoint,
+  ];
 }
 
-function randomBeamTrace(total: number, previous: BeamTrace): BeamTrace {
-  const sourceIndex = Math.floor(Math.random() * total);
-  let targetIndex = Math.floor(Math.random() * (total - 1));
-  if (targetIndex >= sourceIndex) targetIndex += 1;
-
-  if (sourceIndex === previous.sourceIndex && targetIndex === previous.targetIndex) {
-    targetIndex = (targetIndex + 1) % total;
-    if (targetIndex === sourceIndex) targetIndex = (targetIndex + 1) % total;
-  }
+function initialBeamTrace(
+  slot: number,
+  sourceIndexes: number[],
+  targetIndexes: number[],
+): BeamTrace {
+  const sourceIndex = sourceIndexes[(slot * 7) % sourceIndexes.length];
+  const targetIndex = targetIndexes[(slot * 3 + 1) % targetIndexes.length];
 
   return {
-    direction: Math.random() < 0.5 ? -1 : 1,
+    generation: 0,
     sourceIndex,
     targetIndex,
   };
 }
 
+function randomBeamTrace(
+  sourceIndexes: number[],
+  targetIndexes: number[],
+  previous: BeamTrace,
+): BeamTrace {
+  const sourceIndex = sourceIndexes[Math.floor(Math.random() * sourceIndexes.length)];
+  let targetIndex = targetIndexes[Math.floor(Math.random() * targetIndexes.length)];
+  const nextGeneration = previous.generation + 1;
+
+  if (
+    sourceIndex === previous.sourceIndex
+    && targetIndex === previous.targetIndex
+  ) {
+    const previousTargetPosition = targetIndexes.indexOf(targetIndex);
+    targetIndex = targetIndexes[(previousTargetPosition + 1) % targetIndexes.length];
+  }
+
+  return {
+    generation: nextGeneration,
+    sourceIndex,
+    targetIndex,
+  };
+}
+
+function screenSegmentLength(from: PillarPoint, to: PillarPoint) {
+  const deltaX = to[0] - from[0];
+  const deltaY = (to[1] - from[1]) * 1.9;
+  return Math.hypot(deltaX, deltaY);
+}
+
 function approximateScreenLength(route: PillarPoint[]) {
   return route.slice(1).reduce((length, point, index) => {
-    const previous = route[index];
-    const deltaX = point[0] - previous[0];
-    const deltaY = (point[1] - previous[1]) * 1.9;
-    return length + Math.hypot(deltaX, deltaY);
+    return length + screenSegmentLength(route[index], point);
   }, 0);
+}
+
+function continuationEdgeOpacity(y: number) {
+  const distanceFromEdge = Math.min(y, 100 - y);
+  const progress = Math.min(
+    1,
+    Math.max(0, distanceFromEdge / continuationFadeBoundary),
+  );
+
+  return progress * progress * (3 - 2 * progress);
+}
+
+function routeProgressAtPoint(route: PillarPoint[], arrivalPoint: PillarPoint) {
+  const arrivalIndex = route.findIndex((point) => distance(point, arrivalPoint) < 0.001);
+  const totalLength = approximateScreenLength(route);
+
+  if (arrivalIndex <= 0 || totalLength === 0) return 0;
+  return approximateScreenLength(route.slice(0, arrivalIndex + 1)) / totalLength;
+}
+
+function createBeamRun(
+  trace: BeamTrace,
+  satellitePoints: PillarPoint[],
+  slot: number,
+  speed: number,
+  showContinuationConnectors: boolean,
+  emissionRandomness: number,
+): BeamRun {
+  const route = completeBeamRoute(
+    trace,
+    satellitePoints,
+    showContinuationConnectors,
+  );
+  const duration = Math.min(
+    4.3,
+    Math.max(1.5, approximateScreenLength(route) / 42),
+  ) / speed;
+
+  return {
+    arrivals: beamArrivalPoints(
+      trace,
+      satellitePoints,
+      showContinuationConnectors,
+    ),
+    duration,
+    initialDelay: emissionDelay(trace, slot, emissionRandomness),
+    route,
+    trace,
+  };
+}
+
+function PillarsBeam({
+  beamColor,
+  beamEmissionRandomness,
+  beamHeadGlowBlur,
+  beamHeadGlowOpacity,
+  beamHeadGlowRadius,
+  beamHighlightColor,
+  beamTrailLength,
+  burstFadeTime,
+  burstRadius,
+  burstStrength,
+  connectorRadius,
+  satellitePoints,
+  slot,
+  sourceIndexes,
+  speed,
+  targetIndexes,
+  showContinuationConnectors,
+  width,
+}: PillarsBeamProps) {
+  const trailGradientId = `beam-trail-${useId().replaceAll(':', '')}`;
+  const guidePathRef = useRef<SVGPathElement>(null);
+  const orbRef = useRef<HTMLSpanElement>(null);
+  const trailGradientRef = useRef<SVGLinearGradientElement>(null);
+  const trailPathRef = useRef<SVGPathElement>(null);
+  const completionRef = useRef<() => void>(() => undefined);
+  const [beamState, setBeamState] = useState<BeamState>(() => {
+    const initialTrace = initialBeamTrace(slot, sourceIndexes, targetIndexes);
+    const initialRun = createBeamRun(
+      initialTrace,
+      satellitePoints,
+      slot,
+      speed,
+      showContinuationConnectors,
+      beamEmissionRandomness,
+    );
+
+    return {
+      activeRun: initialRun,
+      burstRuns: [initialRun],
+    };
+  });
+  const path = roundedPolylinePath(beamState.activeRun.route, connectorRadius);
+  const resolvedHeadGlowBlur = Math.max(0, beamHeadGlowBlur);
+  const resolvedHeadGlowOpacity = Math.min(1, Math.max(0, beamHeadGlowOpacity));
+  const resolvedHeadGlowRadius = Math.max(0, beamHeadGlowRadius);
+  const beamOrbStyle: BeamOrbStyle = {
+    '--beam-color': beamColor,
+    '--beam-glow-large': `${Math.max(10, width * 12)}px`,
+    '--beam-glow-small': `${Math.max(4, width * 4)}px`,
+    '--beam-head-glow-blur': `${resolvedHeadGlowBlur}px`,
+    '--beam-head-glow-opacity': String(resolvedHeadGlowOpacity),
+    '--beam-head-glow-radius': `${resolvedHeadGlowRadius}px`,
+    '--beam-highlight': beamHighlightColor,
+    '--beam-size': `${Math.max(3, width * 2.4)}px`,
+  };
+  const advanceBeam = useCallback(() => {
+    setBeamState((current) => {
+      const nextTrace = randomBeamTrace(
+        sourceIndexes,
+        targetIndexes,
+        current.activeRun.trace,
+      );
+      const nextRun = createBeamRun(
+        nextTrace,
+        satellitePoints,
+        slot,
+        speed,
+        showContinuationConnectors,
+        beamEmissionRandomness,
+      );
+
+      return {
+        activeRun: nextRun,
+        burstRuns: [...current.burstRuns, nextRun],
+      };
+    });
+  }, [beamEmissionRandomness, satellitePoints, showContinuationConnectors, slot, sourceIndexes, speed, targetIndexes]);
+  const finishBurstRun = useCallback((generation: number) => {
+    setBeamState((current) => ({
+      ...current,
+      burstRuns: current.burstRuns.filter(
+        (run) => run.trace.generation !== generation,
+      ),
+    }));
+  }, []);
+
+  useEffect(() => {
+    completionRef.current = advanceBeam;
+  }, [advanceBeam]);
+
+  useEffect(() => {
+    const guidePath = guidePathRef.current;
+    const orb = orbRef.current;
+    const trailGradient = trailGradientRef.current;
+    const trailPath = trailPathRef.current;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!guidePath || !orb || !trailGradient || !trailPath || reducedMotion) return undefined;
+
+    const totalLength = guidePath.getTotalLength();
+    const resolvedTrailLength = Math.min(totalLength, Math.max(0, beamTrailLength));
+    const delay = beamState.activeRun.initialDelay * 1000;
+    const duration = beamState.activeRun.duration * 1000;
+    let animationFrame = 0;
+    let startedAt: number | undefined;
+
+    const renderFrame = (timestamp: number) => {
+      startedAt ??= timestamp;
+      const elapsed = timestamp - startedAt - delay;
+
+      if (elapsed < 0) {
+        orb.style.opacity = '0';
+        trailPath.style.opacity = '0';
+        animationFrame = window.requestAnimationFrame(renderFrame);
+        return;
+      }
+
+      const progress = Math.min(1, elapsed / duration);
+      const headLength = totalLength * progress;
+      const point = guidePath.getPointAtLength(headLength);
+      const visibleTrailLength = Math.min(resolvedTrailLength, headLength);
+      const trailStart = headLength - visibleTrailLength;
+      const edgeOpacity = showContinuationConnectors
+        ? continuationEdgeOpacity(point.y)
+        : 1;
+
+      orb.style.left = `${point.x}%`;
+      orb.style.top = `${point.y}%`;
+      orb.style.opacity = String(edgeOpacity);
+      if (visibleTrailLength > 0) {
+        const sampleCount = Math.max(1, Math.ceil(visibleTrailLength / 2));
+        const tailPoint = guidePath.getPointAtLength(trailStart);
+        const trail = Array.from({ length: sampleCount + 1 }, (_, index) => {
+          const sample = guidePath.getPointAtLength(
+            trailStart + (visibleTrailLength * index) / sampleCount,
+          );
+          return `${index === 0 ? 'M' : 'L'} ${sample.x} ${sample.y}`;
+        }).join(' ');
+        trailPath.setAttribute('d', trail);
+        trailGradient.setAttribute('x1', String(tailPoint.x));
+        trailGradient.setAttribute('y1', String(tailPoint.y));
+        trailGradient.setAttribute('x2', String(point.x));
+        trailGradient.setAttribute('y2', String(point.y));
+      }
+      trailPath.style.opacity = visibleTrailLength > 0 ? String(edgeOpacity) : '0';
+
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(renderFrame);
+        return;
+      }
+
+      // Keep the completed beam on its leaf for one painted frame. The next
+      // route is created only after the beam has visibly reached its target.
+      animationFrame = window.requestAnimationFrame(() => completionRef.current());
+    };
+
+    animationFrame = window.requestAnimationFrame(renderFrame);
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [beamState.activeRun, beamTrailLength, showContinuationConnectors]);
+
+  return (
+    <>
+      <svg
+        className={styles.connectors}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient
+            gradientUnits="userSpaceOnUse"
+            id={trailGradientId}
+            ref={trailGradientRef}
+          >
+            <stop offset="0" stopColor={beamColor} stopOpacity="0" />
+            <stop offset="0.58" stopColor={beamColor} stopOpacity="0.28" />
+            <stop offset="1" stopColor={beamColor} stopOpacity="0.72" />
+          </linearGradient>
+        </defs>
+        <path ref={guidePathRef} d={path} fill="none" />
+        <path
+          className={styles.beamTrail}
+          d={path}
+          fill="none"
+          ref={trailPathRef}
+          stroke={`url(#${trailGradientId})`}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={Math.max(1.25, width * 1.4)}
+          style={{ filter: `drop-shadow(0 0 ${Math.max(4, width * 4)}px ${beamColor})` }}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <span
+        aria-hidden="true"
+        className={styles.beamOrb}
+        ref={orbRef}
+        style={beamOrbStyle}
+      />
+      {beamState.burstRuns.map((run) => (
+        <div
+          className={styles.burstLayer}
+          aria-hidden="true"
+          key={run.trace.generation}
+        >
+          {run.arrivals.map((arrival, arrivalIndex) => {
+            const burstStyle: BurstStyle = {
+              '--burst-delay': `${run.initialDelay + run.duration * routeProgressAtPoint(run.route, arrival)}s`,
+              '--burst-color': beamColor,
+              '--burst-core-fade-time': `${burstFadeTime * (640 / 920)}ms`,
+              '--burst-fade-time': `${burstFadeTime}ms`,
+              '--burst-highlight': beamHighlightColor,
+              '--burst-radius': `${burstRadius}px`,
+              '--burst-strength': String(burstStrength),
+              '--burst-x': `${arrival[0]}%`,
+              '--burst-y': `${arrival[1]}%`,
+            };
+            const isFinalArrival = arrivalIndex === run.arrivals.length - 1;
+
+            return (
+              <span
+                className={styles.nodeBurst}
+                key={`${arrival[0]}-${arrival[1]}-${arrivalIndex}`}
+                style={burstStyle}
+              >
+                <span
+                  className={styles.nodeBurstGlow}
+                  onAnimationEnd={isFinalArrival
+                    ? () => finishBurstRun(run.trace.generation)
+                    : undefined}
+                />
+                <span className={styles.nodeBurstCore} />
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </>
+  );
 }
 
 export function PillarsConnectors({
   beamColor = '#449c40',
+  beamEmissionRandomness = 100,
   beamEnabled = true,
+  beamHeadGlowBlur = 0,
+  beamHeadGlowOpacity = 1,
+  beamHeadGlowRadius = 0,
   beamHighlightColor = '#c9ebc7',
   beamSpeed = 1,
+  beamTrailLength = 0,
+  burstFadeTime = 920,
+  burstRadius = 32,
+  burstStrength = 1,
   color = '#ffffff',
   connectorRadius = 1.75,
   maxConcurrentBeams = Number.POSITIVE_INFINITY,
   opacity = 0.62,
   satellitePoints,
+  showContinuationConnectors = false,
   width = 1.25,
 }: PillarsConnectorsProps) {
-  const glowFilterId = `pillars-beam-glow-${useId().replaceAll(':', '')}`;
   const satelliteRoutes = satellitePoints.map(routeToSatellite);
+  const continuationRoutes = showContinuationConnectors
+    ? satellitePoints.map(continuationRoute)
+    : [];
   const routes = [...coloredRoutes, ...satelliteRoutes];
+  const resolvedBeamEmissionRandomness = Math.min(100, Math.max(0, beamEmissionRandomness));
   const resolvedBeamSpeed = Math.max(0.1, beamSpeed);
-  const beamCount = beamEnabled && satellitePoints.length > 1
+  const resolvedBeamTrailLength = Math.max(0, beamTrailLength);
+  const resolvedBurstFadeTime = Math.max(1, burstFadeTime);
+  const resolvedBurstRadius = Math.max(0, burstRadius);
+  const resolvedBurstStrength = Math.max(0, burstStrength);
+  const sourceIndexes = satellitePoints.flatMap((point, index) => (
+    point[1] < 50 ? [index] : []
+  ));
+  const targetIndexes = satellitePoints.flatMap((point, index) => (
+    point[1] > 50 ? [index] : []
+  ));
+  const hasCompleteRoute = sourceIndexes.length > 0 && targetIndexes.length > 0;
+  const beamCount = beamEnabled && hasCompleteRoute
     ? Math.min(satellitePoints.length, Math.max(0, Math.floor(maxConcurrentBeams)))
     : 0;
-  const [beamTraces, setBeamTraces] = useState<BeamTrace[]>(() => (
-    Array.from(
-      { length: satellitePoints.length },
-      (_, slot) => initialBeamTrace(slot, satellitePoints.length),
-    )
-  ));
-
-  const advanceBeam = useCallback((slot: number) => {
-    setBeamTraces((current) => current.map((trace, index) => (
-      index === slot ? randomBeamTrace(satellitePoints.length, trace) : trace
-    )));
-  }, [satellitePoints.length]);
-
   return (
-    <svg
-      className={styles.connectors}
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <filter id={glowFilterId} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="0.8" />
-        </filter>
-      </defs>
-      {routes.map((route, index) => {
-        const path = roundedPolylinePath(route, connectorRadius);
+    <>
+      <svg
+        className={styles.connectors}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {routes.map((route, index) => {
+          const path = roundedPolylinePath(route, connectorRadius);
 
-        return (
-          <path
-            className={styles.connector}
-            d={path}
-            fill="none"
-            key={`${route[0].join('-')}-${route.at(-1)!.join('-')}-${index}`}
-            stroke={color}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeOpacity={opacity}
-            strokeWidth={width}
-            vectorEffect="non-scaling-stroke"
-          />
-        );
-      })}
-      {beamTraces.slice(0, beamCount).map((trace, slot) => {
-        const route = completeBeamRoute(trace, satellitePoints);
-        const path = roundedPolylinePath(route, connectorRadius);
-        const duration = Math.min(
-          4.3,
-          Math.max(1.5, approximateScreenLength(route) / 42),
-        ) / resolvedBeamSpeed;
-        const beamStyle: BeamStyle = {
-          '--beam-delay': `${-((slot * 0.37) % duration)}s`,
-          '--beam-duration': `${duration}s`,
-        };
-
-        return (
-          <g key={slot} style={beamStyle}>
+          return (
             <path
-              className={styles.beamGlow}
+              className={styles.connector}
               d={path}
               fill="none"
-              filter={`url(#${glowFilterId})`}
-              pathLength="1"
-              stroke={beamColor}
+              key={`${route[0].join('-')}-${route.at(-1)!.join('-')}-${index}`}
+              stroke={color}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={width * 6}
+              strokeOpacity={opacity}
+              strokeWidth={width}
               vectorEffect="non-scaling-stroke"
             />
+          );
+        })}
+      </svg>
+      {showContinuationConnectors ? (
+        <svg
+          className={`${styles.connectors} ${styles.continuationFade}`}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {continuationRoutes.map((route, index) => (
             <path
-              className={styles.beamCore}
-              d={path}
+              className={styles.connector}
+              d={roundedPolylinePath(route, connectorRadius)}
               fill="none"
-              onAnimationIteration={() => advanceBeam(slot)}
-              pathLength="1"
-              stroke={beamHighlightColor}
+              key={`${route[0].join('-')}-${route.at(-1)!.join('-')}-${index}`}
+              stroke={color}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={width * 2}
+              strokeOpacity={opacity}
+              strokeWidth={width}
               vectorEffect="non-scaling-stroke"
             />
-          </g>
-        );
-      })}
-    </svg>
+          ))}
+        </svg>
+      ) : null}
+      {Array.from({ length: beamCount }, (_, slot) => (
+        <PillarsBeam
+          beamColor={beamColor}
+          beamEmissionRandomness={resolvedBeamEmissionRandomness}
+          beamHeadGlowBlur={beamHeadGlowBlur}
+          beamHeadGlowOpacity={beamHeadGlowOpacity}
+          beamHeadGlowRadius={beamHeadGlowRadius}
+          beamHighlightColor={beamHighlightColor}
+          beamTrailLength={resolvedBeamTrailLength}
+          burstFadeTime={resolvedBurstFadeTime}
+          burstRadius={resolvedBurstRadius}
+          burstStrength={resolvedBurstStrength}
+          connectorRadius={connectorRadius}
+          key={`${slot}:${showContinuationConnectors}`}
+          satellitePoints={satellitePoints}
+          showContinuationConnectors={showContinuationConnectors}
+          slot={slot}
+          sourceIndexes={sourceIndexes}
+          speed={resolvedBeamSpeed}
+          targetIndexes={targetIndexes}
+          width={width}
+        />
+      ))}
+    </>
   );
 }

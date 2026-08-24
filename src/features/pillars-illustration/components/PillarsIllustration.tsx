@@ -1,5 +1,9 @@
 import type { CSSProperties } from 'react';
-import { PillarIcon, type PillarIconName } from './PillarIcon';
+import {
+  PillarIcon,
+  type PillarIconFillMode,
+  type PillarIconName,
+} from './PillarIcon';
 import {
   PillarSurroundingIcon,
   type PillarSurroundingIconName,
@@ -20,38 +24,57 @@ const surroundingIconNames: PillarSurroundingIconName[] = [
   'profile-alt',
 ];
 
-function perimeterPoint(index: number, count: number) {
+function rowPoint(index: number, count: number, y: number, spacing: number) {
   const inset = 8;
-  const sideLength = 100 - inset * 2;
-  const perimeter = sideLength * 4;
-  const position = ((index + 0.5) * perimeter) / count;
+  const availableWidth = 100 - inset * 2;
+  const baseX = count === 1 ? 50 : inset + (availableWidth * index) / (count - 1);
 
-  if (position < sideLength) return { x: inset + position, y: inset };
-  if (position < sideLength * 2) {
-    return { x: 100 - inset, y: inset + position - sideLength };
-  }
-  if (position < sideLength * 3) {
-    return { x: 100 - inset - (position - sideLength * 2), y: 100 - inset };
-  }
-  return { x: inset, y: 100 - inset - (position - sideLength * 3) };
+  return {
+    x: 50 + (baseX - 50) * spacing,
+    y,
+  };
 }
 
-function createSurroundingIcons(requestedCount: number) {
-  const count = Math.max(0, Math.floor(requestedCount));
-  return Array.from({ length: count }, (_, index) => ({
-    name: surroundingIconNames[index % surroundingIconNames.length],
-    ...perimeterPoint(index, count),
-  }));
+function createSurroundingIcons(
+  requestedTopCount: number,
+  requestedBottomCount: number,
+  requestedSpacing: number,
+) {
+  const topCount = Math.max(0, Math.floor(requestedTopCount));
+  const bottomCount = Math.max(0, Math.floor(requestedBottomCount));
+  const spacing = Math.min(1, Math.max(0, requestedSpacing));
+
+  return [
+    ...Array.from({ length: topCount }, (_, index) => ({
+      name: surroundingIconNames[index % surroundingIconNames.length],
+      ...rowPoint(index, topCount, 18, spacing),
+    })),
+    ...Array.from({ length: bottomCount }, (_, index) => ({
+      name: surroundingIconNames[(topCount + index) % surroundingIconNames.length],
+      ...rowPoint(index, bottomCount, 82, spacing),
+    })),
+  ];
 }
 
 export type PillarsIllustrationProps = {
-  auxiliaryIconCount?: number;
+  auxiliaryIconFillColor?: string;
   beamColor?: string;
+  beamEmissionRandomness?: number;
   beamEnabled?: boolean;
+  beamHeadGlowBlur?: number;
+  beamHeadGlowOpacity?: number;
+  beamHeadGlowRadius?: number;
   beamHighlightColor?: string;
   beamSpeed?: number;
+  beamTrailLength?: number;
+  burstFadeTime?: number;
+  burstRadius?: number;
+  burstStrength?: number;
   className?: string;
   color?: string;
+  centralIconFillColor?: string;
+  centralIconFillMode?: PillarIconFillMode;
+  centralIconStrokeOpacity?: number;
   connectorColor?: string;
   connectorOpacity?: number;
   connectorRadius?: number;
@@ -65,6 +88,10 @@ export type PillarsIllustrationProps = {
   height?: CSSProperties['height'];
   iconSize?: number;
   maxConcurrentBeams?: number;
+  numberOfNodesBottom?: number;
+  numberOfNodesTop?: number;
+  auxiliaryNodeSpacing?: number;
+  showContinuationConnectors?: boolean;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
@@ -90,13 +117,24 @@ function cssSize(value: CSSProperties['width']): string {
 }
 
 export function PillarsIllustration({
-  auxiliaryIconCount = 20,
+  auxiliaryIconFillColor = '#000000',
   beamColor = '#449c40',
+  beamEmissionRandomness = 100,
   beamEnabled = true,
+  beamHeadGlowBlur = 0,
+  beamHeadGlowOpacity = 1,
+  beamHeadGlowRadius = 0,
   beamHighlightColor = '#c9ebc7',
   beamSpeed = 1,
+  beamTrailLength = 0,
+  burstFadeTime = 920,
+  burstRadius = 32,
+  burstStrength = 1,
   className,
   color = 'var(--paper)',
+  centralIconFillColor = '#000000',
+  centralIconFillMode = 'gradient',
+  centralIconStrokeOpacity = 1,
   connectorColor = '#ffffff',
   connectorOpacity = 0.62,
   connectorRadius = 1.75,
@@ -110,6 +148,10 @@ export function PillarsIllustration({
   height = '38rem',
   iconSize = 40,
   maxConcurrentBeams = 24,
+  numberOfNodesBottom = 10,
+  numberOfNodesTop = 10,
+  auxiliaryNodeSpacing = 1,
+  showContinuationConnectors = false,
   strokeWidth = 5,
   width = '20rem',
 }: PillarsIllustrationProps) {
@@ -123,22 +165,35 @@ export function PillarsIllustration({
     '--pillars-icon-size': `${iconSize}px`,
     '--pillars-width': cssSize(width),
   };
-  const surroundingIcons = createSurroundingIcons(auxiliaryIconCount);
+  const surroundingIcons = createSurroundingIcons(
+    numberOfNodesTop,
+    numberOfNodesBottom,
+    auxiliaryNodeSpacing,
+  );
   const satellitePoints = surroundingIcons.map(({ x, y }) => [x, y] as PillarPoint);
 
   return (
     <section className={rootClassName} style={style} aria-label="Platform pillar illustration">
       <PillarsConnectors
-        key={satellitePoints.length}
+        key={`${numberOfNodesTop}:${numberOfNodesBottom}:${auxiliaryNodeSpacing}`}
         beamColor={beamColor}
+        beamEmissionRandomness={beamEmissionRandomness}
         beamEnabled={beamEnabled}
+        beamHeadGlowBlur={beamHeadGlowBlur}
+        beamHeadGlowOpacity={beamHeadGlowOpacity}
+        beamHeadGlowRadius={beamHeadGlowRadius}
         beamHighlightColor={beamHighlightColor}
         beamSpeed={beamSpeed}
+        beamTrailLength={beamTrailLength}
+        burstFadeTime={burstFadeTime}
+        burstRadius={burstRadius}
+        burstStrength={burstStrength}
         color={connectorColor}
         connectorRadius={connectorRadius}
         maxConcurrentBeams={maxConcurrentBeams}
         opacity={connectorOpacity}
         satellitePoints={satellitePoints}
+        showContinuationConnectors={showContinuationConnectors}
         width={connectorWidth}
       />
       <div className={styles.surroundingLayer} aria-hidden="true">
@@ -151,6 +206,7 @@ export function PillarsIllustration({
           return (
             <PillarSurroundingIcon
               className={styles.surroundingIcon}
+              fill={auxiliaryIconFillColor}
               key={`${icon.name}-${index}`}
               name={icon.name}
               strokeWidth={strokeWidth / 4}
@@ -165,7 +221,10 @@ export function PillarsIllustration({
             <article className={styles.card} role="listitem" key={pillar.name}>
               <PillarIcon
                 className={styles.icon}
+                fillColor={centralIconFillColor}
+                fillMode={centralIconFillMode}
                 name={pillar.name}
+                strokeOpacity={centralIconStrokeOpacity}
                 title={`${pillar.label} icon`}
                 strokeWidth={strokeWidth}
                 gradientStartColor={gradientStartColor}

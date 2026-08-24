@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
+import { foundationPillarsProps, PillarsIllustration } from '@/features/pillars-illustration';
 import { heroSignalFlowProps, SignalFlowIllustration } from '@/features/signal-flow';
 import styles from './marketing.module.css';
 
@@ -74,8 +75,11 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className={styles.capabilityVisualPlaceholder} role="img" aria-label="Illustration placeholder">
-              <span aria-hidden="true">Illustration placeholder</span>
+            <div className={styles.capabilityVisual}>
+              <PillarsIllustration
+                {...foundationPillarsProps}
+                className={styles.pillarsIllustration}
+              />
             </div>
           </div>
         </div>
@@ -83,7 +87,7 @@ export default function HomePage() {
 
       <section className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}>
         <div className="site-container">
-          <div className={styles.capabilityLayout}>
+          <div className={`${styles.capabilityLayout} ${styles.useCaseLayout}`}>
             <div className={styles.capabilityContent}>
               <div className={styles.sectionHeader}>
                 <p className="eyebrow">Designed around real flow</p>
