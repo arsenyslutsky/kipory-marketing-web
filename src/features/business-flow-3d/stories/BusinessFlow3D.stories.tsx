@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
-import { SignalFlowIllustration } from '../components/SignalFlowIllustration';
+import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
-import { heroSignalFlowProps } from '../presets';
+import { businessFlow3DProps } from '../presets';
 
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
@@ -22,13 +22,13 @@ function nodeGradientArgs(mode: 'light' | 'dark') {
 const darkNodeGradientArgs = nodeGradientArgs('dark');
 
 const meta = {
-  title: 'Animated Illustrations/Signal Flow',
-  component: SignalFlowIllustration,
+  title: 'Animated Illustrations/BusinessFlow3D',
+  component: BusinessFlow3D,
   render: function Render(args) {
     const [, updateArgs] = useArgs();
 
     return (
-      <SignalFlowIllustration
+      <BusinessFlow3D
         {...args}
         onModeChange={(mode) => updateArgs({ mode })}
       />
@@ -310,7 +310,7 @@ const meta = {
     maxEmitDelay: 0,
     assetBasePath: '/assets/nodes',
   },
-} satisfies Meta<typeof SignalFlowIllustration>;
+} satisfies Meta<typeof BusinessFlow3D>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -319,7 +319,7 @@ export const Workflow1: Story = {
   name: 'Workflow 1',
   args: {
     ...darkNodeGradientArgs,
-    ...heroSignalFlowProps,
+    ...businessFlow3DProps,
     interactive: true,
     showInterface: true,
     cameraPitch: 45,

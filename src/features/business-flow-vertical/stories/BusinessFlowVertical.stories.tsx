@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { PillarsIllustration } from '../components/PillarsIllustration';
-import { foundationPillarsProps } from '../presets';
+import { BusinessFlowVertical } from '../components/BusinessFlowVertical';
+import { businessFlowVerticalProps } from '../presets';
 
 const meta = {
-  title: 'Animated Illustrations/Pillars',
-  component: PillarsIllustration,
+  title: 'Animated Illustrations/BusinessFlowVertical',
+  component: BusinessFlowVertical,
   parameters: {
     layout: 'fullscreen',
     controls: { sort: 'none' },
@@ -187,8 +187,8 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: foundationPillarsProps,
-} satisfies Meta<typeof PillarsIllustration>;
+  args: businessFlowVerticalProps,
+} satisfies Meta<typeof BusinessFlowVertical>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

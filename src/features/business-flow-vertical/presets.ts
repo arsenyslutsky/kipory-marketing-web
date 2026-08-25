@@ -1,6 +1,6 @@
-import type { PillarsIllustrationProps } from './components/PillarsIllustration';
+import type { BusinessFlowVerticalProps } from './components/BusinessFlowVertical';
 
-export const foundationPillarsProps = {
+export const businessFlowVerticalProps = {
   auxiliaryIconFillColor: '#212121',
   beamColor: '#449c40',
   beamEmissionRandomness: 100,
@@ -37,4 +37,4 @@ export const foundationPillarsProps = {
   height: '45rem',
   iconSize: 40,
   strokeWidth: 1.5,
-} satisfies PillarsIllustrationProps;
+} satisfies BusinessFlowVerticalProps;

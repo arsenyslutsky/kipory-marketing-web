@@ -74,7 +74,7 @@ export interface SignalFlowTheme {
 
 export type SignalFlowColors = Record<SignalFlowMode, SignalFlowTheme>;
 
-export interface SignalFlowIllustrationProps {
+export interface BusinessFlow3DProps {
   variant?: SignalFlowVariant;
   mode?: SignalFlowMode;
   flow?: FlowConfig;

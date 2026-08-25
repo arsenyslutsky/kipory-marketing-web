@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cssVariablesForTheme, defaultColors, defaultFlow } from '../config';
 import { createSignalFlowScene, type SignalFlowSceneController } from '../scene/createSignalFlowScene';
-import type { SignalFlowIllustrationProps, SignalFlowMode } from '../types';
-import styles from './SignalFlowIllustration.module.css';
+import type { BusinessFlow3DProps, SignalFlowMode } from '../types';
+import styles from './BusinessFlow3D.module.css';
 
 const content = {
   eyebrow: 'OBSERVABILITY LAYER',
@@ -19,7 +19,7 @@ function joinClasses(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-export function SignalFlowIllustration({
+export function BusinessFlow3D({
   variant = 'variant-2',
   mode = 'light',
   flow = defaultFlow,
@@ -78,7 +78,7 @@ export function SignalFlowIllustration({
   maxEmitDelay = 0,
   reducedMotion,
   onModeChange,
-}: SignalFlowIllustrationProps) {
+}: BusinessFlow3DProps) {
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
@@ -251,7 +251,7 @@ export function SignalFlowIllustration({
       data-variant={variant}
       data-mode={mode}
       data-interactive={interactive}
-      aria-label={`Signal flow ${variant.replace('-', ' ')}, ${mode} mode`}
+      aria-label={`Business flow 3D ${variant.replace('-', ' ')}, ${mode} mode`}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
       <div ref={cssLayerRef} className={styles.svgLayer} aria-hidden="true" />
@@ -261,7 +261,7 @@ export function SignalFlowIllustration({
           <header className={styles.topbar}>
             <div className={styles.brand}>
               <span className={styles.brandMark}><i /><i /><i /></span>
-              <span>SIGNAL FLOW</span>
+              <span>BUSINESS FLOW 3D</span>
             </div>
             <div className={styles.variantLabel}><span>02</span> VARIANT 2</div>
             <div className={styles.topMeta}>

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { CameraFollowFlow } from '../components/CameraFollowFlow';
-import { cameraFollowFlowProps } from '../presets';
+import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
+import { businessFlowHorizontalProps } from '../presets';
 
 const meta = {
-  title: 'Animated Illustrations/CameraFollowFlow',
-  component: CameraFollowFlow,
+  title: 'Animated Illustrations/BusinessFlowHorizontal',
+  component: BusinessFlowHorizontal,
   parameters: {
     layout: 'centered',
     controls: { sort: 'none' },
@@ -84,8 +84,8 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: cameraFollowFlowProps,
-} satisfies Meta<typeof CameraFollowFlow>;
+  args: businessFlowHorizontalProps,
+} satisfies Meta<typeof BusinessFlowHorizontal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

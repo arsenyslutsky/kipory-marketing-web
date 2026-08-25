@@ -5,6 +5,6 @@ export type {
   PillarSurroundingIconName,
   PillarSurroundingIconProps,
 } from './components/PillarSurroundingIcon';
-export { PillarsIllustration } from './components/PillarsIllustration';
-export type { PillarsIllustrationProps } from './components/PillarsIllustration';
-export { foundationPillarsProps } from './presets';
+export { BusinessFlowVertical } from './components/BusinessFlowVertical';
+export type { BusinessFlowVerticalProps } from './components/BusinessFlowVertical';
+export { businessFlowVerticalProps } from './presets';

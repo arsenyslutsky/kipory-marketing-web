@@ -1,6 +1,6 @@
-import type { SignalFlowIllustrationProps } from './types';
+import type { BusinessFlow3DProps } from './types';
 
-export const heroSignalFlowProps = {
+export const businessFlow3DProps = {
   mode: 'dark',
   showInterface: false,
   interactive: false,
@@ -49,4 +49,4 @@ export const heroSignalFlowProps = {
   concurrentBeams: 10,
   minEmitDelay: 500,
   maxEmitDelay: 1400,
-} satisfies SignalFlowIllustrationProps;
+} satisfies BusinessFlow3DProps;

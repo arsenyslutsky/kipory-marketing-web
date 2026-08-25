@@ -3,9 +3,9 @@ import {
   PillarSurroundingIcon,
   type PillarIconName,
   type PillarSurroundingIconName,
-} from '@/features/pillars-illustration';
+} from '@/features/business-flow-vertical';
 import type { CSSProperties } from 'react';
-import styles from './CameraFollowFlow.module.css';
+import styles from './BusinessFlowHorizontal.module.css';
 
 type FlowRoute = {
   d: string;
@@ -51,7 +51,7 @@ const nodes: FlowNode[] = [
   { id: 'collector', kind: 'collector', icon: 'intelligence', x: 248, y: 304, delay: 0.68 },
 ];
 
-export type CameraFollowFlowProps = {
+export type BusinessFlowHorizontalProps = {
   auxiliaryIconFillColor?: string;
   beamColor?: string;
   beamEnabled?: boolean;
@@ -108,7 +108,7 @@ function nodePosition(node: FlowNode, resolvedSpeed: number): PositionedStyle {
   };
 }
 
-export function CameraFollowFlow({
+export function BusinessFlowHorizontal({
   auxiliaryIconFillColor = '#212121',
   beamColor = '#449c40',
   beamEnabled = true,
@@ -128,7 +128,7 @@ export function CameraFollowFlow({
   iconSize = 40,
   strokeWidth = 1.5,
   width = '20rem',
-}: CameraFollowFlowProps) {
+}: BusinessFlowHorizontalProps) {
   const resolvedSpeed = Math.max(0.1, beamSpeed);
   const cycleDuration = 5.2 / resolvedSpeed;
   const rootClassName = [
@@ -157,7 +157,7 @@ export function CameraFollowFlow({
       className={rootClassName}
       style={style}
       role="img"
-      aria-label="Camera signal flow entering from the right, passing through one collector and three relays, then reaching six terminal nodes"
+      aria-label="Horizontal business flow entering from the right, passing through one collector and three relays, then reaching six terminal nodes"
     >
       <svg
         className={styles.diagram}

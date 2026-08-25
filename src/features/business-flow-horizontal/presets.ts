@@ -1,6 +1,6 @@
-import type { CameraFollowFlowProps } from './components/CameraFollowFlow';
+import type { BusinessFlowHorizontalProps } from './components/BusinessFlowHorizontal';
 
-export const cameraFollowFlowProps = {
+export const businessFlowHorizontalProps = {
   auxiliaryIconFillColor: '#212121',
   beamColor: '#449c40',
   beamEnabled: true,
@@ -19,4 +19,4 @@ export const cameraFollowFlowProps = {
   iconSize: 40,
   strokeWidth: 1.5,
   width: '20rem',
-} satisfies CameraFollowFlowProps;
+} satisfies BusinessFlowHorizontalProps;

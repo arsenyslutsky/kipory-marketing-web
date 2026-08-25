@@ -3,9 +3,9 @@ import React from 'react';
 import { Button, useCopyButton } from 'storybook/internal/components';
 import { addons, types, useArgs, useArgTypes, useStorybookState } from 'storybook/manager-api';
 
-const ADDON_ID = 'kipory/copy-signal-flow-parameters';
+const ADDON_ID = 'kipory/copy-business-flow-3d-parameters';
 const TOOL_ID = `${ADDON_ID}/tool`;
-const SIGNAL_FLOW_STORY_PREFIX = 'animated-illustrations-signal-flow--';
+const BUSINESS_FLOW_3D_STORY_PREFIX = 'animated-illustrations-businessflow3d--';
 
 function CopyParametersButton() {
   const [args] = useArgs();
@@ -24,8 +24,8 @@ function CopyParametersButton() {
     content,
     children: 'Copy JSON',
     childrenOnCopy: 'Copied',
-    ariaLabel: 'Copy all Signal Flow parameter values as JSON',
-    ariaLabelOnCopy: 'Signal Flow parameter JSON copied to clipboard',
+    ariaLabel: 'Copy all BusinessFlow3D parameter values as JSON',
+    ariaLabelOnCopy: 'BusinessFlow3D parameter JSON copied to clipboard',
   });
 
   return (
@@ -43,17 +43,17 @@ function CopyParametersButton() {
 
 function CopyParametersTool() {
   const { storyId, viewMode } = useStorybookState();
-  const isSignalFlowStory = (
-    viewMode === 'story' && storyId?.startsWith(SIGNAL_FLOW_STORY_PREFIX) === true
+  const isBusinessFlow3DStory = (
+    viewMode === 'story' && storyId?.startsWith(BUSINESS_FLOW_3D_STORY_PREFIX) === true
   );
 
-  return isSignalFlowStory ? <CopyParametersButton /> : null;
+  return isBusinessFlow3DStory ? <CopyParametersButton /> : null;
 }
 
 addons.register(ADDON_ID, () => {
   addons.add(TOOL_ID, {
     type: types.TOOL,
-    title: 'Copy Signal Flow parameters',
+    title: 'Copy BusinessFlow3D parameters',
     render: CopyParametersTool,
   });
 });

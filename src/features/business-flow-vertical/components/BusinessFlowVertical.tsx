@@ -9,7 +9,7 @@ import {
   type PillarSurroundingIconName,
 } from './PillarSurroundingIcon';
 import { PillarsConnectors, type PillarPoint } from './PillarsConnectors';
-import styles from './PillarsIllustration.module.css';
+import styles from './BusinessFlowVertical.module.css';
 
 const pillars: Array<{ name: PillarIconName; label: string }> = [
   { name: 'server', label: 'Server' },
@@ -56,7 +56,7 @@ function createSurroundingIcons(
   ];
 }
 
-export type PillarsIllustrationProps = {
+export type BusinessFlowVerticalProps = {
   auxiliaryIconFillColor?: string;
   beamColor?: string;
   beamEmissionRandomness?: number;
@@ -116,7 +116,7 @@ function cssSize(value: CSSProperties['width']): string {
   return value ?? 'auto';
 }
 
-export function PillarsIllustration({
+export function BusinessFlowVertical({
   auxiliaryIconFillColor = '#000000',
   beamColor = '#449c40',
   beamEmissionRandomness = 100,
@@ -154,7 +154,7 @@ export function PillarsIllustration({
   showContinuationConnectors = false,
   strokeWidth = 5,
   width = '20rem',
-}: PillarsIllustrationProps) {
+}: BusinessFlowVerticalProps) {
   const rootClassName = className ? `${styles.root} ${className}` : styles.root;
   const style: IllustrationStyle = {
     '--pillars-color': color,
@@ -173,7 +173,7 @@ export function PillarsIllustration({
   const satellitePoints = surroundingIcons.map(({ x, y }) => [x, y] as PillarPoint);
 
   return (
-    <section className={rootClassName} style={style} aria-label="Platform pillar illustration">
+    <section className={rootClassName} style={style} aria-label="Vertical business flow">
       <PillarsConnectors
         key={`${numberOfNodesTop}:${numberOfNodesBottom}:${auxiliaryNodeSpacing}`}
         beamColor={beamColor}

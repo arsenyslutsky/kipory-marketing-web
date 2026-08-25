@@ -533,7 +533,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   );
 
   if (!nodes[rootNodeId] || hiddenNodeIds.has(rootNodeId) || !branches[rootNodeId]?.length) {
-    throw new Error('SignalFlowIllustration needs a visible root node with at least one connection.');
+    throw new Error('BusinessFlow3D needs a visible root node with at least one connection.');
   }
 
   const renderer = new THREE.WebGLRenderer({

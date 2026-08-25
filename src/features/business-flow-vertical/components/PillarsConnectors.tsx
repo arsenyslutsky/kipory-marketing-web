@@ -8,7 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
-import styles from './PillarsIllustration.module.css';
+import styles from './BusinessFlowVertical.module.css';
 
 export type PillarPoint = readonly [x: number, y: number];
 

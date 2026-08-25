@@ -1,6 +1,6 @@
-export { SignalFlowIllustration } from './components/SignalFlowIllustration';
-export { heroSignalFlowProps } from './presets';
-export { VariantTwoSignalFlow } from './components/SignalFlowVariants';
+export { BusinessFlow3D } from './components/BusinessFlow3D';
+export { businessFlow3DProps } from './presets';
+export { BusinessFlow3DVariantTwo } from './components/BusinessFlow3DVariants';
 export { defaultColors, defaultFlow } from './config';
 export type {
   ConnectorStrokeType,
@@ -10,7 +10,7 @@ export type {
   NodeProgressMode,
   NodeShape,
   SignalFlowColors,
-  SignalFlowIllustrationProps,
+  BusinessFlow3DProps,
   SignalFlowMode,
   SignalFlowTheme,
   SignalFlowVariant,

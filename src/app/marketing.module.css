@@ -47,7 +47,7 @@
 .capabilityCardCopy p { max-width: 520px; margin: 12px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
 .capabilityVisual, .capabilityVisualPlaceholder { min-height: 100%; display: grid; place-items: center; color: var(--type-color-control); background: rgba(255,255,255,.015); border: 1px solid var(--surface-alternate-line); }
 .capabilityVisual { overflow: hidden; background: transparent; border: 0; }
-.capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 100%; height: calc(100% - 10rem); max-width: 600px; margin-inline: 0; }
+.capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 75%; height: calc(100% - 10rem); max-width: 450px; margin-inline: 0; }
 .capabilityVisualPlaceholder span { font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); text-transform: uppercase; }
 .systemSection { background: var(--ink); }
 .useCaseSection { padding-block: 60px; color: var(--type-color-alternate-primary); scroll-margin-top: 72px; }
