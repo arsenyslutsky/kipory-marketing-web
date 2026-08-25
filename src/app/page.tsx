@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
+import { GlowLink } from '@/components/ui/GlowLink';
 import { foundationPillarsProps, PillarsIllustration } from '@/features/pillars-illustration';
 import { heroSignalFlowProps, SignalFlowIllustration } from '@/features/signal-flow';
 import styles from './marketing.module.css';
@@ -36,6 +38,19 @@ function CountBox({ value }: { value: string }) {
   return <span className={styles.countBox}>{value}</span>;
 }
 
+function LearnMoreLink({ className, href, scrollShiftRem = 0 }: { className: string; href: string; scrollShiftRem?: number }) {
+  return (
+    <Link className={`${styles.learnMoreLink} ${className}`} href={href} data-scroll-shift-rem={scrollShiftRem}>
+      <span>Learn More</span>
+      <span className={styles.learnMoreChevron} aria-hidden="true">
+        <svg viewBox="0 0 16 18" focusable="false">
+          <path d="M3 3.5 8 8.5l5-5M3 9.5l5 5 5-5" />
+        </svg>
+      </span>
+    </Link>
+  );
+}
+
 export default function HomePage() {
   return (
     <HeroScrollEffects id="main-content" className={styles.main} scrollRange={700}>
@@ -54,22 +69,16 @@ export default function HomePage() {
               Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
             </p>
             <div className={styles.heroActions}>
-              <Link className="button button--accent" href="/contact">Request access <span>↗</span></Link>
+              <GlowLink href="/contact">Request access <span>↗</span></GlowLink>
               <Link className="button button--outline" href="/product">Explore the product</Link>
             </div>
-            <p className={styles.heroProof}>
-              <span>Learn More</span>
-              <span className={styles.heroProofChevron} aria-hidden="true">
-                <svg viewBox="0 0 16 18" focusable="false">
-                  <path d="M3 3.5 8 8.5l5-5M3 9.5l5 5 5-5" />
-                </svg>
-              </span>
-            </p>
+            <LearnMoreLink className={styles.heroLearnMore} href="#pillars" scrollShiftRem={10} />
           </div>
         </div>
       </section>
 
       <section
+        id="pillars"
         className={`${styles.section} ${styles.lightSection} ${styles.gridSurfaceSection} ${styles.movementSection}`}
         aria-labelledby="pillars-title"
       >
@@ -102,10 +111,12 @@ export default function HomePage() {
               />
             </div>
           </div>
+          <LearnMoreLink className={styles.sectionLearnMore} href="#delivery" />
         </div>
       </section>
 
       <section
+        id="delivery"
         className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}
         aria-labelledby="delivery-title"
       >
@@ -137,6 +148,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <BackToTop />
     </HeroScrollEffects>
   );
 }

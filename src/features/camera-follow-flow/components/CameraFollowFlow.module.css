@@ -1,0 +1,303 @@
+.root {
+  position: relative;
+  isolation: isolate;
+  width: var(--camera-width);
+  height: var(--camera-height);
+  margin: 0;
+  overflow: hidden;
+  color: var(--camera-color);
+  background: transparent;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--camera-grid-opacity);
+  background-image:
+    linear-gradient(to right, var(--camera-grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--camera-grid-color) 1px, transparent 1px);
+  background-size: var(--camera-grid-density) var(--camera-grid-density);
+  pointer-events: none;
+}
+
+.diagram,
+.burstLayer,
+.iconLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.diagram {
+  z-index: 1;
+  display: block;
+  overflow: visible;
+}
+
+.connectors path {
+  fill: none;
+  stroke: var(--camera-connector);
+  stroke-width: var(--camera-connector-width);
+  stroke-dasharray: 5.6 4.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: var(--camera-connector-opacity);
+  vector-effect: non-scaling-stroke;
+}
+
+.beamTrail,
+.beamCore,
+.beamShortTrail,
+.beamShortCore {
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0;
+  mix-blend-mode: screen;
+  vector-effect: non-scaling-stroke;
+  animation: camera-beam-pass var(--camera-flow-cycle) linear var(--camera-delay) infinite;
+}
+
+.beamTrail,
+.beamShortTrail {
+  stroke: var(--camera-beam);
+  stroke-width: 6;
+  stroke-dasharray: 32 68;
+  filter: blur(3px) drop-shadow(0 0 7px var(--camera-beam));
+}
+
+.beamCore,
+.beamShortCore {
+  stroke: var(--camera-beam-highlight);
+  stroke-width: 1.8;
+  stroke-dasharray: 13 87;
+  filter: drop-shadow(0 0 3px var(--camera-beam-highlight)) drop-shadow(0 0 7px var(--camera-beam));
+}
+
+.beamShortTrail,
+.beamShortCore {
+  animation-name: camera-beam-pass-short;
+}
+
+.beamHead,
+.beamShortHead {
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: camera-beam-head var(--camera-flow-cycle) linear var(--camera-delay) infinite;
+}
+
+.beamShortHead {
+  animation-name: camera-beam-head-short;
+}
+
+.beamHeadHalo {
+  fill: color-mix(in srgb, var(--camera-beam) 34%, transparent);
+  filter: blur(5px) drop-shadow(0 0 8px var(--camera-beam));
+}
+
+.beamHeadOrb {
+  fill: var(--camera-beam-highlight);
+  filter: drop-shadow(0 0 3px var(--camera-beam-highlight)) drop-shadow(0 0 8px var(--camera-beam));
+}
+
+.burstLayer {
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nodeBurst,
+.iconNode {
+  position: absolute;
+  left: var(--camera-x);
+  top: var(--camera-y);
+  transform: translate(-50%, -50%);
+}
+
+.nodeBurst {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.nodeBurstGlow,
+.nodeBurstCore {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center;
+  animation: camera-node-burst var(--camera-flow-cycle) cubic-bezier(.16, 1, .3, 1) var(--camera-delay) infinite;
+}
+
+.nodeBurstGlow {
+  inset: 0;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--camera-beam-highlight) 100%, white 0%) 0%,
+    color-mix(in srgb, var(--camera-beam) 94%, white 6%) 16%,
+    color-mix(in srgb, var(--camera-beam) 72%, transparent) 34%,
+    color-mix(in srgb, var(--camera-beam) 32%, transparent) 56%,
+    transparent 76%
+  );
+  filter:
+    drop-shadow(0 0 .5rem color-mix(in srgb, var(--camera-beam-highlight) 92%, transparent))
+    drop-shadow(0 0 1.15rem color-mix(in srgb, var(--camera-beam) 86%, transparent))
+    brightness(.5);
+  mix-blend-mode: screen;
+}
+
+.nodeBurstCore {
+  inset: 39%;
+  background: var(--camera-beam-highlight);
+  box-shadow:
+    0 0 .45rem .12rem color-mix(in srgb, var(--camera-beam-highlight) 96%, transparent),
+    0 0 .9rem .32rem color-mix(in srgb, var(--camera-beam) 88%, transparent);
+  animation-name: camera-node-burst-core;
+  mix-blend-mode: screen;
+}
+
+.iconLayer {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.iconNode {
+  display: grid;
+  place-items: center;
+  color: var(--camera-color);
+}
+
+.pillarIcon {
+  width: var(--camera-icon-size);
+  height: var(--camera-icon-size);
+  overflow: visible;
+  filter: drop-shadow(0 0 1.75rem color-mix(in srgb, var(--camera-color) 24%, transparent));
+}
+
+.collectorNode .pillarIcon {
+  width: calc(var(--camera-icon-size) * 1.18);
+  height: calc(var(--camera-icon-size) * 1.18);
+}
+
+.surroundingIcon {
+  width: 1.5rem;
+  height: 1.75rem;
+  fill: none;
+  opacity: .72;
+}
+
+.motionDisabled .beams,
+.motionDisabled .burstLayer {
+  display: none;
+}
+
+@keyframes camera-beam-pass {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+
+  2% {
+    opacity: 1;
+  }
+
+  20% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  23%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes camera-beam-pass-short {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+
+  2% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  15%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes camera-beam-head {
+  0%, 1% { opacity: 0; }
+  3%, 19% { opacity: 1; }
+  22%, 100% { opacity: 0; }
+}
+
+@keyframes camera-beam-head-short {
+  0%, 1% { opacity: 0; }
+  3%, 11% { opacity: 1; }
+  14%, 100% { opacity: 0; }
+}
+
+@keyframes camera-node-burst {
+  0% {
+    opacity: 0;
+    transform: scale(.2);
+  }
+
+  4% {
+    opacity: 1;
+    transform: scale(.54);
+  }
+
+  12% {
+    opacity: .72;
+    transform: scale(1.05);
+  }
+
+  26%,
+  100% {
+    opacity: 0;
+    transform: scale(2.15);
+  }
+}
+
+@keyframes camera-node-burst-core {
+  0% {
+    opacity: 0;
+    transform: scale(.25);
+  }
+
+  5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  17%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beams,
+  .burstLayer {
+    display: none;
+  }
+
+  .pillarIcon {
+    filter: none;
+  }
+}

@@ -1,0 +1,130 @@
+.wrapper {
+  display: inline-flex;
+  isolation: isolate;
+}
+
+.link {
+  position: relative;
+  min-height: 48px;
+  padding: 2px;
+  display: inline-flex;
+  isolation: isolate;
+  color: var(--ink);
+  font: var(--type-control-weight) var(--type-control-size-md)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
+  text-transform: uppercase;
+  transition: transform .2s ease;
+}
+
+.link:hover {
+  transform: translateY(-2px);
+}
+
+.outerGlow,
+.edgeGlow {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: .48;
+  transition: opacity .3s ease;
+}
+
+.outerGlow {
+  z-index: -2;
+  inset: -13px;
+  filter: blur(15px);
+}
+
+.edgeGlow {
+  z-index: -1;
+  inset: 0;
+  background: var(--accent-dark);
+}
+
+.glowField {
+  position: absolute;
+  inset: -170%;
+  background: conic-gradient(
+    from 10deg,
+    var(--accent-dark) 0 14%,
+    transparent 23% 43%,
+    color-mix(in srgb, var(--accent) 54%, var(--paper)) 54% 66%,
+    transparent 76% 91%,
+    var(--accent-dark) 100%
+  );
+  transform-origin: center;
+  animation: glowOrbit 5.8s cubic-bezier(.56, .15, .28, .86) infinite;
+  animation-play-state: paused;
+}
+
+.edgeGlow .glowField {
+  inset: -210%;
+  background: conic-gradient(
+    from 28deg,
+    var(--accent-dark) 0 18%,
+    transparent 28% 46%,
+    color-mix(in srgb, var(--accent) 34%, var(--paper)) 56% 68%,
+    transparent 78% 100%
+  );
+  animation-duration: 4.8s;
+  animation-direction: reverse;
+}
+
+.surface {
+  position: relative;
+  z-index: 1;
+  min-height: 44px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, .08), transparent 42%),
+    var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(10, 12, 11, .18);
+  transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+.link:hover .outerGlow,
+.link:focus-visible .outerGlow {
+  opacity: .86;
+}
+
+.link:hover .edgeGlow,
+.link:focus-visible .edgeGlow {
+  opacity: 1;
+}
+
+.link:hover .glowField,
+.link:focus-visible .glowField {
+  animation-play-state: running;
+}
+
+.link:active .outerGlow {
+  opacity: 1;
+}
+
+.link:active .surface {
+  box-shadow: inset 0 0 0 1px rgba(10, 12, 11, .35), inset 0 2px 7px rgba(10, 12, 11, .2);
+}
+
+@keyframes glowOrbit {
+  0% { transform: rotate(10deg) scale(1); }
+  50% { transform: rotate(190deg) scale(.78); }
+  100% { transform: rotate(370deg) scale(1); }
+}
+
+@media (max-width: 620px) {
+  .wrapper,
+  .link,
+  .surface {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowField {
+    animation: none;
+  }
+}
