@@ -4,15 +4,14 @@ import {
   type PillarIconName,
   type PillarSurroundingIconName,
 } from '@/features/business-flow-vertical';
+import { FlowLayer3D } from '@/components/elements/FlowLayer3D';
 import type { CSSProperties } from 'react';
+import { useMemo } from 'react';
+import {
+  businessFlowHorizontalPaths,
+  createBusinessFlowHorizontalBeamSource,
+} from '../routes';
 import styles from './BusinessFlowHorizontal.module.css';
-
-type FlowRoute = {
-  d: string;
-  delay: number;
-  id: string;
-  short?: boolean;
-};
 
 type FlowNode = {
   delay: number;
@@ -22,21 +21,6 @@ type FlowNode = {
   x: number;
   y: number;
 };
-
-const routes: FlowRoute[] = [
-  { id: 'aux-top', d: 'M 324 244 C 302 244 302 282 282 282', delay: 0, short: true },
-  { id: 'aux-middle', d: 'M 324 304 L 282 304', delay: 0.1, short: true },
-  { id: 'aux-bottom', d: 'M 324 364 C 302 364 302 326 282 326', delay: 0.2, short: true },
-  { id: 'collector-relay-top', d: 'M 214 282 C 190 282 194 107 170 107', delay: 0.72 },
-  { id: 'collector-relay-middle', d: 'M 214 304 L 170 304', delay: 0.78, short: true },
-  { id: 'collector-relay-bottom', d: 'M 214 326 C 190 326 194 501 170 501', delay: 0.84 },
-  { id: 'relay-top-terminal-1', d: 'M 116 92 C 90 92 86 59 58 59', delay: 1.72 },
-  { id: 'relay-top-terminal-2', d: 'M 116 122 C 90 122 86 155 58 155', delay: 1.8 },
-  { id: 'relay-middle-terminal-1', d: 'M 116 289 C 90 289 86 251 58 251', delay: 1.76 },
-  { id: 'relay-middle-terminal-2', d: 'M 116 319 C 90 319 86 357 58 357', delay: 1.84 },
-  { id: 'relay-bottom-terminal-1', d: 'M 116 486 C 90 486 86 453 58 453', delay: 1.8 },
-  { id: 'relay-bottom-terminal-2', d: 'M 116 516 C 90 516 86 549 58 549', delay: 1.88 },
-];
 
 const nodes: FlowNode[] = [
   { id: 'terminal-1', kind: 'terminal', icon: 'download', x: 37, y: 59, delay: 2.68 },
@@ -77,9 +61,6 @@ type IllustrationStyle = CSSProperties & {
   '--camera-beam': string;
   '--camera-beam-highlight': string;
   '--camera-color': string;
-  '--camera-connector': string;
-  '--camera-connector-opacity': string;
-  '--camera-connector-width': string;
   '--camera-flow-cycle': string;
   '--camera-grid-color': string;
   '--camera-grid-density': string;
@@ -131,6 +112,24 @@ export function BusinessFlowHorizontal({
 }: BusinessFlowHorizontalProps) {
   const resolvedSpeed = Math.max(0.1, beamSpeed);
   const cycleDuration = 5.2 / resolvedSpeed;
+  const connector = useMemo(() => ({
+    color: connectorColor,
+    opacity: connectorOpacity,
+    stroke: 'dashed' as const,
+    width: connectorWidth,
+  }), [connectorColor, connectorOpacity, connectorWidth]);
+  const beam = useMemo(() => ({
+    beamColor,
+    beamHighlightColor,
+    beamWidth: 1,
+    enabled: beamEnabled,
+    glowIntensity: 1,
+    trailLength: 0.38,
+  }), [beamColor, beamEnabled, beamHighlightColor]);
+  const beamSource = useMemo(
+    () => createBusinessFlowHorizontalBeamSource(resolvedSpeed),
+    [resolvedSpeed],
+  );
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,
@@ -140,9 +139,6 @@ export function BusinessFlowHorizontal({
     '--camera-beam': beamColor,
     '--camera-beam-highlight': beamHighlightColor,
     '--camera-color': color,
-    '--camera-connector': connectorColor,
-    '--camera-connector-opacity': String(connectorOpacity),
-    '--camera-connector-width': String(connectorWidth),
     '--camera-flow-cycle': `${cycleDuration}s`,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
@@ -159,61 +155,13 @@ export function BusinessFlowHorizontal({
       role="img"
       aria-label="Horizontal business flow entering from the right, passing through one collector and three relays, then reaching six terminal nodes"
     >
-      <svg
-        className={styles.diagram}
-        viewBox="0 0 320 608"
-        aria-hidden="true"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <g className={styles.connectors}>
-          {routes.map((route) => (
-            <path key={route.id} d={route.d} pathLength="100" />
-          ))}
-        </g>
-
-        <g className={styles.beams}>
-          {routes.map((route) => {
-            const delay = route.delay / resolvedSpeed;
-            const timedStyle: PositionedStyle = {
-              '--camera-delay': `${delay}s`,
-            };
-            const motionWindow = route.short ? 0.12 : 0.2;
-
-            return (
-              <g key={route.id}>
-                <path
-                  className={route.short ? styles.beamShortTrail : styles.beamTrail}
-                  d={route.d}
-                  pathLength="100"
-                  style={timedStyle}
-                />
-                <path
-                  className={route.short ? styles.beamShortCore : styles.beamCore}
-                  d={route.d}
-                  pathLength="100"
-                  style={timedStyle}
-                />
-                <g
-                  className={route.short ? styles.beamShortHead : styles.beamHead}
-                  style={timedStyle}
-                >
-                  <circle className={styles.beamHeadHalo} r="9" />
-                  <circle className={styles.beamHeadOrb} r="2.4" />
-                  <animateMotion
-                    begin={`${delay}s`}
-                    calcMode="linear"
-                    dur={`${cycleDuration}s`}
-                    keyPoints="0;1;1"
-                    keyTimes={`0;${motionWindow};1`}
-                    path={route.d}
-                    repeatCount="indefinite"
-                  />
-                </g>
-              </g>
-            );
-          })}
-        </g>
-      </svg>
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        className={styles.flowLayer}
+        connector={connector}
+        paths={businessFlowHorizontalPaths}
+      />
 
       <div className={styles.burstLayer} aria-hidden="true">
         {nodes.map((node) => (

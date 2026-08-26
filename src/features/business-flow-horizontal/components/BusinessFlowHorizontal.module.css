@@ -21,7 +21,7 @@
   pointer-events: none;
 }
 
-.diagram,
+.flowLayer,
 .burstLayer,
 .iconLayer {
   position: absolute;
@@ -30,75 +30,8 @@
   height: 100%;
 }
 
-.diagram {
+.flowLayer {
   z-index: 1;
-  display: block;
-  overflow: visible;
-}
-
-.connectors path {
-  fill: none;
-  stroke: var(--camera-connector);
-  stroke-width: var(--camera-connector-width);
-  stroke-dasharray: 5.6 4.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: var(--camera-connector-opacity);
-  vector-effect: non-scaling-stroke;
-}
-
-.beamTrail,
-.beamCore,
-.beamShortTrail,
-.beamShortCore {
-  fill: none;
-  stroke-linecap: round;
-  opacity: 0;
-  mix-blend-mode: screen;
-  vector-effect: non-scaling-stroke;
-  animation: camera-beam-pass var(--camera-flow-cycle) linear var(--camera-delay) infinite;
-}
-
-.beamTrail,
-.beamShortTrail {
-  stroke: var(--camera-beam);
-  stroke-width: 6;
-  stroke-dasharray: 32 68;
-  filter: blur(3px) drop-shadow(0 0 7px var(--camera-beam));
-}
-
-.beamCore,
-.beamShortCore {
-  stroke: var(--camera-beam-highlight);
-  stroke-width: 1.8;
-  stroke-dasharray: 13 87;
-  filter: drop-shadow(0 0 3px var(--camera-beam-highlight)) drop-shadow(0 0 7px var(--camera-beam));
-}
-
-.beamShortTrail,
-.beamShortCore {
-  animation-name: camera-beam-pass-short;
-}
-
-.beamHead,
-.beamShortHead {
-  opacity: 0;
-  mix-blend-mode: screen;
-  animation: camera-beam-head var(--camera-flow-cycle) linear var(--camera-delay) infinite;
-}
-
-.beamShortHead {
-  animation-name: camera-beam-head-short;
-}
-
-.beamHeadHalo {
-  fill: color-mix(in srgb, var(--camera-beam) 34%, transparent);
-  filter: blur(5px) drop-shadow(0 0 8px var(--camera-beam));
-}
-
-.beamHeadOrb {
-  fill: var(--camera-beam-highlight);
-  filter: drop-shadow(0 0 3px var(--camera-beam-highlight)) drop-shadow(0 0 8px var(--camera-beam));
 }
 
 .burstLayer {
@@ -189,65 +122,8 @@
   opacity: .72;
 }
 
-.motionDisabled .beams,
 .motionDisabled .burstLayer {
   display: none;
-}
-
-@keyframes camera-beam-pass {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 100;
-  }
-
-  2% {
-    opacity: 1;
-  }
-
-  20% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-
-  23%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes camera-beam-pass-short {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 100;
-  }
-
-  2% {
-    opacity: 1;
-  }
-
-  12% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-
-  15%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes camera-beam-head {
-  0%, 1% { opacity: 0; }
-  3%, 19% { opacity: 1; }
-  22%, 100% { opacity: 0; }
-}
-
-@keyframes camera-beam-head-short {
-  0%, 1% { opacity: 0; }
-  3%, 11% { opacity: 1; }
-  14%, 100% { opacity: 0; }
 }
 
 @keyframes camera-node-burst {
@@ -292,7 +168,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .beams,
   .burstLayer {
     display: none;
   }
