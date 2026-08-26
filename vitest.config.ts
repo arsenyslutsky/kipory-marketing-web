@@ -1,7 +1,7 @@
-import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vitest/config';
+const { fileURLToPath } = require('node:url');
+const { defineConfig } = require('vitest/config');
 
-export default defineConfig({
+module.exports = defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: { environment: 'jsdom', setupFiles: ['./src/test/setup.ts'] },
 });
