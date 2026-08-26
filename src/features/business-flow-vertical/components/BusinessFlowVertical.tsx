@@ -1,4 +1,16 @@
-import type { CSSProperties } from 'react';
+'use client';
+
+import {
+  FlowLayer3D,
+  type FlowLayer3DArrival,
+  type FlowLayer3DArrivalEvent,
+} from '@/components/elements/FlowLayer3D';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  createBusinessFlowVerticalBeamSource,
+  createBusinessFlowVerticalPaths,
+  type PillarPoint,
+} from '../routes';
 import {
   PillarIcon,
   type PillarIconFillMode,
@@ -8,7 +20,6 @@ import {
   PillarSurroundingIcon,
   type PillarSurroundingIconName,
 } from './PillarSurroundingIcon';
-import { PillarsConnectors, type PillarPoint } from './PillarsConnectors';
 import styles from './BusinessFlowVertical.module.css';
 
 const pillars: Array<{ name: PillarIconName; label: string }> = [
@@ -29,10 +40,7 @@ function rowPoint(index: number, count: number, y: number, spacing: number) {
   const availableWidth = 100 - inset * 2;
   const baseX = count === 1 ? 50 : inset + (availableWidth * index) / (count - 1);
 
-  return {
-    x: 50 + (baseX - 50) * spacing,
-    y,
-  };
+  return { x: 50 + (baseX - 50) * spacing, y };
 }
 
 function createSurroundingIcons(
@@ -111,9 +119,43 @@ type SurroundingIconStyle = CSSProperties & {
   '--surrounding-y': string;
 };
 
+type BurstStyle = CSSProperties & {
+  '--burst-color': string;
+  '--burst-core-fade-time': string;
+  '--burst-fade-time': string;
+  '--burst-highlight': string;
+  '--burst-radius': string;
+  '--burst-strength': string;
+};
+
+type BurstRecord = {
+  key: string;
+  point: FlowLayer3DArrival['point'];
+};
+
 function cssSize(value: CSSProperties['width']): string {
   if (typeof value === 'number') return `${value}px`;
   return value ?? 'auto';
+}
+
+function useReducedMotionPreference() {
+  const getPreference = () => (
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
+  const [reducedMotion, setReducedMotion] = useState(getPreference);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+
+    query.addEventListener('change', updatePreference);
+    return () => query.removeEventListener('change', updatePreference);
+  }, []);
+
+  return reducedMotion;
 }
 
 export function BusinessFlowVertical({
@@ -155,7 +197,78 @@ export function BusinessFlowVertical({
   strokeWidth = 5,
   width = '20rem',
 }: BusinessFlowVerticalProps) {
-  const rootClassName = className ? `${styles.root} ${className}` : styles.root;
+  const reducedMotion = useReducedMotionPreference();
+  const [burstRecords, setBurstRecords] = useState<BurstRecord[]>([]);
+  const surroundingIcons = useMemo(
+    () => createSurroundingIcons(numberOfNodesTop, numberOfNodesBottom, auxiliaryNodeSpacing),
+    [auxiliaryNodeSpacing, numberOfNodesBottom, numberOfNodesTop],
+  );
+  const satellitePoints = useMemo(
+    () => surroundingIcons.map(({ x, y }) => [x, y] as PillarPoint),
+    [surroundingIcons],
+  );
+  const curve = Math.min(100, Math.max(0, connectorRadius * 20));
+  const paths = useMemo(
+    () => createBusinessFlowVerticalPaths(satellitePoints, showContinuationConnectors)
+      .map((path) => ({ ...path, curve })),
+    [curve, satellitePoints, showContinuationConnectors],
+  );
+  const beamSource = useMemo(
+    () => createBusinessFlowVerticalBeamSource({
+      connectorRadius,
+      emissionRandomness: beamEmissionRandomness,
+      maxConcurrentBeams,
+      satellitePoints,
+      showContinuationConnectors,
+      speed: beamSpeed,
+    }),
+    [
+      beamEmissionRandomness,
+      beamSpeed,
+      connectorRadius,
+      maxConcurrentBeams,
+      satellitePoints,
+      showContinuationConnectors,
+    ],
+  );
+  const connector = useMemo(() => ({
+    color: connectorColor,
+    opacity: connectorOpacity,
+    stroke: 'dashed' as const,
+    width: connectorWidth,
+  }), [connectorColor, connectorOpacity, connectorWidth]);
+  const beam = useMemo(() => ({
+    beamColor,
+    beamHighlightColor,
+    beamWidth: connectorWidth,
+    enabled: beamEnabled,
+    glowIntensity: Math.min(3, Math.max(
+      0,
+      beamHeadGlowOpacity * (1 + beamHeadGlowRadius / 32 + beamHeadGlowBlur / 32),
+    )),
+    trailLength: Math.min(1, Math.max(0, beamTrailLength / 100)),
+  }), [
+    beamColor,
+    beamEnabled,
+    beamHeadGlowBlur,
+    beamHeadGlowOpacity,
+    beamHeadGlowRadius,
+    beamHighlightColor,
+    beamTrailLength,
+    connectorWidth,
+  ]);
+  const onArrival = useCallback(({ arrival, generation, runId }: FlowLayer3DArrivalEvent) => {
+    const key = `${runId}:${generation}:${arrival.id}`;
+    setBurstRecords((current) => current.some((record) => record.key === key)
+      ? current
+      : [...current, { key, point: arrival.point }]);
+  }, []);
+  const finishBurst = useCallback((key: string) => {
+    setBurstRecords((current) => current.filter((record) => record.key !== key));
+  }, []);
+  const rootClassName = [styles.root, !beamEnabled && styles.motionDisabled, className]
+    .filter(Boolean)
+    .join(' ');
   const style: IllustrationStyle = {
     '--pillars-color': color,
     '--pillars-grid-color': gridColor,
@@ -165,37 +278,47 @@ export function BusinessFlowVertical({
     '--pillars-icon-size': `${iconSize}px`,
     '--pillars-width': cssSize(width),
   };
-  const surroundingIcons = createSurroundingIcons(
-    numberOfNodesTop,
-    numberOfNodesBottom,
-    auxiliaryNodeSpacing,
-  );
-  const satellitePoints = surroundingIcons.map(({ x, y }) => [x, y] as PillarPoint);
+  const resolvedBurstFadeTime = Math.max(1, burstFadeTime);
+  const burstStyle: BurstStyle = {
+    '--burst-color': beamColor,
+    '--burst-core-fade-time': `${resolvedBurstFadeTime * (640 / 920)}ms`,
+    '--burst-fade-time': `${resolvedBurstFadeTime}ms`,
+    '--burst-highlight': beamHighlightColor,
+    '--burst-radius': `${Math.max(0, burstRadius)}px`,
+    '--burst-strength': String(Math.max(0, burstStrength)),
+  };
 
   return (
     <section className={rootClassName} style={style} aria-label="Vertical business flow">
-      <PillarsConnectors
-        key={`${numberOfNodesTop}:${numberOfNodesBottom}:${auxiliaryNodeSpacing}`}
-        beamColor={beamColor}
-        beamEmissionRandomness={beamEmissionRandomness}
-        beamEnabled={beamEnabled}
-        beamHeadGlowBlur={beamHeadGlowBlur}
-        beamHeadGlowOpacity={beamHeadGlowOpacity}
-        beamHeadGlowRadius={beamHeadGlowRadius}
-        beamHighlightColor={beamHighlightColor}
-        beamSpeed={beamSpeed}
-        beamTrailLength={beamTrailLength}
-        burstFadeTime={burstFadeTime}
-        burstRadius={burstRadius}
-        burstStrength={burstStrength}
-        color={connectorColor}
-        connectorRadius={connectorRadius}
-        maxConcurrentBeams={maxConcurrentBeams}
-        opacity={connectorOpacity}
-        satellitePoints={satellitePoints}
-        showContinuationConnectors={showContinuationConnectors}
-        width={connectorWidth}
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        className={styles.flowLayer}
+        connector={connector}
+        onArrival={onArrival}
+        paths={paths}
+        reducedMotion={reducedMotion}
       />
+      <div className={styles.burstLayer} aria-hidden="true">
+        {burstRecords.map((record) => (
+          <span
+            className={styles.nodeBurst}
+            data-testid="arrival-burst"
+            key={record.key}
+            style={{
+              ...burstStyle,
+              left: `${record.point[0] * 100}%`,
+              top: `${record.point[1] * 100}%`,
+            }}
+          >
+            <span
+              className={styles.nodeBurstGlow}
+              onAnimationEnd={() => finishBurst(record.key)}
+            />
+            <span className={styles.nodeBurstCore} />
+          </span>
+        ))}
+      </div>
       <div className={styles.surroundingLayer} aria-hidden="true">
         {surroundingIcons.map((icon, index) => {
           const surroundingStyle: SurroundingIconStyle = {

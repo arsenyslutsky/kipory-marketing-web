@@ -1,5 +1,6 @@
 .root {
   position: relative;
+  isolation: isolate;
   width: var(--pillars-width);
   height: var(--pillars-height);
   margin-inline: auto;
@@ -71,31 +72,12 @@
   transform: translate(-50%, -50%);
 }
 
-.connectors {
+.flowLayer {
   position: absolute;
   z-index: 1;
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.continuationFade {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 12%,
-    #000 88%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 12%,
-    #000 88%,
-    transparent 100%
-  );
 }
 
 .burstLayer {
@@ -106,61 +88,8 @@
   pointer-events: none;
 }
 
-.connector {
-  stroke-dasharray: .35rem .3rem;
-}
-
-.beamOrb {
-  position: absolute;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: var(--beam-size);
-  height: var(--beam-size);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  background: var(--beam-highlight);
-  box-shadow:
-    0 0 var(--beam-glow-small) var(--beam-highlight),
-    0 0 var(--beam-glow-large) var(--beam-color);
-  mix-blend-mode: screen;
-  transform: translate(-50%, -50%);
-  will-change: left, top, opacity;
-}
-
-.beamOrb::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: calc(var(--beam-head-glow-radius) * 2);
-  height: calc(var(--beam-head-glow-radius) * 2);
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--beam-highlight) 95%, transparent) 0%,
-    color-mix(in srgb, var(--beam-color) 68%, transparent) 30%,
-    color-mix(in srgb, var(--beam-color) 28%, transparent) 54%,
-    transparent 76%
-  );
-  filter: blur(var(--beam-head-glow-blur));
-  opacity: var(--beam-head-glow-opacity);
-  transform: translate(-50%, -50%);
-}
-
-.beamTrail {
-  opacity: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  will-change: opacity;
-}
-
 .nodeBurst {
   position: absolute;
-  left: var(--burst-x);
-  top: var(--burst-y);
   width: calc(var(--burst-radius) * 2);
   height: calc(var(--burst-radius) * 2);
   border-radius: 50%;
@@ -175,7 +104,7 @@
   opacity: 0;
   pointer-events: none;
   transform-origin: center;
-  animation: pillars-node-burst var(--burst-fade-time) cubic-bezier(.16, 1, .3, 1) var(--burst-delay) 1 both;
+  animation: pillars-node-burst var(--burst-fade-time) cubic-bezier(.16, 1, .3, 1) 1 both;
 }
 
 .nodeBurstGlow {
@@ -247,12 +176,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .beamOrb,
   .nodeBurstGlow,
   .nodeBurstCore {
     animation: none;
     opacity: 0;
   }
+}
+
+.motionDisabled .burstLayer {
+  display: none;
 }
 
 @media (max-width: 760px) {
