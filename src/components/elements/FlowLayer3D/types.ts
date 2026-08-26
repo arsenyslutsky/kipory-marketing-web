@@ -34,6 +34,9 @@ export type FlowLayer3DBeamStyle = {
   beamWidth: number;
   enabled: boolean;
   glowIntensity: number;
+  headGlowBlur?: number;
+  headGlowOpacity?: number;
+  headGlowRadius?: number;
   trailLength: number;
 };
 

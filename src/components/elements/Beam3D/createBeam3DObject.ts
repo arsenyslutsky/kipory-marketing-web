@@ -33,6 +33,7 @@ export type CreateBeam3DObjectOptions = {
   packetCoreShape?: PacketCoreShape;
   packetCoreSize?: number;
   packetHaloBlur?: number;
+  packetHaloOpacity?: number;
   packetHaloSize?: number;
   packetShadow?: number;
   packetVisible?: boolean;
@@ -466,6 +467,7 @@ export function createBeam3DObject({
   packetCoreShape = 'circle',
   packetCoreSize = 1,
   packetHaloBlur = 0,
+  packetHaloOpacity,
   packetHaloSize = 1,
   packetShadow = 0,
   packetVisible = true,
@@ -497,7 +499,9 @@ export function createBeam3DObject({
   const resolvedPacketHaloBlur = THREE.MathUtils.clamp(packetHaloBlur, 0, 1);
   const resolvedPacketHaloSize = THREE.MathUtils.clamp(packetHaloSize, 0, 4);
   const resolvedPacketShadow = THREE.MathUtils.clamp(packetShadow, 0, 1);
-  const packetHaloOpacity = Math.min((isRibbon ? 0.24 : 0.17) * resolvedGlow, 0.85);
+  const resolvedPacketHaloOpacity = packetHaloOpacity === undefined
+    ? Math.min((isRibbon ? 0.24 : 0.17) * resolvedGlow, 0.85)
+    : THREE.MathUtils.clamp(packetHaloOpacity, 0, 1);
   const packetFlareOpacity = Math.min(
     (isRibbon ? (isDark ? 0.92 : 0.58) : (isDark ? 0.5 : 0.38)) * resolvedGlow,
     0.95,
@@ -591,7 +595,7 @@ export function createBeam3DObject({
       color: colors.packetHalo,
       fogEnabled,
       mode,
-      opacity: packetHaloOpacity,
+      opacity: resolvedPacketHaloOpacity,
       style,
     }),
   );
@@ -685,7 +689,7 @@ export function createBeam3DObject({
     packet.scale.setScalar(resolvedPacketCoreSize);
     packet.material.opacity = resolvedPacketVisibility;
     packetShadowObject.material.opacity = packetShadowOpacity * resolvedPacketVisibility;
-    packetHalo.material.uniforms.uOpacity.value = packetHaloOpacity * resolvedPacketVisibility;
+    packetHalo.material.uniforms.uOpacity.value = resolvedPacketHaloOpacity * resolvedPacketVisibility;
     packetFlare.material.opacity = packetFlareOpacity * resolvedPacketVisibility;
     packetHalo.scale.setScalar(
       (0.86 + Math.sin(time * 7 + phase * 0.8) * 0.1) * resolvedPacketHaloSize,
@@ -706,7 +710,7 @@ export function createBeam3DObject({
     packetFlare,
     packetFlareOpacity,
     packetHalo,
-    packetHaloOpacity,
+    packetHaloOpacity: resolvedPacketHaloOpacity,
     packetShadow: packetShadowObject,
     packetShadowOpacity,
     position,

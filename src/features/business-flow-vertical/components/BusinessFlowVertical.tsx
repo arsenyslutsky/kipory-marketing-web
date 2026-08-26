@@ -4,6 +4,7 @@ import {
   FlowLayer3D,
   type FlowLayer3DArrival,
   type FlowLayer3DArrivalEvent,
+  type FlowLayer3DBeamSource,
 } from '@/components/elements/FlowLayer3D';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
@@ -133,6 +134,17 @@ type BurstRecord = {
   point: FlowLayer3DArrival['point'];
 };
 
+type BurstContext = {
+  beamEnabled: boolean;
+  beamSource: FlowLayer3DBeamSource;
+  reducedMotion: boolean;
+};
+
+type BurstState = {
+  context: BurstContext;
+  records: BurstRecord[];
+};
+
 function cssSize(value: CSSProperties['width']): string {
   if (typeof value === 'number') return `${value}px`;
   return value ?? 'auto';
@@ -198,7 +210,6 @@ export function BusinessFlowVertical({
   width = '20rem',
 }: BusinessFlowVerticalProps) {
   const reducedMotion = useReducedMotionPreference();
-  const [burstRecords, setBurstRecords] = useState<BurstRecord[]>([]);
   const surroundingIcons = useMemo(
     () => createSurroundingIcons(numberOfNodesTop, numberOfNodesBottom, auxiliaryNodeSpacing),
     [auxiliaryNodeSpacing, numberOfNodesBottom, numberOfNodesTop],
@@ -240,12 +251,12 @@ export function BusinessFlowVertical({
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
-    beamWidth: connectorWidth,
+    beamWidth: Math.max(1.25, connectorWidth * 1.4),
     enabled: beamEnabled,
-    glowIntensity: Math.min(3, Math.max(
-      0,
-      beamHeadGlowOpacity * (1 + beamHeadGlowRadius / 32 + beamHeadGlowBlur / 32),
-    )),
+    glowIntensity: 1,
+    headGlowBlur: beamHeadGlowBlur,
+    headGlowOpacity: beamHeadGlowOpacity,
+    headGlowRadius: beamHeadGlowRadius,
     trailLength: Math.min(1, Math.max(0, beamTrailLength / 100)),
   }), [
     beamColor,
@@ -257,15 +268,34 @@ export function BusinessFlowVertical({
     beamTrailLength,
     connectorWidth,
   ]);
+  const burstContext = useMemo<BurstContext>(() => ({
+    beamEnabled,
+    beamSource,
+    reducedMotion,
+  }), [beamEnabled, beamSource, reducedMotion]);
+  const [burstState, setBurstState] = useState<BurstState>(() => ({
+    context: burstContext,
+    records: [],
+  }));
+  const burstRecords = burstState.context === burstContext ? burstState.records : [];
+  const updateBurstRecords = useCallback((
+    update: (current: BurstRecord[]) => BurstRecord[],
+  ) => {
+    setBurstState((current) => ({
+      context: burstContext,
+      records: update(current.context === burstContext ? current.records : []),
+    }));
+  }, [burstContext]);
   const onArrival = useCallback(({ arrival, generation, runId }: FlowLayer3DArrivalEvent) => {
+    if (!beamEnabled || reducedMotion) return;
     const key = `${runId}:${generation}:${arrival.id}`;
-    setBurstRecords((current) => current.some((record) => record.key === key)
+    updateBurstRecords((current) => current.some((record) => record.key === key)
       ? current
       : [...current, { key, point: arrival.point }]);
-  }, []);
+  }, [beamEnabled, reducedMotion, updateBurstRecords]);
   const finishBurst = useCallback((key: string) => {
-    setBurstRecords((current) => current.filter((record) => record.key !== key));
-  }, []);
+    updateBurstRecords((current) => current.filter((record) => record.key !== key));
+  }, [updateBurstRecords]);
   const rootClassName = [styles.root, !beamEnabled && styles.motionDisabled, className]
     .filter(Boolean)
     .join(' ');

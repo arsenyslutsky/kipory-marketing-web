@@ -4,6 +4,7 @@ import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 import { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
+import { resolveFlowLayer3DBeamStyle } from './resolveFlowLayer3DBeamStyle';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
 import type {
   FlowLayer3DBeamRun,
@@ -147,9 +148,10 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       return;
     }
     const slotCount = Math.max(0, Math.floor(beamSource.slots));
+    const beamObjectStyle = resolveFlowLayer3DBeamStyle(beamStyle);
     for (let index = 0; index < slotCount; index += 1) {
       const beam = createBeam3DObject({
-        beamWidth: beamStyle.beamWidth,
+        ...beamObjectStyle,
         colors: {
           beam: beamStyle.beamColor,
           beamHighlight: beamStyle.beamHighlightColor,
@@ -160,11 +162,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         },
         flareTexture,
         fogEnabled: false,
-        glowIntensity: beamStyle.glowIntensity,
         mode: 'dark',
         path: fallbackPath,
         style: 'ribbon',
-        trailLength: beamStyle.trailLength,
       });
       const slot: BeamSlot = {
         beam,

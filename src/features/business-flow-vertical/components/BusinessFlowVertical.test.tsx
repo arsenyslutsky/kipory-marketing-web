@@ -4,11 +4,18 @@ import { BusinessFlowVertical } from './BusinessFlowVertical';
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
+    beam,
     paths,
     beamSource,
     onArrival,
     reducedMotion,
   }: {
+    beam: {
+      beamWidth: number;
+      headGlowBlur?: number;
+      headGlowOpacity?: number;
+      headGlowRadius?: number;
+    };
     paths: Array<{ curve?: number }>;
     beamSource: { slots: number };
     onArrival?: (event: {
@@ -22,7 +29,11 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     <button
       type="button"
       data-testid="flow-layer"
+      data-beam-width={beam.beamWidth}
       data-curve={paths[0]?.curve}
+      data-head-glow-blur={beam.headGlowBlur}
+      data-head-glow-opacity={beam.headGlowOpacity}
+      data-head-glow-radius={beam.headGlowRadius}
       data-paths={paths.length}
       data-reduced-motion={String(reducedMotion)}
       data-slots={beamSource.slots}
@@ -55,6 +66,27 @@ it('renders one shared layer while retaining central and surrounding icons', () 
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-paths', '11');
   expect(screen.getByLabelText('Vertical business flow')).toBeInTheDocument();
   expect(screen.getAllByRole('img')).toHaveLength(4);
+});
+
+it('preserves independent beam trail and head-glow controls', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(
+    <BusinessFlowVertical
+      beamHeadGlowBlur={12}
+      beamHeadGlowOpacity={0.35}
+      beamHeadGlowRadius={48}
+      connectorWidth={2}
+    />,
+  );
+
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-beam-width', '2.8');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-blur', '12');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-opacity', '0.35');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-radius', '48');
 });
 
 it('passes live reduced-motion preference to the shared layer and cleans up its listener', () => {
@@ -92,5 +124,51 @@ it('renders arrival bursts at normalized points and removes completed bursts', (
   expect(burst).toHaveStyle({ left: '20%', top: '50%' });
 
   fireEvent.animationEnd(burst.firstElementChild!);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+});
+
+it('clears active bursts when beams are disabled or reduced motion activates', () => {
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const query = {
+    addEventListener: (_: 'change', listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    },
+    matches: false,
+    removeEventListener: (_: 'change', listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    },
+  } as unknown as MediaQueryList;
+  vi.stubGlobal('matchMedia', vi.fn(() => query));
+  const view = render(<BusinessFlowVertical />);
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  expect(screen.getByTestId('arrival-burst')).toBeInTheDocument();
+  view.rerender(<BusinessFlowVertical beamEnabled={false} />);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+  view.rerender(<BusinessFlowVertical />);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  act(() => listeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent)));
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+});
+
+it('clears bursts on source changes but retains them across unrelated rerenders', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  const view = render(<BusinessFlowVertical />);
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  view.rerender(<BusinessFlowVertical burstRadius={48} />);
+  expect(screen.getByTestId('arrival-burst')).toBeInTheDocument();
+
+  view.rerender(<BusinessFlowVertical burstRadius={48} beamSpeed={2} />);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  view.rerender(<BusinessFlowVertical burstRadius={48} beamSpeed={2} numberOfNodesTop={8} />);
   expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
 });
