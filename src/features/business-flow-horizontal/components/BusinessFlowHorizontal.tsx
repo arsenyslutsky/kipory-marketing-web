@@ -6,7 +6,7 @@ import {
 } from '@/features/business-flow-vertical';
 import { FlowLayer3D } from '@/components/elements/FlowLayer3D';
 import type { CSSProperties } from 'react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   businessFlowHorizontalPaths,
   createBusinessFlowHorizontalBeamSource,
@@ -89,6 +89,26 @@ function nodePosition(node: FlowNode, resolvedSpeed: number): PositionedStyle {
   };
 }
 
+function useReducedMotionPreference() {
+  const getPreference = () => (
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
+  const [reducedMotion, setReducedMotion] = useState(getPreference);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+
+    query.addEventListener('change', updatePreference);
+    return () => query.removeEventListener('change', updatePreference);
+  }, []);
+
+  return reducedMotion;
+}
+
 export function BusinessFlowHorizontal({
   auxiliaryIconFillColor = '#212121',
   beamColor = '#449c40',
@@ -110,6 +130,7 @@ export function BusinessFlowHorizontal({
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
+  const reducedMotion = useReducedMotionPreference();
   const resolvedSpeed = Math.max(0.1, beamSpeed);
   const cycleDuration = 5.2 / resolvedSpeed;
   const connector = useMemo(() => ({
@@ -161,6 +182,7 @@ export function BusinessFlowHorizontal({
         className={styles.flowLayer}
         connector={connector}
         paths={businessFlowHorizontalPaths}
+        reducedMotion={reducedMotion}
       />
 
       <div className={styles.burstLayer} aria-hidden="true">

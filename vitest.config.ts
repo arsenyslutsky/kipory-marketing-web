@@ -1,4 +1,4 @@
 module.exports = {
-  resolve: { alias: { '@': `${process.cwd()}/src` } },
+  resolve: { alias: { '@': `${__dirname}/src` } },
   test: { environment: 'jsdom', setupFiles: ['./src/test/setup.ts'] },
 };
