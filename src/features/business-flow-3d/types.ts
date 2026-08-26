@@ -1,6 +1,8 @@
+import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
+
 export type SignalFlowVariant = 'variant-2';
 export type SignalFlowMode = 'light' | 'dark';
-export type ConnectorStrokeType = 'solid' | 'dotted' | 'dashed';
+export type ConnectorStrokeType = Connector3DStroke;
 export type NodeGeometryShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type NodeShape =
   | NodeGeometryShape
