@@ -26,3 +26,34 @@ it('waits for delay and emits each crossed arrival once', () => {
     completed: true, progress: 1, arrivals: [run.arrivals[1]],
   });
 });
+
+it('does not emit a progress-zero arrival before its delay completes', () => {
+  const delayedRun = {
+    ...run,
+    arrivals: [{ id: 'start', point: [0, 0] as const, progress: 0 }],
+  };
+
+  expect(stepFlowLayer3DBeamRun(delayedRun, 249, new Set())).toMatchObject({
+    arrivals: [],
+    progress: 0,
+  });
+  expect(stepFlowLayer3DBeamRun(delayedRun, 250, new Set())).toMatchObject({
+    arrivals: [delayedRun.arrivals[0]],
+    progress: 0,
+  });
+});
+
+it('deduplicates repeated arrival IDs from one scheduler step', () => {
+  const duplicateArrivalRun = {
+    ...run,
+    delayMs: 0,
+    arrivals: [
+      { id: 'same', point: [0.5, 0.5] as const, progress: 0.5 },
+      { id: 'same', point: [0.75, 0.75] as const, progress: 0.5 },
+    ],
+  };
+
+  expect(stepFlowLayer3DBeamRun(duplicateArrivalRun, 500, new Set()).arrivals).toEqual([
+    duplicateArrivalRun.arrivals[0],
+  ]);
+});

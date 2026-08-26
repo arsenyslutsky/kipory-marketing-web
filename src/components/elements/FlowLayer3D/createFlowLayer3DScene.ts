@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from '../Beam3D/createBeam3DObject';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
+import { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
@@ -22,6 +23,7 @@ type BeamSlot = {
   beam: Beam3DObject;
   deliveredArrivalIds: Set<string>;
   generation: number;
+  pendingNextRun: boolean;
   run: FlowLayer3DBeamRun | null;
   startedAtMs: number;
 };
@@ -37,6 +39,25 @@ function disposeObjectResources(root: THREE.Object3D) {
   });
 }
 
+function createRenderer(canvas: HTMLCanvasElement) {
+  let renderer: THREE.WebGLRenderer | undefined;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      canvas,
+      powerPreference: 'high-performance',
+    });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    return renderer;
+  } catch (error) {
+    renderer?.dispose();
+    throw error;
+  }
+}
+
 export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLayer3DSceneController {
   const {
     beam: beamStyle,
@@ -49,15 +70,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     reducedMotion = false,
     worldHeight = 20,
   } = options;
-  const renderer = new THREE.WebGLRenderer({
-    alpha: true,
-    antialias: true,
-    canvas,
-    powerPreference: 'high-performance',
-  });
-  renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const renderer = createRenderer(canvas);
 
   const scene = new THREE.Scene();
   scene.background = null;
@@ -109,9 +122,16 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     slot.beam.setVisible(true);
   }
 
-  function nextRun(slot: BeamSlot, index: number, nowMs: number) {
-    slot.generation += 1;
-    assignRun(slot, beamSource.next(index, slot.generation), nowMs);
+  function loadNextRun(slot: BeamSlot, index: number, generation: number, nowMs: number) {
+    const next = advanceFlowLayer3DBeamSlot(
+      beamSource,
+      index,
+      generation,
+      (run) => resolvePath(run.path) !== null,
+    );
+    slot.generation = next.generation;
+    slot.pendingNextRun = next.status === 'invalid';
+    assignRun(slot, next.run, nowMs);
   }
 
   function createBeams() {
@@ -128,8 +148,6 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
     const slotCount = Math.max(0, Math.floor(beamSource.slots));
     for (let index = 0; index < slotCount; index += 1) {
-      const initialRun = beamSource.next(index, 0);
-      const initialPath = initialRun ? resolvePath(initialRun.path) : fallbackPath;
       const beam = createBeam3DObject({
         beamWidth: beamStyle.beamWidth,
         colors: {
@@ -144,7 +162,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         fogEnabled: false,
         glowIntensity: beamStyle.glowIntensity,
         mode: 'dark',
-        path: initialPath ?? fallbackPath,
+        path: fallbackPath,
         style: 'ribbon',
         trailLength: beamStyle.trailLength,
       });
@@ -152,12 +170,13 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         beam,
         deliveredArrivalIds: new Set(),
         generation: 0,
+        pendingNextRun: false,
         run: null,
         startedAtMs: 0,
       };
       beamSlots.push(slot);
       scene.add(beam.group);
-      assignRun(slot, initialPath ? initialRun : null, 0);
+      loadNextRun(slot, index, 0, 0);
     }
   }
 
@@ -190,6 +209,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     const time = clock.getElapsedTime();
     const nowMs = time * 1000;
     beamSlots.forEach((slot, index) => {
+      if (slot.pendingNextRun) loadNextRun(slot, index, slot.generation + 1, nowMs);
       const state = slot.run
         ? stepFlowLayer3DBeamRun(slot.run, nowMs - slot.startedAtMs, slot.deliveredArrivalIds)
         : { arrivals: [], completed: false, progress: 0 };
@@ -204,7 +224,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         time,
         visibility: slot.run ? 1 : 0,
       });
-      if (slot.run && state.completed) nextRun(slot, index, nowMs);
+      if (slot.run && state.completed) loadNextRun(slot, index, slot.generation + 1, nowMs);
     });
     renderer.render(scene, camera);
   }

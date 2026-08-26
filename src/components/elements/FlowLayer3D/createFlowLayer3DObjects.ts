@@ -52,22 +52,28 @@ export function createFlowLayer3DObjects({
   const group = new THREE.Group();
   const connectors: THREE.Object3D[] = [];
 
-  paths.forEach((route) => {
-    const resolvedRoute = resolveFlowLayer3DPath(route, { aspectRatio, worldHeight });
-    if (!resolvedRoute) return;
-    const path = resolveFlowPath3D(resolvedRoute.path);
-    const createConnector = resolvedRoute.fading
-      ? createFadingConnector3DObject
-      : createConnector3DObject;
-    const connectorObject = createConnector({
-      ...connector,
-      fogEnabled: false,
-      path,
+  try {
+    paths.forEach((route) => {
+      const resolvedRoute = resolveFlowLayer3DPath(route, { aspectRatio, worldHeight });
+      if (!resolvedRoute) return;
+      const path = resolveFlowPath3D(resolvedRoute.path);
+      const createConnector = resolvedRoute.fading
+        ? createFadingConnector3DObject
+        : createConnector3DObject;
+      const connectorObject = createConnector({
+        ...connector,
+        fogEnabled: false,
+        path,
+      });
+      connectorObject.userData.flowLayer3DPathId = resolvedRoute.id;
+      connectors.push(connectorObject);
+      group.add(connectorObject);
     });
-    connectorObject.userData.flowLayer3DPathId = resolvedRoute.id;
-    connectors.push(connectorObject);
-    group.add(connectorObject);
-  });
+  } catch (error) {
+    disposeObjectResources(group);
+    group.clear();
+    throw error;
+  }
 
   return {
     connectors,
