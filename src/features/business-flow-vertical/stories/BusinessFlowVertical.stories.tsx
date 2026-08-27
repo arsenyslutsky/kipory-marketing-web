@@ -71,6 +71,11 @@ const meta = {
       description: 'Stroke opacity of the four central pillar icons.',
       table: { category: 'Central Nodes' },
     },
+    nodeProgressMode: {
+      control: 'inline-radio',
+      options: ['bar', 'outline'],
+      table: { category: 'Central Nodes' },
+    },
     gradientStartColor: {
       control: 'color',
       table: { category: 'Central Nodes' },

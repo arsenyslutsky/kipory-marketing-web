@@ -39,6 +39,11 @@ const meta = {
       control: { type: 'range', min: 24, max: 80, step: 1 },
       table: { category: 'Nodes' },
     },
+    nodeProgressMode: {
+      control: 'inline-radio',
+      options: ['bar', 'outline'],
+      table: { category: 'Nodes' },
+    },
     strokeWidth: {
       control: { type: 'range', min: 0.5, max: 5, step: 0.25 },
       table: { category: 'Nodes' },

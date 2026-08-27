@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
+import { businessFlowVerticalHomepageProps } from '../presets';
 import { BusinessFlowVertical } from './BusinessFlowVertical';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
@@ -121,6 +122,17 @@ it('maps its public color to every node stroke without changing central or satel
   expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
   expect(capturedNodes?.slice(0, 4).every((node) => node.iconColor === '#222222')).toBe(true);
   expect(capturedNodes?.slice(4).every((node) => node.iconColor === '#111111')).toBe(true);
+});
+
+it('renders homepage node processing progress as bars', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(<BusinessFlowVertical {...businessFlowVerticalHomepageProps} />);
+
+  expect(capturedNodeStyle?.progressMode).toBe('bar');
 });
 
 it('preserves independent beam trail and head-glow controls', () => {

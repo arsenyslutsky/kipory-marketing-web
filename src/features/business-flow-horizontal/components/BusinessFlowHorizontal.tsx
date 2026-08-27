@@ -4,6 +4,7 @@ import {
   FlowLayer3D,
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
+import type { Node3DProgressMode } from '@/components/elements/Node3D';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -35,6 +36,7 @@ export type BusinessFlowHorizontalProps = {
   gridOpacity?: number;
   height?: CSSProperties['height'];
   iconSize?: number;
+  nodeProgressMode?: Node3DProgressMode;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
@@ -108,6 +110,7 @@ export function BusinessFlowHorizontal({
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
+  nodeProgressMode = 'outline',
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
@@ -155,11 +158,11 @@ export function BusinessFlowHorizontal({
     outlineOpacity: 0,
     outlineWidth: 1,
     progressBarHeight: 15,
-    progressMode: 'outline',
+    progressMode: nodeProgressMode,
     progressPadding: 1,
     sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
     sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
-  }), []);
+  }), [nodeProgressMode]);
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,

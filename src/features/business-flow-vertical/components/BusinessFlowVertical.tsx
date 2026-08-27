@@ -7,6 +7,7 @@ import {
   type FlowLayer3DBeamSource,
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
+import type { Node3DProgressMode } from '@/components/elements/Node3D';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   businessFlowVerticalCentralNodes,
@@ -55,6 +56,7 @@ export type BusinessFlowVerticalProps = {
   maxConcurrentBeams?: number;
   numberOfNodesBottom?: number;
   numberOfNodesTop?: number;
+  nodeProgressMode?: Node3DProgressMode;
   auxiliaryNodeSpacing?: number;
   showContinuationConnectors?: boolean;
   strokeWidth?: number;
@@ -154,6 +156,7 @@ export function BusinessFlowVertical({
   maxConcurrentBeams = 24,
   numberOfNodesBottom = 10,
   numberOfNodesTop = 10,
+  nodeProgressMode = 'outline',
   auxiliaryNodeSpacing = 1,
   showContinuationConnectors = false,
   strokeWidth = 5,
@@ -207,11 +210,11 @@ export function BusinessFlowVertical({
     outlineOpacity: 0,
     outlineWidth: 1,
     progressBarHeight: 15,
-    progressMode: 'outline',
+    progressMode: nodeProgressMode,
     progressPadding: 1,
     sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
     sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
-  }), [gradient]);
+  }), [gradient, nodeProgressMode]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
   const paths = useMemo(
     () => createBusinessFlowVerticalPaths(satellitePoints, showContinuationConnectors)

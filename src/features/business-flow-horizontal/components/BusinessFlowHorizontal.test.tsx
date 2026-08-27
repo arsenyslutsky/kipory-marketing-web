@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
+import { businessFlowHorizontalHomepageProps } from '../presets';
 import { BusinessFlowHorizontal } from './BusinessFlowHorizontal';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
@@ -66,6 +67,12 @@ it('maps its public color to every node stroke without changing the role fill co
     .toBe(true);
   expect(capturedNodes?.filter((node) => !node.id.startsWith('terminal')).every((node) => node.iconColor === '#222222'))
     .toBe(true);
+});
+
+it('renders homepage node processing progress as bars', () => {
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+
+  expect(capturedNodeStyle?.progressMode).toBe('bar');
 });
 
 it('passes current reduced-motion preference to the shared layer and cleans up its listener', () => {
