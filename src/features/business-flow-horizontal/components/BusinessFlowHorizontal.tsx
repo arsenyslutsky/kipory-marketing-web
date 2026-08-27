@@ -1,41 +1,21 @@
 'use client';
 
 import {
-  PillarIcon,
-  PillarSurroundingIcon,
-  type PillarIconName,
-  type PillarSurroundingIconName,
-} from '@/features/business-flow-vertical';
-import { FlowLayer3D } from '@/components/elements/FlowLayer3D';
+  FlowLayer3D,
+  type FlowLayer3DNodeStyle,
+} from '@/components/elements/FlowLayer3D';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  businessFlowHorizontalLayoutNodes,
+  createBusinessFlowHorizontalNodes,
+  type BusinessFlowHorizontalLayoutNode,
+} from '../nodes';
 import {
   businessFlowHorizontalPaths,
   createBusinessFlowHorizontalBeamSource,
 } from '../routes';
 import styles from './BusinessFlowHorizontal.module.css';
-
-type FlowNode = {
-  delay: number;
-  icon: PillarIconName | PillarSurroundingIconName;
-  id: string;
-  kind: 'collector' | 'relay' | 'terminal';
-  x: number;
-  y: number;
-};
-
-const nodes: FlowNode[] = [
-  { id: 'terminal-1', kind: 'terminal', icon: 'download', x: 37, y: 59, delay: 2.68 },
-  { id: 'terminal-2', kind: 'terminal', icon: 'profile', x: 37, y: 155, delay: 2.76 },
-  { id: 'terminal-3', kind: 'terminal', icon: 'profile-alt', x: 37, y: 251, delay: 2.72 },
-  { id: 'terminal-4', kind: 'terminal', icon: 'download', x: 37, y: 357, delay: 2.8 },
-  { id: 'terminal-5', kind: 'terminal', icon: 'profile', x: 37, y: 453, delay: 2.76 },
-  { id: 'terminal-6', kind: 'terminal', icon: 'profile-alt', x: 37, y: 549, delay: 2.84 },
-  { id: 'relay-1', kind: 'relay', icon: 'server', x: 143, y: 107, delay: 1.68 },
-  { id: 'relay-2', kind: 'relay', icon: 'graph', x: 143, y: 304, delay: 1.74 },
-  { id: 'relay-3', kind: 'relay', icon: 'vector', x: 143, y: 501, delay: 1.8 },
-  { id: 'collector', kind: 'collector', icon: 'intelligence', x: 248, y: 304, delay: 0.68 },
-];
 
 export type BusinessFlowHorizontalProps = {
   auxiliaryIconFillColor?: string;
@@ -68,7 +48,6 @@ type IllustrationStyle = CSSProperties & {
   '--camera-grid-density': string;
   '--camera-grid-opacity': string;
   '--camera-height': string;
-  '--camera-icon-size': string;
   '--camera-width': string;
 };
 
@@ -83,7 +62,7 @@ function cssSize(value: CSSProperties['width']): string {
   return value ?? 'auto';
 }
 
-function nodePosition(node: FlowNode, resolvedSpeed: number): PositionedStyle {
+function nodePosition(node: BusinessFlowHorizontalLayoutNode, resolvedSpeed: number): PositionedStyle {
   return {
     '--camera-delay': `${node.delay / resolvedSpeed}s`,
     '--camera-x': `${(node.x / 320) * 100}%`,
@@ -153,6 +132,32 @@ export function BusinessFlowHorizontal({
     () => createBusinessFlowHorizontalBeamSource(resolvedSpeed),
     [resolvedSpeed],
   );
+  const nodes = useMemo(() => createBusinessFlowHorizontalNodes({
+    auxiliaryIconColor: auxiliaryIconFillColor,
+    centralIconColor: centralIconFillColor,
+    centralIconStrokeOpacity,
+    iconSize,
+    strokeWidth,
+  }), [
+    auxiliaryIconFillColor,
+    centralIconFillColor,
+    centralIconStrokeOpacity,
+    iconSize,
+    strokeWidth,
+  ]);
+  const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    assetBasePath: '/assets/nodes',
+    frontGradient: { angle: 117, start: '#066b43', mid: '#03492b', end: '#052f24' },
+    mode: 'dark',
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    progressBarHeight: 15,
+    progressMode: 'outline',
+    progressPadding: 1,
+    sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
+    sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
+  }), []);
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,
@@ -167,7 +172,6 @@ export function BusinessFlowHorizontal({
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),
     '--camera-height': cssSize(height),
-    '--camera-icon-size': `${iconSize}px`,
     '--camera-width': cssSize(width),
   };
 
@@ -183,12 +187,14 @@ export function BusinessFlowHorizontal({
         beamSource={beamSource}
         className={styles.flowLayer}
         connector={connector}
+        nodes={nodes}
+        nodeStyle={nodeStyle}
         paths={businessFlowHorizontalPaths}
         reducedMotion={reducedMotion}
       />
 
       <div className={styles.burstLayer} aria-hidden="true">
-        {nodes.map((node) => (
+        {businessFlowHorizontalLayoutNodes.map((node) => (
           <span
             className={styles.nodeBurst}
             key={node.id}
@@ -196,34 +202,6 @@ export function BusinessFlowHorizontal({
           >
             <span className={styles.nodeBurstGlow} />
             <span className={styles.nodeBurstCore} />
-          </span>
-        ))}
-      </div>
-
-      <div className={styles.iconLayer} aria-hidden="true">
-        {nodes.map((node) => (
-          <span
-            className={`${styles.iconNode} ${styles[`${node.kind}Node`]}`}
-            key={node.id}
-            style={nodePosition(node, resolvedSpeed)}
-          >
-            {node.kind === 'terminal' ? (
-              <PillarSurroundingIcon
-                className={styles.surroundingIcon}
-                fill={auxiliaryIconFillColor}
-                name={node.icon as PillarSurroundingIconName}
-                strokeWidth={strokeWidth / 4}
-              />
-            ) : (
-              <PillarIcon
-                className={styles.pillarIcon}
-                fillColor={centralIconFillColor}
-                fillMode="black"
-                name={node.icon as PillarIconName}
-                strokeOpacity={centralIconStrokeOpacity}
-                strokeWidth={strokeWidth}
-              />
-            )}
           </span>
         ))}
       </div>

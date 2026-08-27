@@ -22,8 +22,7 @@
 }
 
 .flowLayer,
-.burstLayer,
-.iconLayer {
+.burstLayer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -40,15 +39,11 @@
   pointer-events: none;
 }
 
-.nodeBurst,
-.iconNode {
+.nodeBurst {
   position: absolute;
   left: var(--camera-x);
   top: var(--camera-y);
   transform: translate(-50%, -50%);
-}
-
-.nodeBurst {
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 50%;
@@ -90,36 +85,6 @@
     0 0 .9rem .32rem color-mix(in srgb, var(--camera-beam) 88%, transparent);
   animation-name: camera-node-burst-core;
   mix-blend-mode: screen;
-}
-
-.iconLayer {
-  z-index: 3;
-  pointer-events: none;
-}
-
-.iconNode {
-  display: grid;
-  place-items: center;
-  color: var(--camera-color);
-}
-
-.pillarIcon {
-  width: var(--camera-icon-size);
-  height: var(--camera-icon-size);
-  overflow: visible;
-  filter: drop-shadow(0 0 1.75rem color-mix(in srgb, var(--camera-color) 24%, transparent));
-}
-
-.collectorNode .pillarIcon {
-  width: calc(var(--camera-icon-size) * 1.18);
-  height: calc(var(--camera-icon-size) * 1.18);
-}
-
-.surroundingIcon {
-  width: 1.5rem;
-  height: 1.75rem;
-  fill: none;
-  opacity: .72;
 }
 
 .motionDisabled .burstLayer {
@@ -170,9 +135,5 @@
 @media (prefers-reduced-motion: reduce) {
   .burstLayer {
     display: none;
-  }
-
-  .pillarIcon {
-    filter: none;
   }
 }

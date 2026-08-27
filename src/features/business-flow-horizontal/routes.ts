@@ -1,4 +1,8 @@
 import type { FlowLayer3DBeamSource, FlowLayer3DPath } from '@/components/elements/FlowLayer3D';
+import {
+  businessFlowHorizontalLayoutNodeById,
+  type BusinessFlowHorizontalLayoutNode,
+} from './nodes';
 
 type BusinessFlowHorizontalRoute = FlowLayer3DPath & {
   delay: number;
@@ -11,6 +15,11 @@ function point(x: number, y: number) {
   return [x / 320, y / 608] as const;
 }
 
+function nodePoint(id: BusinessFlowHorizontalLayoutNode['id']) {
+  const node = businessFlowHorizontalLayoutNodeById[id];
+  return point(node.x, node.y);
+}
+
 const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'aux-top',
@@ -19,7 +28,7 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
       point(302, 244),
       point(302, 282),
       point(282, 282),
-      point(248, 304),
+      nodePoint('collector'),
     ],
     curve,
     delay: 0,
@@ -27,7 +36,7 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   },
   {
     id: 'aux-middle',
-    points: [point(324, 304), point(282, 304), point(248, 304)],
+    points: [point(324, 304), point(282, 304), nodePoint('collector')],
     delay: 0.1,
     short: true,
   },
@@ -38,7 +47,7 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
       point(302, 364),
       point(302, 326),
       point(282, 326),
-      point(248, 304),
+      nodePoint('collector'),
     ],
     curve,
     delay: 0.2,
@@ -47,31 +56,31 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'collector-relay-top',
     points: [
-      point(248, 304),
+      nodePoint('collector'),
       point(214, 282),
       point(190, 282),
       point(190, 107),
       point(170, 107),
-      point(143, 107),
+      nodePoint('relay-1'),
     ],
     curve,
     delay: 0.72,
   },
   {
     id: 'collector-relay-middle',
-    points: [point(248, 304), point(214, 304), point(170, 304), point(143, 304)],
+    points: [nodePoint('collector'), point(214, 304), point(170, 304), nodePoint('relay-2')],
     delay: 0.78,
     short: true,
   },
   {
     id: 'collector-relay-bottom',
     points: [
-      point(248, 304),
+      nodePoint('collector'),
       point(214, 326),
       point(190, 326),
       point(190, 501),
       point(170, 501),
-      point(143, 501),
+      nodePoint('relay-3'),
     ],
     curve,
     delay: 0.84,
@@ -79,12 +88,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-top-terminal-1',
     points: [
-      point(143, 107),
+      nodePoint('relay-1'),
       point(116, 92),
       point(90, 92),
       point(90, 59),
       point(58, 59),
-      point(37, 59),
+      nodePoint('terminal-1'),
     ],
     curve,
     delay: 1.72,
@@ -92,12 +101,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-top-terminal-2',
     points: [
-      point(143, 107),
+      nodePoint('relay-1'),
       point(116, 122),
       point(90, 122),
       point(90, 155),
       point(58, 155),
-      point(37, 155),
+      nodePoint('terminal-2'),
     ],
     curve,
     delay: 1.8,
@@ -105,12 +114,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-middle-terminal-1',
     points: [
-      point(143, 304),
+      nodePoint('relay-2'),
       point(116, 289),
       point(90, 289),
       point(90, 251),
       point(58, 251),
-      point(37, 251),
+      nodePoint('terminal-3'),
     ],
     curve,
     delay: 1.76,
@@ -118,12 +127,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-middle-terminal-2',
     points: [
-      point(143, 304),
+      nodePoint('relay-2'),
       point(116, 319),
       point(90, 319),
       point(90, 357),
       point(58, 357),
-      point(37, 357),
+      nodePoint('terminal-4'),
     ],
     curve,
     delay: 1.84,
@@ -131,12 +140,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-bottom-terminal-1',
     points: [
-      point(143, 501),
+      nodePoint('relay-3'),
       point(116, 486),
       point(90, 486),
       point(90, 453),
       point(58, 453),
-      point(37, 453),
+      nodePoint('terminal-5'),
     ],
     curve,
     delay: 1.8,
@@ -144,12 +153,12 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
   {
     id: 'relay-bottom-terminal-2',
     points: [
-      point(143, 501),
+      nodePoint('relay-3'),
       point(116, 516),
       point(90, 516),
       point(90, 549),
       point(58, 549),
-      point(37, 549),
+      nodePoint('terminal-6'),
     ],
     curve,
     delay: 1.88,

@@ -1,33 +1,53 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
+import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
 import { BusinessFlowHorizontal } from './BusinessFlowHorizontal';
+
+let capturedNodes: readonly FlowLayer3DNode[] | undefined;
+let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
     paths,
     beamSource,
+    nodes,
+    nodeStyle,
     reducedMotion,
   }: {
     paths: unknown[];
     beamSource: { slots: number };
+    nodes?: readonly FlowLayer3DNode[];
+    nodeStyle?: FlowLayer3DNodeStyle;
     reducedMotion?: boolean;
-  }) => (
-    <div
-      data-testid="flow-layer"
-      data-paths={paths.length}
-      data-reduced-motion={String(reducedMotion)}
-      data-slots={beamSource.slots}
-    />
-  ),
+  }) => {
+    capturedNodes = nodes;
+    capturedNodeStyle = nodeStyle;
+    return (
+      <div
+        data-testid="flow-layer"
+        data-paths={paths.length}
+        data-reduced-motion={String(reducedMotion)}
+        data-slots={beamSource.slots}
+      />
+    );
+  },
 }));
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  capturedNodes = undefined;
+  capturedNodeStyle = undefined;
+  vi.unstubAllGlobals();
+});
 
-it('renders one shared layer and retains its DOM icon composition', () => {
-  render(<BusinessFlowHorizontal />);
+it('renders one shared Node3D layer instead of DOM icon SVGs', () => {
+  const { container } = render(<BusinessFlowHorizontal />);
   expect(screen.getAllByTestId('flow-layer')).toHaveLength(1);
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-paths', '12');
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-slots', '12');
+  expect(capturedNodes).toHaveLength(10);
+  expect(capturedNodes?.find((node) => node.id === 'collector')).toMatchObject({ shape: 'hexagon' });
+  expect(capturedNodeStyle).toMatchObject({ assetBasePath: '/assets/nodes' });
+  expect(container.querySelectorAll('svg')).toHaveLength(0);
   expect(screen.getByRole('img', { name: /Horizontal business flow/i })).toBeInTheDocument();
 });
 
