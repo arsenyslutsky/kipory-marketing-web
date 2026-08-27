@@ -7,7 +7,10 @@ import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import type { SignalFlowTheme } from '@/features/business-flow-3d/types';
-import type { Node3DProgressMode, Node3DShape } from './types';
+import { styleNode3DIconSvg } from './styleNode3DIconSvg';
+import type { Node3DIconFillMode, Node3DProgressMode, Node3DResolvedGradient, Node3DShape } from './types';
+
+export type { Node3DResolvedGradient } from './types';
 
 const svgAssetMarkupCache = new Map<string, Promise<string>>();
 const gradientTextureCache = new WeakMap<THREE.WebGLRenderer, Map<string, THREE.CanvasTexture>>();
@@ -22,13 +25,6 @@ function loadSvgAssetMarkup(url: string) {
   svgAssetMarkupCache.set(url, request);
   return request;
 }
-
-export type Node3DResolvedGradient = {
-  angle: number;
-  end: string;
-  mid: string;
-  start: string;
-};
 
 export type Node3DGlowState = {
   value: number;
@@ -49,7 +45,12 @@ export type CreateNode3DObjectOptions = {
   frontGradient: Node3DResolvedGradient;
   height: number;
   icon: string;
+  iconColor?: string;
+  iconFillMode?: Node3DIconFillMode;
+  iconGradient?: Node3DResolvedGradient;
   iconOpacity: number;
+  iconStrokeOpacity?: number;
+  iconStrokeWidth?: number;
   id: string;
   initialGlowIntensity?: number;
   initialProgress?: number;
@@ -79,7 +80,12 @@ export function createNode3DObject({
   frontGradient,
   height,
   icon,
+  iconColor,
+  iconFillMode,
+  iconGradient,
   iconOpacity,
+  iconStrokeOpacity,
+  iconStrokeWidth,
   id,
   initialGlowIntensity = 0,
   initialProgress,
@@ -110,6 +116,9 @@ export function createNode3DObject({
   const resolvedProgressBarHeight = THREE.MathUtils.clamp(Math.round(progressBarHeight), 0, 100);
   const nodeCornerRadiusPixels = THREE.MathUtils.clamp(nodeCornerRadius, 0, 50);
   const baseIconOpacity = THREE.MathUtils.clamp(iconOpacity, 0, 1);
+  const resolvedIconColor = iconColor ?? palette.icon;
+  const resolvedIconStrokeOpacity = iconStrokeOpacity ?? 1;
+  const resolvedIconStrokeWidth = iconStrokeWidth;
 
   const radialSidesForShape = (nodeShape: Node3DShape) => nodeShape === 'circle'
     ? 64
@@ -401,7 +410,7 @@ export function createNode3DObject({
       width: `${viewportWidth}px`,
       height: `${viewportHeight}px`,
       opacity: String(baseIconOpacity),
-      backgroundColor: palette.icon,
+      backgroundColor: resolvedIconColor,
       maskImage: `url("${imageUrl}")`,
       maskSize: 'contain',
       maskPosition: 'center',
@@ -431,16 +440,16 @@ export function createNode3DObject({
         display: 'block',
         width: '100%',
         height: '100%',
-        color: palette.icon,
+        color: resolvedIconColor,
         overflow: 'visible',
       });
-      svg.querySelectorAll<SVGElement>('[stroke]').forEach((element) => {
-        if (element.getAttribute('stroke') !== 'none') element.setAttribute('stroke', 'currentColor');
-        element.setAttribute('shape-rendering', 'geometricPrecision');
-      });
-      svg.querySelectorAll<SVGElement>('[fill]').forEach((element) => {
-        if (element.getAttribute('fill') !== 'none') element.setAttribute('fill', 'currentColor');
-      });
+      styleNode3DIconSvg(svg, {
+        color: resolvedIconColor,
+        fillMode: iconFillMode ?? 'solid',
+        gradient: iconGradient,
+        strokeOpacity: resolvedIconStrokeOpacity,
+        strokeWidth: resolvedIconStrokeWidth,
+      }, `${id}-icon-gradient`);
       image.style.backgroundColor = 'transparent';
       image.style.maskImage = 'none';
       image.style.setProperty('-webkit-mask-image', 'none');

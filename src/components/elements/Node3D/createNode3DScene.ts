@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS3DRenderer, type CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { defaultColors } from '@/features/business-flow-3d/config';
-import { createNode3DObject, type Node3DResolvedGradient } from './createNode3DObject';
+import { createNode3DObject } from './createNode3DObject';
 import type {
+  Node3DResolvedGradient,
   Node3DSceneController,
   Node3DSceneOptions,
   Node3DShape,
@@ -44,7 +45,10 @@ export function createNode3DScene(options: Node3DSceneOptions): Node3DSceneContr
     frontGradientStartColor,
     glowIntensity,
     icon,
+    iconColor,
     iconOpacity,
+    iconStrokeOpacity,
+    iconStrokeWidth,
     interactive,
     mode,
     nodeCornerRadius,
@@ -214,7 +218,10 @@ export function createNode3DScene(options: Node3DSceneOptions): Node3DSceneContr
     frontGradient,
     height: nodeHeight,
     icon,
+    iconColor,
     iconOpacity,
+    iconStrokeOpacity,
+    iconStrokeWidth,
     id: 'node-3d-preview',
     initialGlowIntensity: resolvedGlowIntensity,
     initialProgress: showProgress ? resolvedProgress : undefined,
