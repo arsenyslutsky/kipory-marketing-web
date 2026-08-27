@@ -3,6 +3,7 @@ import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from 
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 import { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
+import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import { resolveFlowLayer3DBeamStyle } from './resolveFlowLayer3DBeamStyle';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
@@ -29,17 +30,6 @@ type BeamSlot = {
   run: FlowLayer3DBeamRun | null;
   startedAtMs: number;
 };
-
-function disposeObjectResources(root: THREE.Object3D) {
-  root.traverse((object) => {
-    if (!(object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points || object instanceof THREE.Sprite)) {
-      return;
-    }
-    object.geometry?.dispose();
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-    materials.forEach((material) => material?.dispose());
-  });
-}
 
 function createRenderer(canvas: HTMLCanvasElement) {
   let renderer: THREE.WebGLRenderer | undefined;
@@ -259,7 +249,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     connectorObjects?.destroy();
     if (connectorObjects) scene.remove(connectorObjects.group);
     beamSlots.forEach(({ beam }) => {
-      disposeObjectResources(beam.group);
+      disposeFlowLayer3DObjectResources(beam.group);
       scene.remove(beam.group);
     });
     flareTexture?.dispose();

@@ -1,6 +1,8 @@
 export { FlowLayer3D } from './FlowLayer3D';
 export { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
 export { createFlowLayer3DObjects } from './createFlowLayer3DObjects';
+export { createFlowLayer3DNodes } from './createFlowLayer3DNodes';
+export type { FlowLayer3DNodes } from './createFlowLayer3DNodes';
 export { createFlowLayer3DScene } from './createFlowLayer3DScene';
 export { normalizedPointToWorld, resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 export { resolveFlowLayer3DNode } from './resolveFlowLayer3DNode';
