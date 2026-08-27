@@ -2,8 +2,14 @@ import Link from 'next/link';
 import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { GlowLink } from '@/components/ui/GlowLink';
-import { BusinessFlowVertical, businessFlowVerticalProps } from '@/features/business-flow-vertical';
-import { BusinessFlow3D, businessFlow3DProps } from '@/features/business-flow-3d';
+import {
+  BusinessFlowVertical,
+  businessFlowVerticalHomepageProps,
+} from '@/features/business-flow-vertical';
+import {
+  BusinessFlow3D,
+  businessFlow3DHomepageProps,
+} from '@/features/business-flow-3d';
 import styles from './marketing.module.css';
 
 const capabilities = [
@@ -56,7 +62,7 @@ export default function HomePage() {
     <HeroScrollEffects id="main-content" className={styles.main} scrollRange={700}>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroVisual} aria-hidden="true">
-          <BusinessFlow3D {...businessFlow3DProps} />
+          <BusinessFlow3D {...businessFlow3DHomepageProps} />
         </div>
         <div className={styles.heroShade} />
         <div className={`site-container ${styles.heroInner}`}>
@@ -106,7 +112,7 @@ export default function HomePage() {
             </div>
             <div className={styles.capabilityVisual}>
               <BusinessFlowVertical
-                {...businessFlowVerticalProps}
+                {...businessFlowVerticalHomepageProps}
                 className={styles.pillarsIllustration}
               />
             </div>

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
-import { businessFlowHorizontalProps } from '../presets';
+import { businessFlowHorizontalHomepageProps } from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlowHorizontal',
@@ -84,10 +84,15 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowHorizontalProps,
+  args: businessFlowHorizontalHomepageProps,
 } satisfies Meta<typeof BusinessFlowHorizontal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Foundation: Story = {};
+
+export const CurrentNextjsApp: Story = {
+  name: 'Current Next.js App',
+  args: businessFlowHorizontalHomepageProps,
+};

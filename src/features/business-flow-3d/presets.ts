@@ -1,6 +1,6 @@
 import type { BusinessFlow3DProps } from './types';
 
-export const businessFlow3DProps = {
+export const businessFlow3DHomepageProps = {
   mode: 'dark',
   showInterface: false,
   interactive: false,

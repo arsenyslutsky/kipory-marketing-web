@@ -1,6 +1,6 @@
 import type { BusinessFlowVerticalProps } from './components/BusinessFlowVertical';
 
-export const businessFlowVerticalProps = {
+export const businessFlowVerticalHomepageProps = {
   auxiliaryIconFillColor: '#212121',
   beamColor: '#449c40',
   beamEmissionRandomness: 100,

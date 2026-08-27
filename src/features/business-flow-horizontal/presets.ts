@@ -1,6 +1,6 @@
 import type { BusinessFlowHorizontalProps } from './components/BusinessFlowHorizontal';
 
-export const businessFlowHorizontalProps = {
+export const businessFlowHorizontalHomepageProps = {
   auxiliaryIconFillColor: '#212121',
   beamColor: '#449c40',
   beamEnabled: true,

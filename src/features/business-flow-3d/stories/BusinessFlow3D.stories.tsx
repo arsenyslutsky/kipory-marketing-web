@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
 import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
-import { businessFlow3DProps } from '../presets';
+import { businessFlow3DHomepageProps } from '../presets';
 
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
@@ -319,7 +319,7 @@ export const Workflow1: Story = {
   name: 'Workflow 1',
   args: {
     ...darkNodeGradientArgs,
-    ...businessFlow3DProps,
+    ...businessFlow3DHomepageProps,
     interactive: true,
     showInterface: true,
     cameraPitch: 45,
@@ -327,4 +327,9 @@ export const Workflow1: Story = {
     cameraZoom: 1.4,
     emitterX: 5,
   },
+};
+
+export const CurrentNextjsApp: Story = {
+  name: 'Current Next.js App',
+  args: businessFlow3DHomepageProps,
 };
