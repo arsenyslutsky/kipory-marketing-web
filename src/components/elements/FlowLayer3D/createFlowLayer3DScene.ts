@@ -78,7 +78,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   scene.background = null;
   const camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 100);
   camera.position.set(0, 20, 0);
-  camera.up.set(0, 0, 1);
+  camera.up.set(0, 0, -1);
   camera.lookAt(0, 0, 0);
   const timer = new THREE.Timer();
   const beamSlots: BeamSlot[] = [];

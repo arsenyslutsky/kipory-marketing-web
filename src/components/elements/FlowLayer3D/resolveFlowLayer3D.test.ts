@@ -4,9 +4,9 @@ import { normalizedPointToWorld, resolveFlowLayer3DPath } from './resolveFlowLay
 describe('normalizedPointToWorld', () => {
   it('maps top-view coordinates into an aspect-correct X/Z plane', () => {
     expect(normalizedPointToWorld([0, 0], { aspectRatio: 2, worldHeight: 10 }))
-      .toEqual([-10, 0, 5]);
+      .toEqual([-10, 0, -5]);
     expect(normalizedPointToWorld([1, 1], { aspectRatio: 2, worldHeight: 10 }))
-      .toEqual([10, 0, -5]);
+      .toEqual([10, 0, 5]);
     expect(normalizedPointToWorld([0.5, 0.5], { aspectRatio: 2, worldHeight: 10 }))
       .toEqual([0, 0, 0]);
   });
@@ -23,7 +23,7 @@ describe('resolveFlowLayer3DPath', () => {
       path: {
         curve: 48,
         interpolation: 'linear',
-        points: [[-10, 0, 0], [0, 0, 0], [0, 0, -10]],
+        points: [[-10, 0, 0], [0, 0, 0], [0, 0, 10]],
       },
     });
   });

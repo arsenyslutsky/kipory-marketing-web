@@ -66,7 +66,7 @@ it('disposes the renderer when renderer configuration fails', () => {
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });
 
-it('projects a normalized top point above an asymmetric normalized bottom point', () => {
+it('projects normalized left and top points to the matching screen edges', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
     animationFrames.push(callback);
@@ -103,15 +103,24 @@ it('projects a normalized top point above an asymmetric normalized bottom point'
   const camera = renderer.render.mock.calls[0]?.[1] as THREE.OrthographicCamera | undefined;
   if (!camera) throw new Error('Expected the orthographic camera to render.');
   camera.updateMatrixWorld();
-  const top = new THREE.Vector3(...normalizedPointToWorld([0.2, 0.15], {
+  const left = new THREE.Vector3(...normalizedPointToWorld([0.15, 0.5], {
     aspectRatio: 0.5,
     worldHeight: 20,
   })).project(camera);
-  const bottom = new THREE.Vector3(...normalizedPointToWorld([0.8, 0.75], {
+  const right = new THREE.Vector3(...normalizedPointToWorld([0.75, 0.5], {
+    aspectRatio: 0.5,
+    worldHeight: 20,
+  })).project(camera);
+  const top = new THREE.Vector3(...normalizedPointToWorld([0.5, 0.15], {
+    aspectRatio: 0.5,
+    worldHeight: 20,
+  })).project(camera);
+  const bottom = new THREE.Vector3(...normalizedPointToWorld([0.5, 0.75], {
     aspectRatio: 0.5,
     worldHeight: 20,
   })).project(camera);
 
+  expect(left.x).toBeLessThan(right.x);
   expect(top.y).toBeGreaterThan(bottom.y);
 
   controller.destroy();
@@ -232,7 +241,7 @@ it('renders a completed path before assigning the next run and keeps the next ru
 
   expect(setPath).toHaveBeenCalledOnce();
   expect(beam.uniforms.uProgress.value).toBeCloseTo(0.016);
-  expect(beam.position.z).toBeCloseTo(-5);
+  expect(beam.position.z).toBeCloseTo(5);
 
   controller.destroy();
 });

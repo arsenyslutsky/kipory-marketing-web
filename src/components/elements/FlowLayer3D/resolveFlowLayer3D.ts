@@ -11,7 +11,7 @@ export function normalizedPointToWorld(
   { aspectRatio, worldHeight = 20 }: FlowLayer3DFrame,
 ): FlowPath3DPoint {
   const worldWidth = worldHeight * Math.max(aspectRatio, 0.0001);
-  return [(x - 0.5) * worldWidth, 0, (0.5 - y) * worldHeight];
+  return [(x - 0.5) * worldWidth, 0, (y - 0.5) * worldHeight];
 }
 
 export function resolveFlowLayer3DPath(
