@@ -1,7 +1,61 @@
 import type { FlowPath3D, FlowPath3DPoint } from '../FlowPath3D/types';
 import type { Connector3DStroke } from '../Connector3D/types';
+import type {
+  Node3DIconFillMode,
+  Node3DMode,
+  Node3DProgressMode,
+  Node3DResolvedGradient,
+  Node3DShape,
+} from '../Node3D/types';
 
 export type FlowLayer3DPoint = readonly [x: number, y: number];
+
+export type FlowLayer3DNode = {
+  cardDepth: number;
+  glowIntensity?: number;
+  height: number;
+  icon: string;
+  iconColor: string;
+  iconFillMode?: Node3DIconFillMode;
+  iconGradient?: Node3DResolvedGradient;
+  iconOpacity: number;
+  iconStrokeOpacity?: number;
+  iconStrokeWidth?: number;
+  id: string;
+  position: FlowLayer3DPoint;
+  progress?: number;
+  scale?: number;
+  shape: Node3DShape;
+  tier: number;
+  width: number;
+};
+
+export type FlowLayer3DNodeStyle = {
+  assetBasePath: string;
+  frontGradient: Node3DResolvedGradient;
+  mode: Node3DMode;
+  nodeCornerRadius: number;
+  outlineOpacity: number;
+  outlineWidth: number;
+  progressBarHeight: number;
+  progressMode: Node3DProgressMode;
+  progressPadding: number;
+  sideXGradient: Node3DResolvedGradient;
+  sideZGradient: Node3DResolvedGradient;
+};
+
+export type FlowLayer3DNodeFrame = {
+  aspectRatio: number;
+  viewportHeight: number;
+  worldHeight?: number;
+};
+
+export type ResolvedFlowLayer3DNode = Omit<FlowLayer3DNode, 'position' | 'width' | 'cardDepth' | 'height'> & {
+  cardDepth: number;
+  height: number;
+  position: readonly [x: number, z: number];
+  width: number;
+};
 
 export type FlowLayer3DFrame = {
   aspectRatio: number;
