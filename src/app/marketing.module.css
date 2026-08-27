@@ -45,16 +45,16 @@
 .capabilityCard:hover .capabilityTitlePrimary { color: var(--accent); }
 .capabilityTitleSecondary { margin-top: .15em; color: var(--type-color-accent); font-family: var(--type-accent-family); font-size: var(--type-accent-size-supporting); font-weight: var(--type-accent-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-accent-tracking); text-transform: lowercase; }
 .capabilityCardCopy p { max-width: 520px; margin: 12px 0 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); text-wrap: pretty; }
-.capabilityVisual, .capabilityVisualPlaceholder { min-height: 100%; display: grid; place-items: center; color: var(--type-color-control); background: rgba(255,255,255,.015); border: 1px solid var(--surface-alternate-line); }
+.capabilityVisual, .deliveryIllustration { min-height: 100%; display: grid; place-items: center; }
 .capabilityVisual { overflow: hidden; background: transparent; border: 0; }
 .capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 75%; height: calc(100% - 10rem); max-width: 450px; margin-inline: 0; }
-.capabilityVisualPlaceholder span { font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); text-transform: uppercase; }
+.deliveryIllustration { min-width: 0; min-height: 38rem; overflow: hidden; }
 .systemSection { background: var(--ink); }
 .useCaseSection { padding-block: 60px; color: var(--type-color-alternate-primary); scroll-margin-top: 72px; }
 .useCaseLayout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
 .useCaseLayout .capabilityContent { grid-column: 2; grid-row: 1; }
 .useCaseLayout .capabilityContent .sectionTitle { width: 100%; }
-.useCaseLayout .capabilityVisualPlaceholder { grid-column: 1; grid-row: 1; }
+.useCaseLayout .deliveryIllustration { grid-column: 1; grid-row: 1; }
 .useCaseList { margin-top: 80px; }
 .useCaseList a { min-height: 4rem; padding-block: 12px; display: grid; grid-template-columns: 52px 1fr; gap: 0; align-items: center; border-bottom: 1px dashed var(--surface-alternate-line); }
 .useCaseList a:last-child { border-bottom: 0; }
@@ -113,10 +113,10 @@
   .sectionHeader, .useCaseHeader, .pageHeroGrid, .proseGrid, .contactGrid { grid-template-columns: 1fr; gap: 32px; }
   .capabilityLayout { grid-template-columns: 1fr; }
   .useCaseLayout .capabilityContent,
-  .useCaseLayout .capabilityVisualPlaceholder { grid-column: auto; grid-row: auto; }
+  .useCaseLayout .deliveryIllustration { grid-column: auto; grid-row: auto; }
   .capabilityContent .sectionTitle { width: 100%; }
   .capabilityCard { min-height: auto; }
-  .capabilityVisual, .capabilityVisualPlaceholder { min-height: 360px; }
+  .capabilityVisual, .deliveryIllustration { min-height: 360px; }
   .capabilityVisual { position: relative; }
   .capabilityVisual .pillarsIllustration { inset: 0; height: 100%; max-width: 100%; }
   .featureGrid { grid-template-columns: 1fr; }

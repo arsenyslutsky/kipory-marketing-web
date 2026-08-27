@@ -10,6 +10,10 @@ import {
   BusinessFlow3D,
   businessFlow3DHomepageProps,
 } from '@/features/business-flow-3d';
+import {
+  BusinessFlowHorizontal,
+  businessFlowHorizontalHomepageProps,
+} from '@/features/business-flow-horizontal';
 import styles from './marketing.module.css';
 
 const capabilities = [
@@ -147,8 +151,8 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className={styles.capabilityVisualPlaceholder} role="img" aria-label="Illustration placeholder">
-              <span aria-hidden="true">Illustration placeholder</span>
+            <div className={styles.deliveryIllustration}>
+              <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
             </div>
           </div>
         </div>
