@@ -34,9 +34,9 @@ const coloredPoints = {
 };
 
 const coloredRoutes: readonly (readonly PillarPoint[])[] = [
-  [[26, 50], [34, 50]],
-  [[46, 50], [54, 50]],
-  [[66, 50], [74, 50]],
+  [[20, 50], [26, 50], [34, 50], [40, 50]],
+  [[40, 50], [46, 50], [54, 50], [60, 50]],
+  [[60, 50], [66, 50], [74, 50], [80, 50]],
 ];
 
 const centralOrder: readonly CentralNode[] = ['server', 'graph', 'vector', 'intelligence'];
@@ -120,10 +120,12 @@ function routeToSatellite(point: PillarPoint): PillarPoint[] {
   const junctionY = (parentPoint[1] + point[1]) / 2;
 
   return [
+    parentPoint,
     [parentPoint[0], parentPoint[1] + direction * 3],
     [parentPoint[0], junctionY],
     [point[0], junctionY],
     [point[0], point[1] - direction * 2.5],
+    point,
   ];
 }
 
@@ -133,8 +135,8 @@ function continuationRoute(point: PillarPoint): PillarPoint[] {
   const canvasEdgeY = isTopNode ? 0 : 100;
 
   return isTopNode
-    ? [[point[0], canvasEdgeY], [point[0], nodeEdgeY]]
-    : [[point[0], nodeEdgeY], [point[0], canvasEdgeY]];
+    ? [[point[0], canvasEdgeY], [point[0], nodeEdgeY], point]
+    : [point, [point[0], nodeEdgeY], [point[0], canvasEdgeY]];
 }
 
 function satelliteParent(point: PillarPoint): CentralNode {

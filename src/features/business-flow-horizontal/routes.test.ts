@@ -10,10 +10,32 @@ it('preserves twelve connectors and the off-canvas entry', () => {
     id: 'aux-top',
     points: [
       [324 / 320, 244 / 608], [302 / 320, 244 / 608],
-      [302 / 320, 282 / 608], [282 / 320, 282 / 608],
+      [302 / 320, 282 / 608], [282 / 320, 282 / 608], [248 / 320, 304 / 608],
     ],
   });
   expect(businessFlowHorizontalPaths.at(-1)?.id).toBe('relay-bottom-terminal-2');
+});
+
+it('extends every attached connector beneath the center of its item', () => {
+  const endpoints = Object.fromEntries(businessFlowHorizontalPaths.map((path) => [
+    path.id,
+    [path.points[0], path.points.at(-1)],
+  ]));
+
+  expect(endpoints).toEqual({
+    'aux-top': [[324 / 320, 244 / 608], [248 / 320, 304 / 608]],
+    'aux-middle': [[324 / 320, 304 / 608], [248 / 320, 304 / 608]],
+    'aux-bottom': [[324 / 320, 364 / 608], [248 / 320, 304 / 608]],
+    'collector-relay-top': [[248 / 320, 304 / 608], [143 / 320, 107 / 608]],
+    'collector-relay-middle': [[248 / 320, 304 / 608], [143 / 320, 304 / 608]],
+    'collector-relay-bottom': [[248 / 320, 304 / 608], [143 / 320, 501 / 608]],
+    'relay-top-terminal-1': [[143 / 320, 107 / 608], [37 / 320, 59 / 608]],
+    'relay-top-terminal-2': [[143 / 320, 107 / 608], [37 / 320, 155 / 608]],
+    'relay-middle-terminal-1': [[143 / 320, 304 / 608], [37 / 320, 251 / 608]],
+    'relay-middle-terminal-2': [[143 / 320, 304 / 608], [37 / 320, 357 / 608]],
+    'relay-bottom-terminal-1': [[143 / 320, 501 / 608], [37 / 320, 453 / 608]],
+    'relay-bottom-terminal-2': [[143 / 320, 501 / 608], [37 / 320, 549 / 608]],
+  });
 });
 
 it('preserves staggering and scales the cycle by speed', () => {

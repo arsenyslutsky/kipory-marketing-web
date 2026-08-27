@@ -26,6 +26,28 @@ it('builds central, satellite, and continuation connectors', () => {
   expect(continued.filter((path) => path.fading)).toHaveLength(4);
 });
 
+it('extends central, satellite, and continuation connectors beneath their item centers', () => {
+  const paths = createBusinessFlowVerticalPaths(satellites, true);
+  const endpoints = Object.fromEntries(paths.map((path) => [
+    path.id,
+    [path.points[0], path.points.at(-1)],
+  ]));
+
+  expect(endpoints).toEqual({
+    'central-0': [[0.2, 0.5], [0.4, 0.5]],
+    'central-1': [[0.4, 0.5], [0.6, 0.5]],
+    'central-2': [[0.6, 0.5], [0.8, 0.5]],
+    'satellite-0': [[0.2, 0.5], [0.2, 0.18]],
+    'satellite-1': [[0.8, 0.5], [0.8, 0.18]],
+    'satellite-2': [[0.2, 0.5], [0.2, 0.82]],
+    'satellite-3': [[0.8, 0.5], [0.8, 0.82]],
+    'continuation-0': [[0.2, 0], [0.2, 0.18]],
+    'continuation-1': [[0.8, 0], [0.8, 0.18]],
+    'continuation-2': [[0.2, 1], [0.2, 0.82]],
+    'continuation-3': [[0.8, 1], [0.8, 0.82]],
+  });
+});
+
 it('orients fading continuations from the canvas edge toward each satellite', () => {
   const continuations = createBusinessFlowVerticalPaths(satellites, true)
     .filter((path) => path.fading);
