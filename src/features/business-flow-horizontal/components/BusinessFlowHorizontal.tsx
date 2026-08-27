@@ -2,16 +2,15 @@
 
 import {
   FlowLayer3D,
+  type FlowLayer3DArrival,
+  type FlowLayer3DArrivalEvent,
+  type FlowLayer3DBeamSource,
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
 import type { CSSProperties } from 'react';
-import { useEffect, useMemo, useState } from 'react';
-import {
-  businessFlowHorizontalLayoutNodes,
-  createBusinessFlowHorizontalNodes,
-  type BusinessFlowHorizontalLayoutNode,
-} from '../nodes';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createBusinessFlowHorizontalNodes } from '../nodes';
 import {
   businessFlowHorizontalPaths,
   createBusinessFlowHorizontalBeamSource,
@@ -21,9 +20,17 @@ import styles from './BusinessFlowHorizontal.module.css';
 export type BusinessFlowHorizontalProps = {
   auxiliaryIconFillColor?: string;
   beamColor?: string;
+  beamEmissionRandomness?: number;
   beamEnabled?: boolean;
+  beamHeadGlowBlur?: number;
+  beamHeadGlowOpacity?: number;
+  beamHeadGlowRadius?: number;
   beamHighlightColor?: string;
   beamSpeed?: number;
+  beamTrailLength?: number;
+  burstFadeTime?: number;
+  burstRadius?: number;
+  burstStrength?: number;
   centralIconFillColor?: string;
   centralIconStrokeOpacity?: number;
   className?: string;
@@ -36,16 +43,14 @@ export type BusinessFlowHorizontalProps = {
   gridOpacity?: number;
   height?: CSSProperties['height'];
   iconSize?: number;
+  maxConcurrentBeams?: number;
   nodeProgressMode?: Node3DProgressMode;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
 
 type IllustrationStyle = CSSProperties & {
-  '--camera-beam': string;
-  '--camera-beam-highlight': string;
   '--camera-color': string;
-  '--camera-flow-cycle': string;
   '--camera-grid-color': string;
   '--camera-grid-density': string;
   '--camera-grid-opacity': string;
@@ -53,23 +58,34 @@ type IllustrationStyle = CSSProperties & {
   '--camera-width': string;
 };
 
-type PositionedStyle = CSSProperties & {
-  '--camera-delay': string;
-  '--camera-x'?: string;
-  '--camera-y'?: string;
+type BurstStyle = CSSProperties & {
+  '--burst-color': string;
+  '--burst-core-fade-time': string;
+  '--burst-fade-time': string;
+  '--burst-highlight': string;
+  '--burst-radius': string;
+  '--burst-strength': string;
+};
+
+type BurstRecord = {
+  key: string;
+  point: FlowLayer3DArrival['point'];
+};
+
+type BurstContext = {
+  beamEnabled: boolean;
+  beamSource: FlowLayer3DBeamSource;
+  reducedMotion: boolean;
+};
+
+type BurstState = {
+  context: BurstContext;
+  records: BurstRecord[];
 };
 
 function cssSize(value: CSSProperties['width']): string {
   if (typeof value === 'number') return `${value}px`;
   return value ?? 'auto';
-}
-
-function nodePosition(node: BusinessFlowHorizontalLayoutNode, resolvedSpeed: number): PositionedStyle {
-  return {
-    '--camera-delay': `${node.delay / resolvedSpeed}s`,
-    '--camera-x': `${(node.x / 320) * 100}%`,
-    '--camera-y': `${(node.y / 608) * 100}%`,
-  };
 }
 
 function useReducedMotionPreference() {
@@ -95,9 +111,17 @@ function useReducedMotionPreference() {
 export function BusinessFlowHorizontal({
   auxiliaryIconFillColor = '#212121',
   beamColor = '#449c40',
+  beamEmissionRandomness = 100,
   beamEnabled = true,
+  beamHeadGlowBlur = 0,
+  beamHeadGlowOpacity = 1,
+  beamHeadGlowRadius = 0,
   beamHighlightColor = '#c9ebc7',
   beamSpeed = 1.4,
+  beamTrailLength = 0,
+  burstFadeTime = 920,
+  burstRadius = 32,
+  burstStrength = 1,
   centralIconFillColor = '#1d281d',
   centralIconStrokeOpacity = 0.52,
   className,
@@ -110,13 +134,13 @@ export function BusinessFlowHorizontal({
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
+  maxConcurrentBeams = 24,
   nodeProgressMode = 'outline',
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
   const reducedMotion = useReducedMotionPreference();
   const resolvedSpeed = Math.max(0.1, beamSpeed);
-  const cycleDuration = 5.2 / resolvedSpeed;
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
@@ -126,14 +150,30 @@ export function BusinessFlowHorizontal({
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
-    beamWidth: 1,
+    beamWidth: Math.max(1.25, connectorWidth * 1.4),
     enabled: beamEnabled,
     glowIntensity: 1,
-    trailLength: 0.38,
-  }), [beamColor, beamEnabled, beamHighlightColor]);
+    headGlowBlur: beamHeadGlowBlur,
+    headGlowOpacity: beamHeadGlowOpacity,
+    headGlowRadius: beamHeadGlowRadius,
+    trailLength: 0,
+  }), [
+    beamColor,
+    beamEnabled,
+    beamHeadGlowBlur,
+    beamHeadGlowOpacity,
+    beamHeadGlowRadius,
+    beamHighlightColor,
+    connectorWidth,
+  ]);
   const beamSource = useMemo(
-    () => createBusinessFlowHorizontalBeamSource(resolvedSpeed),
-    [resolvedSpeed],
+    () => createBusinessFlowHorizontalBeamSource({
+      emissionRandomness: beamEmissionRandomness,
+      maxConcurrentBeams,
+      speed: resolvedSpeed,
+      trailLengthInIllustrationUnits: beamTrailLength,
+    }),
+    [beamEmissionRandomness, beamTrailLength, maxConcurrentBeams, resolvedSpeed],
   );
   const nodes = useMemo(() => createBusinessFlowHorizontalNodes({
     auxiliaryIconColor: auxiliaryIconFillColor,
@@ -163,21 +203,55 @@ export function BusinessFlowHorizontal({
     sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
     sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
   }), [nodeProgressMode]);
+  const burstContext = useMemo<BurstContext>(() => ({
+    beamEnabled,
+    beamSource,
+    reducedMotion,
+  }), [beamEnabled, beamSource, reducedMotion]);
+  const [burstState, setBurstState] = useState<BurstState>(() => ({
+    context: burstContext,
+    records: [],
+  }));
+  const burstRecords = burstState.context === burstContext ? burstState.records : [];
+  const updateBurstRecords = useCallback((
+    update: (current: BurstRecord[]) => BurstRecord[],
+  ) => {
+    setBurstState((current) => ({
+      context: burstContext,
+      records: update(current.context === burstContext ? current.records : []),
+    }));
+  }, [burstContext]);
+  const onArrival = useCallback(({ arrival, generation, runId }: FlowLayer3DArrivalEvent) => {
+    if (!beamEnabled || reducedMotion) return;
+    const key = `${runId}:${generation}:${arrival.id}`;
+    updateBurstRecords((current) => current.some((record) => record.key === key)
+      ? current
+      : [...current, { key, point: arrival.point }]);
+  }, [beamEnabled, reducedMotion, updateBurstRecords]);
+  const finishBurst = useCallback((key: string) => {
+    updateBurstRecords((current) => current.filter((record) => record.key !== key));
+  }, [updateBurstRecords]);
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,
     className,
   ].filter(Boolean).join(' ');
   const style: IllustrationStyle = {
-    '--camera-beam': beamColor,
-    '--camera-beam-highlight': beamHighlightColor,
     '--camera-color': color,
-    '--camera-flow-cycle': `${cycleDuration}s`,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),
     '--camera-height': cssSize(height),
     '--camera-width': cssSize(width),
+  };
+  const resolvedBurstFadeTime = Math.max(1, burstFadeTime);
+  const burstStyle: BurstStyle = {
+    '--burst-color': beamColor,
+    '--burst-core-fade-time': `${resolvedBurstFadeTime * (640 / 920)}ms`,
+    '--burst-fade-time': `${resolvedBurstFadeTime}ms`,
+    '--burst-highlight': beamHighlightColor,
+    '--burst-radius': `${Math.max(0, burstRadius)}px`,
+    '--burst-strength': String(Math.max(0, burstStrength)),
   };
 
   return (
@@ -194,18 +268,27 @@ export function BusinessFlowHorizontal({
         connector={connector}
         nodes={nodes}
         nodeStyle={nodeStyle}
+        onArrival={onArrival}
         paths={businessFlowHorizontalPaths}
         reducedMotion={reducedMotion}
       />
 
       <div className={styles.burstLayer} aria-hidden="true">
-        {businessFlowHorizontalLayoutNodes.map((node) => (
+        {burstRecords.map((record) => (
           <span
             className={styles.nodeBurst}
-            key={node.id}
-            style={nodePosition(node, resolvedSpeed)}
+            data-testid="arrival-burst"
+            key={record.key}
+            style={{
+              ...burstStyle,
+              left: `${record.point[0] * 100}%`,
+              top: `${record.point[1] * 100}%`,
+            }}
           >
-            <span className={styles.nodeBurstGlow} />
+            <span
+              className={styles.nodeBurstGlow}
+              onAnimationEnd={() => finishBurst(record.key)}
+            />
             <span className={styles.nodeBurstCore} />
           </span>
         ))}

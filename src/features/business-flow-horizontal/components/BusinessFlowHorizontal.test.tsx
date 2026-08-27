@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
 import { businessFlowHorizontalHomepageProps } from '../presets';
@@ -9,26 +9,57 @@ let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
+    beam,
     paths,
     beamSource,
     nodes,
     nodeStyle,
+    onArrival,
     reducedMotion,
   }: {
+    beam: {
+      beamWidth: number;
+      headGlowBlur?: number;
+      headGlowOpacity?: number;
+      headGlowRadius?: number;
+      trailLength: number;
+    };
     paths: unknown[];
-    beamSource: { slots: number };
+    beamSource: {
+      slots: number;
+      next: (slot: number, generation: number) => { trailLength?: number } | null;
+    };
     nodes?: readonly FlowLayer3DNode[];
     nodeStyle?: FlowLayer3DNodeStyle;
+    onArrival?: (event: {
+      arrival: { id: string; point: readonly [number, number]; progress: number };
+      generation: number;
+      runId: string;
+      slot: number;
+    }) => void;
     reducedMotion?: boolean;
   }) => {
     capturedNodes = nodes;
     capturedNodeStyle = nodeStyle;
     return (
-      <div
+      <button
+        type="button"
         data-testid="flow-layer"
+        data-beam-width={beam.beamWidth}
+        data-head-glow-blur={beam.headGlowBlur}
+        data-head-glow-opacity={beam.headGlowOpacity}
+        data-head-glow-radius={beam.headGlowRadius}
         data-paths={paths.length}
         data-reduced-motion={String(reducedMotion)}
+        data-run-trail={beamSource.slots > 0 ? beamSource.next(0, 0)?.trailLength : undefined}
         data-slots={beamSource.slots}
+        data-style-trail={beam.trailLength}
+        onClick={() => onArrival?.({
+          arrival: { id: 'collector', point: [0.2, 0.5], progress: 1 },
+          generation: 3,
+          runId: 'aux-top:3',
+          slot: 0,
+        })}
       />
     );
   },
@@ -73,6 +104,59 @@ it('renders homepage node processing progress as bars', () => {
   render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
 
   expect(capturedNodeStyle?.progressMode).toBe('bar');
+});
+
+it('propagates the complete homepage beam effect to the shared layer', () => {
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+
+  const layer = screen.getByTestId('flow-layer');
+  expect(layer).toHaveAttribute('data-beam-width', '1.4');
+  expect(layer).toHaveAttribute('data-head-glow-blur', '32');
+  expect(layer).toHaveAttribute('data-head-glow-opacity', '0');
+  expect(layer).toHaveAttribute('data-head-glow-radius', '0');
+  expect(layer).toHaveAttribute('data-style-trail', '0');
+  expect(layer).toHaveAttribute('data-run-trail', '0');
+  expect(layer).toHaveAttribute('data-slots', '5');
+});
+
+it('renders real arrival bursts with homepage visuals and removes completed bursts', () => {
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  const burst = screen.getByTestId('arrival-burst');
+  expect(burst).toHaveStyle({ left: '20%', top: '50%' });
+  expect(burst.style.getPropertyValue('--burst-radius')).toBe('25px');
+  expect(burst.style.getPropertyValue('--burst-fade-time')).toBe('1700ms');
+  expect(burst.style.getPropertyValue('--burst-strength')).toBe('0.5');
+
+  fireEvent.animationEnd(burst.firstElementChild!);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+});
+
+it('clears active bursts when beams are disabled or reduced motion activates', () => {
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const query = {
+    addEventListener: (_: 'change', listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    },
+    matches: false,
+    removeEventListener: (_: 'change', listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    },
+  } as unknown as MediaQueryList;
+  vi.stubGlobal('matchMedia', vi.fn(() => query));
+  const view = render(<BusinessFlowHorizontal />);
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  expect(screen.getByTestId('arrival-burst')).toBeInTheDocument();
+  view.rerender(<BusinessFlowHorizontal beamEnabled={false} />);
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
+  view.rerender(<BusinessFlowHorizontal />);
+
+  fireEvent.click(screen.getByTestId('flow-layer'));
+  act(() => listeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent)));
+  expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
 });
 
 it('passes current reduced-motion preference to the shared layer and cleans up its listener', () => {

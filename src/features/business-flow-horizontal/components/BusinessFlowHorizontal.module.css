@@ -35,19 +35,17 @@
 
 .burstLayer {
   z-index: 2;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
 }
 
 .nodeBurst {
   position: absolute;
-  left: var(--camera-x);
-  top: var(--camera-y);
-  transform: translate(-50%, -50%);
-  width: 2.4rem;
-  height: 2.4rem;
+  width: calc(var(--burst-radius) * 2);
+  height: calc(var(--burst-radius) * 2);
   border-radius: 50%;
   pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .nodeBurstGlow,
@@ -57,33 +55,35 @@
   opacity: 0;
   pointer-events: none;
   transform-origin: center;
-  animation: camera-node-burst var(--camera-flow-cycle) cubic-bezier(.16, 1, .3, 1) var(--camera-delay) infinite;
+  animation: camera-node-burst var(--burst-fade-time) cubic-bezier(.16, 1, .3, 1) 1 both;
 }
 
 .nodeBurstGlow {
   inset: 0;
   background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--camera-beam-highlight) 100%, white 0%) 0%,
-    color-mix(in srgb, var(--camera-beam) 94%, white 6%) 16%,
-    color-mix(in srgb, var(--camera-beam) 72%, transparent) 34%,
-    color-mix(in srgb, var(--camera-beam) 32%, transparent) 56%,
-    transparent 76%
+    circle closest-side,
+    color-mix(in srgb, var(--burst-highlight) 100%, white 0%) 0%,
+    color-mix(in srgb, var(--burst-color) 94%, white 6%) 23%,
+    color-mix(in srgb, var(--burst-color) 72%, transparent) 48%,
+    color-mix(in srgb, var(--burst-color) 32%, transparent) 79%,
+    transparent 100%
   );
   filter:
-    drop-shadow(0 0 .5rem color-mix(in srgb, var(--camera-beam-highlight) 92%, transparent))
-    drop-shadow(0 0 1.15rem color-mix(in srgb, var(--camera-beam) 86%, transparent))
-    brightness(.5);
+    drop-shadow(0 0 .5rem color-mix(in srgb, var(--burst-highlight) 92%, transparent))
+    drop-shadow(0 0 1.15rem color-mix(in srgb, var(--burst-color) 86%, transparent))
+    brightness(var(--burst-strength));
   mix-blend-mode: screen;
 }
 
 .nodeBurstCore {
   inset: 39%;
-  background: var(--camera-beam-highlight);
+  background: var(--burst-highlight);
   box-shadow:
-    0 0 .45rem .12rem color-mix(in srgb, var(--camera-beam-highlight) 96%, transparent),
-    0 0 .9rem .32rem color-mix(in srgb, var(--camera-beam) 88%, transparent);
+    0 0 .45rem .12rem color-mix(in srgb, var(--burst-highlight) 96%, transparent),
+    0 0 .9rem .32rem color-mix(in srgb, var(--burst-color) 88%, transparent);
   animation-name: camera-node-burst-core;
+  animation-duration: var(--burst-core-fade-time);
+  filter: brightness(var(--burst-strength));
   mix-blend-mode: screen;
 }
 
@@ -97,17 +97,16 @@
     transform: scale(.2);
   }
 
-  4% {
+  14% {
     opacity: 1;
     transform: scale(.54);
   }
 
-  12% {
+  42% {
     opacity: .72;
     transform: scale(1.05);
   }
 
-  26%,
   100% {
     opacity: 0;
     transform: scale(2.15);
@@ -120,12 +119,11 @@
     transform: scale(.25);
   }
 
-  5% {
+  18% {
     opacity: 1;
     transform: scale(1);
   }
 
-  17%,
   100% {
     opacity: 0;
     transform: scale(1.55);
@@ -133,7 +131,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .burstLayer {
-    display: none;
+  .nodeBurstGlow,
+  .nodeBurstCore {
+    animation: none;
+    opacity: 0;
   }
 }

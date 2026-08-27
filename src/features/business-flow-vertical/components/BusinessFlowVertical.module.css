@@ -73,12 +73,12 @@
 .nodeBurstGlow {
   inset: 0;
   background: radial-gradient(
-    circle,
+    circle closest-side,
     color-mix(in srgb, var(--burst-highlight) 100%, white 0%) 0%,
-    color-mix(in srgb, var(--burst-color) 94%, white 6%) 16%,
-    color-mix(in srgb, var(--burst-color) 72%, transparent) 34%,
-    color-mix(in srgb, var(--burst-color) 32%, transparent) 56%,
-    transparent 76%
+    color-mix(in srgb, var(--burst-color) 94%, white 6%) 23%,
+    color-mix(in srgb, var(--burst-color) 72%, transparent) 48%,
+    color-mix(in srgb, var(--burst-color) 32%, transparent) 79%,
+    transparent 100%
   );
   filter:
     drop-shadow(0 0 .5rem color-mix(in srgb, var(--burst-highlight) 92%, transparent))

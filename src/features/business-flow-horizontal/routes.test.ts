@@ -4,6 +4,17 @@ import {
   createBusinessFlowHorizontalBeamSource,
 } from './routes';
 
+function createSource(overrides: Partial<Parameters<typeof createBusinessFlowHorizontalBeamSource>[0]> = {}) {
+  return createBusinessFlowHorizontalBeamSource({
+    emissionRandomness: 0,
+    maxConcurrentBeams: 5,
+    random: () => 0.5,
+    speed: 1,
+    trailLengthInIllustrationUnits: 0,
+    ...overrides,
+  });
+}
+
 it('preserves twelve connectors and the off-canvas entry', () => {
   expect(businessFlowHorizontalPaths).toHaveLength(12);
   expect(businessFlowHorizontalPaths[0]).toMatchObject({
@@ -66,10 +77,75 @@ it('extends every attached connector beneath the center of its item', () => {
   });
 });
 
-it('preserves staggering and scales the cycle by speed', () => {
-  const source = createBusinessFlowHorizontalBeamSource(2);
-  expect(source.slots).toBe(12);
-  expect(source.next(0, 0)).toMatchObject({ id: 'aux-top:0', delayMs: 0, durationMs: 312 });
-  expect(source.next(1, 0)?.delayMs).toBe(50);
-  expect(source.next(0, 1)?.delayMs).toBe(2288);
+it('limits concurrent slots and rotates them through every route', () => {
+  const source = createSource();
+  const routeIds = Array.from({ length: 3 }, (_, generation) => (
+    Array.from({ length: source.slots }, (_, slot) => source.next(slot, generation)?.path.id)
+  )).flat();
+
+  expect(source.slots).toBe(5);
+  expect(new Set(routeIds)).toEqual(new Set(businessFlowHorizontalPaths.map((path) => path.id)));
+  expect(routeIds.slice(0, 6)).toEqual([
+    'aux-top',
+    'aux-middle',
+    'aux-bottom',
+    'collector-relay-top',
+    'collector-relay-middle',
+    'collector-relay-bottom',
+  ]);
+});
+
+it('uses deterministic staggering when randomness is disabled', () => {
+  const source = createSource();
+
+  expect(source.next(0, 0)).toMatchObject({ id: 'aux-top:0', delayMs: 0 });
+  expect(source.next(1, 0)?.delayMs).toBe(280);
+  expect(source.next(0, 1)?.delayMs).toBe(0);
+});
+
+it('uses injected randomness for later emission delays', () => {
+  const source = createSource({ emissionRandomness: 100, random: () => 0.5 });
+  source.next(0, 0);
+
+  const later = source.next(0, 1)!;
+  expect(later.id).toBe('collector-relay-bottom:1');
+  expect(later.delayMs).toBe(660);
+  expect(later.delayMs).toBeGreaterThanOrEqual(120);
+  expect(later.delayMs).toBeLessThanOrEqual(1200);
+});
+
+it('scales durations by speed above a one-tenth floor', () => {
+  const zeroSpeedDuration = createSource({ speed: 0 }).next(3, 0)!.durationMs;
+  const floorSpeedDuration = createSource({ speed: 0.1 }).next(3, 0)!.durationMs;
+  const doubleSpeedDuration = createSource({ speed: 2 }).next(3, 0)!.durationMs;
+
+  expect(zeroSpeedDuration).toBe(floorSpeedDuration);
+  expect(doubleSpeedDuration * 20).toBeCloseTo(floorSpeedDuration);
+});
+
+it('emits arrivals at route endpoints and rejects invalid slots', () => {
+  const source = createSource();
+  const run = source.next(0, 0)!;
+
+  expect(run.arrivals).toEqual([{
+    id: 'aux-top',
+    point: [248 / 320, 304 / 608],
+    progress: 1,
+  }]);
+  expect(source.next(-1, 0)).toBeNull();
+  expect(source.next(5, 0)).toBeNull();
+});
+
+it('converts illustration-pixel trail length into route progress', () => {
+  const source = createSource({ trailLengthInIllustrationUnits: 32 });
+  const straightRouteRun = source.next(1, 0)!;
+
+  expect(straightRouteRun.path.id).toBe('aux-middle');
+  expect(straightRouteRun.trailLength).toBeCloseTo(32 / 76);
+});
+
+it('floors and caps concurrent beam slots', () => {
+  expect(createSource({ maxConcurrentBeams: 2.9 }).slots).toBe(2);
+  expect(createSource({ maxConcurrentBeams: 99 }).slots).toBe(12);
+  expect(createSource({ maxConcurrentBeams: -1 }).slots).toBe(0);
 });
