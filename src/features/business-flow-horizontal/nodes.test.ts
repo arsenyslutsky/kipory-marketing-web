@@ -64,3 +64,23 @@ it('preserves all business icon descriptors, including terminal stroke-width sca
     });
   });
 });
+
+it('retains central stroke opacity while central and terminal icons use the solid-fill default', () => {
+  const nodes = createBusinessFlowHorizontalNodes({
+    auxiliaryIconColor: '#212121',
+    centralIconColor: '#1d281d',
+    centralIconStrokeOpacity: 0.52,
+    iconSize: 40,
+    iconStrokeColor: '#f3f5ef',
+    strokeWidth: 1.5,
+  });
+  const centralNodes = nodes.filter((node) => node.id === 'collector' || node.id.startsWith('relay'));
+  const terminalNodes = nodes.filter((node) => node.id.startsWith('terminal'));
+
+  expect(centralNodes).toHaveLength(4);
+  expect(centralNodes.every((node) => node.iconStrokeOpacity === 0.52)).toBe(true);
+  expect(centralNodes.every((node) => !('iconFillMode' in node))).toBe(true);
+  expect(terminalNodes).toHaveLength(6);
+  expect(terminalNodes.every((node) => !('iconStrokeOpacity' in node))).toBe(true);
+  expect(terminalNodes.every((node) => !('iconFillMode' in node))).toBe(true);
+});
