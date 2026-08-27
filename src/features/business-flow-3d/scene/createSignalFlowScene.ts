@@ -16,6 +16,10 @@ import {
   type Node3DProgressControl,
   type Node3DResolvedGradient,
 } from '@/components/elements/Node3D/createNode3DObject';
+import {
+  disposeNode3DGradientTextures,
+  isNode3DManagedGradientTexture,
+} from '@/components/elements/Node3D/node3DGradientTextureCache';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import type { ConnectorStrokeType, FlowConfig, NodeGeometryShape, NodeProgressMode, NodeShape, SignalFlowMode, SignalFlowTheme, SignalFlowVariant } from '../types';
@@ -1171,13 +1175,16 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
           materials.forEach((material) => {
             if (!material) return;
             Object.values(material).forEach((value) => {
-              if (value instanceof THREE.Texture) value.dispose();
+              if (value instanceof THREE.Texture && !isNode3DManagedGradientTexture(value)) {
+                value.dispose();
+              }
             });
             material.dispose();
           });
         }
         if (object instanceof CSS3DObject) object.element.remove();
       });
+      disposeNode3DGradientTextures(renderer);
       renderer.dispose();
       cssRenderer.domElement.remove();
     },

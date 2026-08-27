@@ -22,4 +22,12 @@ it('reuses textures per renderer and disposes them only at renderer teardown', (
   disposeNode3DGradientTextures(rendererA);
   expect(textureA.dispose).toHaveBeenCalledOnce();
   expect(textureB.dispose).not.toHaveBeenCalled();
+
+  disposeNode3DGradientTextures(rendererA);
+  expect(textureA.dispose).toHaveBeenCalledOnce();
+
+  disposeNode3DGradientTextures(rendererB);
+  expect(textureB.dispose).toHaveBeenCalledOnce();
+  disposeNode3DGradientTextures(rendererB);
+  expect(textureB.dispose).toHaveBeenCalledOnce();
 });

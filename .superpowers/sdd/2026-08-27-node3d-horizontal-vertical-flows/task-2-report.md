@@ -104,3 +104,77 @@ Tests  52 passed (52)
 ## Concerns
 
 None identified for this task. The existing BusinessFlow3D scene has a separate resource cleanup path; this task intentionally limits lifecycle integration to the requested `createNode3DScene` files.
+
+## Fix Round 1
+
+### Findings addressed
+
+- Updated `createSignalFlowScene` cleanup to skip renderer-managed Node3D gradient textures during material traversal and call `disposeNode3DGradientTextures(renderer)` exactly once immediately before `renderer.dispose()`.
+- Expanded cache lifecycle assertions for repeated renderer-A disposal, renderer-B teardown, and repeated renderer-B disposal.
+- Added a BusinessFlow controller lifecycle regression that verifies the shared face texture is disposed once, the renderer cache is finalized (a subsequent lookup creates a replacement), and the renderer is disposed once.
+
+### TDD RED
+
+Command:
+
+```bash
+export PATH=/Users/arsenys/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH
+npm test -- src/features/business-flow-3d/scene/createSignalFlowScene.test.ts
+```
+
+Output:
+
+```text
+❯ src/features/business-flow-3d/scene/createSignalFlowScene.test.ts (1 test | 1 failed)
+× finalizes managed gradient textures through BusinessFlow renderer teardown
+AssertionError: expected "dispose" to be called once, but got 2 times
+```
+
+The failure demonstrated the existing BusinessFlow cleanup was disposing one renderer-managed shared texture once per Node3D material instead of through renderer ownership.
+
+### TDD GREEN
+
+Command:
+
+```bash
+export PATH=/Users/arsenys/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH
+npm test -- src/features/business-flow-3d/scene/createSignalFlowScene.test.ts
+```
+
+Output:
+
+```text
+Test Files  1 passed (1)
+Tests  1 passed (1)
+```
+
+### Covering tests
+
+Command:
+
+```bash
+export PATH=/Users/arsenys/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH
+npm test -- src/components/elements/Node3D/node3DGradientTextureCache.test.ts src/features/business-flow-3d/scene/createSignalFlowScene.test.ts
+```
+
+Output:
+
+```text
+Test Files  2 passed (2)
+Tests  2 passed (2)
+```
+
+### Files changed
+
+- `src/features/business-flow-3d/scene/createSignalFlowScene.ts` — protects managed textures and finalizes the Node3D cache before renderer teardown.
+- `src/features/business-flow-3d/scene/createSignalFlowScene.test.ts` — new BusinessFlow lifecycle regression with jsdom canvas and renderer lifecycle setup.
+- `src/components/elements/Node3D/node3DGradientTextureCache.test.ts` — asserts idempotent disposal for both renderer scopes.
+- `.superpowers/sdd/2026-08-27-node3d-horizontal-vertical-flows/task-2-report.md` — this fix-round record.
+
+### Fix-round self-review
+
+- Both existing consumers of `createNode3DObject` now skip managed textures during material cleanup (`createNode3DScene` and `createSignalFlowScene`).
+- Both consumers finalize the renderer-owned cache immediately before `renderer.dispose()`.
+- Cache tests verify renderer isolation and idempotence; BusinessFlow regression verifies shared-texture single disposal and cache deletion.
+- The regression uses real Node3D geometry/material creation with a mocked renderer and canvas 2D context; it does not alter production behavior.
+- No unrelated files were changed.
