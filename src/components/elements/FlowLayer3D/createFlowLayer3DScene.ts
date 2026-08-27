@@ -83,6 +83,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   const beamSlots: BeamSlot[] = [];
   let connectorObjects: FlowLayer3DObjects | undefined;
   let frameId = 0;
+  let firstFrameElapsed: number | undefined;
   let destroyed = false;
   let aspectRatio = 1;
   let flareTexture: THREE.Texture | undefined;
@@ -207,7 +208,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     if (destroyed) return;
     frameId = requestAnimationFrame(animate);
     timer.update(timestamp);
-    const time = timer.getElapsed();
+    const elapsed = timer.getElapsed();
+    firstFrameElapsed ??= elapsed;
+    const time = elapsed - firstFrameElapsed;
     const nowMs = time * 1000;
     beamSlots.forEach((slot, index) => {
       if (slot.pendingNextRun) loadNextRun(slot, index, slot.generation + 1, nowMs);
