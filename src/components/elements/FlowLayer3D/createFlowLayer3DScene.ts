@@ -79,7 +79,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   camera.position.set(0, 20, 0);
   camera.up.set(0, 0, -1);
   camera.lookAt(0, 0, 0);
-  const clock = new THREE.Clock();
+  const timer = new THREE.Timer();
   const beamSlots: BeamSlot[] = [];
   let connectorObjects: FlowLayer3DObjects | undefined;
   let frameId = 0;
@@ -203,10 +203,11 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
   }
 
-  function animate() {
+  function animate(timestamp: DOMHighResTimeStamp) {
     if (destroyed) return;
     frameId = requestAnimationFrame(animate);
-    const time = clock.getElapsedTime();
+    timer.update(timestamp);
+    const time = timer.getElapsed();
     const nowMs = time * 1000;
     beamSlots.forEach((slot, index) => {
       if (slot.pendingNextRun) loadNextRun(slot, index, slot.generation + 1, nowMs);
