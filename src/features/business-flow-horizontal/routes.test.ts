@@ -16,6 +16,34 @@ it('preserves twelve connectors and the off-canvas entry', () => {
   expect(businessFlowHorizontalPaths.at(-1)?.id).toBe('relay-bottom-terminal-2');
 });
 
+it('fades only the off-canvas auxiliary connectors toward the collector', () => {
+  expect(
+    businessFlowHorizontalPaths
+      .filter((path) => path.fading)
+      .map((path) => ({
+        end: path.points.at(-1),
+        id: path.id,
+        start: path.points[0],
+      })),
+  ).toEqual([
+    {
+      end: [248 / 320, 304 / 608],
+      id: 'aux-top',
+      start: [324 / 320, 244 / 608],
+    },
+    {
+      end: [248 / 320, 304 / 608],
+      id: 'aux-middle',
+      start: [324 / 320, 304 / 608],
+    },
+    {
+      end: [248 / 320, 304 / 608],
+      id: 'aux-bottom',
+      start: [324 / 320, 364 / 608],
+    },
+  ]);
+});
+
 it('extends every attached connector beneath the center of its item', () => {
   const endpoints = Object.fromEntries(businessFlowHorizontalPaths.map((path) => [
     path.id,

@@ -32,12 +32,14 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
     ],
     curve,
     delay: 0,
+    fading: true,
     short: true,
   },
   {
     id: 'aux-middle',
     points: [point(324, 304), point(282, 304), nodePoint('collector')],
     delay: 0.1,
+    fading: true,
     short: true,
   },
   {
@@ -51,6 +53,7 @@ const routes: readonly BusinessFlowHorizontalRoute[] = [
     ],
     curve,
     delay: 0.2,
+    fading: true,
     short: true,
   },
   {
