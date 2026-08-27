@@ -7,7 +7,7 @@ import ts from 'typescript';
 import type {
   HomepagePresetArgs,
   HomepagePresetStoryId,
-} from './homepagePresetContract';
+} from './homepagePresetContract.ts';
 
 type Primitive = string | number | boolean;
 type PresetEntry = { key: string; value: Primitive };
