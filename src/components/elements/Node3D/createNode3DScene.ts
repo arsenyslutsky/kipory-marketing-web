@@ -3,6 +3,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS3DRenderer, type CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { defaultColors } from '@/features/business-flow-3d/config';
 import { createNode3DObject } from './createNode3DObject';
+import {
+  disposeNode3DGradientTextures,
+  isNode3DManagedGradientTexture,
+} from './node3DGradientTextureCache';
 import type {
   Node3DResolvedGradient,
   Node3DSceneController,
@@ -327,12 +331,15 @@ export function createNode3DScene(options: Node3DSceneOptions): Node3DSceneContr
           materials.forEach((material) => {
             if (!material) return;
             Object.values(material).forEach((value) => {
-              if (value instanceof THREE.Texture) value.dispose();
+              if (value instanceof THREE.Texture && !isNode3DManagedGradientTexture(value)) {
+                value.dispose();
+              }
             });
             material.dispose();
           });
         }
       });
+      disposeNode3DGradientTextures(renderer);
       renderer.dispose();
       cssLayer.replaceChildren();
     },

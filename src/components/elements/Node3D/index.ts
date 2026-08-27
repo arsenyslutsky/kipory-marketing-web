@@ -1,5 +1,10 @@
 export { Node3D } from './Node3D';
 export { createNode3DObject } from './createNode3DObject';
+export {
+  disposeNode3DGradientTextures,
+  getNode3DGradientTexture,
+  isNode3DManagedGradientTexture,
+} from './node3DGradientTextureCache';
 export type {
   CreateNode3DObjectOptions,
   Node3DGlowState,

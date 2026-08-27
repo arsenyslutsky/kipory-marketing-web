@@ -7,13 +7,13 @@ import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import type { SignalFlowTheme } from '@/features/business-flow-3d/types';
+import { getNode3DGradientTexture } from './node3DGradientTextureCache';
 import { styleNode3DIconSvg } from './styleNode3DIconSvg';
 import type { Node3DIconFillMode, Node3DProgressMode, Node3DResolvedGradient, Node3DShape } from './types';
 
 export type { Node3DResolvedGradient } from './types';
 
 const svgAssetMarkupCache = new Map<string, Promise<string>>();
-const gradientTextureCache = new WeakMap<THREE.WebGLRenderer, Map<string, THREE.CanvasTexture>>();
 
 function loadSvgAssetMarkup(url: string) {
   const cached = svgAssetMarkupCache.get(url);
@@ -135,38 +135,34 @@ export function createNode3DObject({
       frontGradient.mid,
       frontGradient.end,
     ].join('|');
-    const rendererTextures = gradientTextureCache.get(renderer) ?? new Map<string, THREE.CanvasTexture>();
-    gradientTextureCache.set(renderer, rendererTextures);
-    const cachedTexture = rendererTextures.get(textureKey);
-    if (cachedTexture) return cachedTexture;
-
-    const gradientCanvas = document.createElement('canvas');
-    gradientCanvas.width = 512;
-    gradientCanvas.height = 320;
-    const context = gradientCanvas.getContext('2d');
-    if (!context) throw new Error('Could not create the node face gradient.');
-    const angle = THREE.MathUtils.degToRad(frontGradient.angle);
-    const directionX = Math.cos(angle);
-    const directionY = Math.sin(angle);
-    const centerX = gradientCanvas.width * 0.5;
-    const centerY = gradientCanvas.height * 0.5;
-    const extent = Math.abs(directionX) * centerX + Math.abs(directionY) * centerY;
-    const gradient = context.createLinearGradient(
-      centerX - directionX * extent,
-      centerY - directionY * extent,
-      centerX + directionX * extent,
-      centerY + directionY * extent,
-    );
-    gradient.addColorStop(0, frontGradient.start);
-    gradient.addColorStop(0.48, frontGradient.mid);
-    gradient.addColorStop(1, frontGradient.end);
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, gradientCanvas.width, gradientCanvas.height);
-    const texture = new THREE.CanvasTexture(gradientCanvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-    rendererTextures.set(textureKey, texture);
-    return texture;
+    return getNode3DGradientTexture(renderer, textureKey, () => {
+      const gradientCanvas = document.createElement('canvas');
+      gradientCanvas.width = 512;
+      gradientCanvas.height = 320;
+      const context = gradientCanvas.getContext('2d');
+      if (!context) throw new Error('Could not create the node face gradient.');
+      const angle = THREE.MathUtils.degToRad(frontGradient.angle);
+      const directionX = Math.cos(angle);
+      const directionY = Math.sin(angle);
+      const centerX = gradientCanvas.width * 0.5;
+      const centerY = gradientCanvas.height * 0.5;
+      const extent = Math.abs(directionX) * centerX + Math.abs(directionY) * centerY;
+      const gradient = context.createLinearGradient(
+        centerX - directionX * extent,
+        centerY - directionY * extent,
+        centerX + directionX * extent,
+        centerY + directionY * extent,
+      );
+      gradient.addColorStop(0, frontGradient.start);
+      gradient.addColorStop(0.48, frontGradient.mid);
+      gradient.addColorStop(1, frontGradient.end);
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, gradientCanvas.width, gradientCanvas.height);
+      const texture = new THREE.CanvasTexture(gradientCanvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      return texture;
+    });
   }
 
   function createCardSideMaterial(
