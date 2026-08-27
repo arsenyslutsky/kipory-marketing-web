@@ -100,7 +100,9 @@ function readPresetEntries(object: ts.ObjectLiteralExpression): PresetEntry[] {
 function renderPresetObject(entries: PresetEntry[]): string {
   const properties = entries
     .map(({ key, value }) => {
-      const serialized = typeof value === 'string' ? JSON.stringify(value) : String(value);
+      const serialized = typeof value === 'string'
+        ? `'${JSON.stringify(value).slice(1, -1).replaceAll("'", "\\'").replaceAll('\\"', '"')}'`
+        : String(value);
       return `  ${key}: ${serialized},`;
     })
     .join('\n');

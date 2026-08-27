@@ -24,11 +24,18 @@ it('merges partial primitive args while preserving imports, omitted values, and 
     `import type { Props } from './types';
 
 export const demo = {
-  color: "#fff",
+  color: '#fff',
   speed: 0.5,
   enabled: true,
 } satisfies Props;
 `,
+  );
+});
+
+it('serializes apostrophes and control characters safely in project quote style', () => {
+  const source = "export const demo = { label: 'old' } satisfies Props;\n";
+  expect(rewriteHomepagePresetSource(source, 'demo', { label: "it's\nsafe" })).toBe(
+    "export const demo = {\n  label: 'it\\'s\\nsafe',\n} satisfies Props;\n",
   );
 });
 

@@ -32,8 +32,19 @@ describe('homepage preset contract', () => {
       filterHomepagePresetArgs(
         { speed: 1.4, color: '#fff', renderLabel: () => 'x', hidden: true },
         { speed: {}, color: {}, renderLabel: {}, hidden: { table: { disable: true } } },
+        ['speed', 'color', 'renderLabel', 'hidden'],
       ),
     ).toEqual({ speed: 1.4, color: '#fff' });
+  });
+
+  it('keeps only keys registered by the current homepage preset story', () => {
+    expect(
+      filterHomepagePresetArgs(
+        { mode: 'dark', connectorOpacity: 0.62, assetBasePath: '/assets/nodes' },
+        { mode: {}, connectorOpacity: {}, assetBasePath: {} },
+        ['mode', 'connectorOpacity'],
+      ),
+    ).toEqual({ mode: 'dark', connectorOpacity: 0.62 });
   });
 
   it('builds a same-origin capability request', () => {

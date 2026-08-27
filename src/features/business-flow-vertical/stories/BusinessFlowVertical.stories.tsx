@@ -200,4 +200,7 @@ export const Foundation: Story = {
 export const CurrentNextjsApp: Story = {
   name: 'Current Next.js App',
   args: businessFlowVerticalHomepageProps,
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlowVerticalHomepageProps) },
+  },
 };

@@ -1,5 +1,5 @@
 import { CopyIcon, SaveIcon } from '@storybook/icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, useCopyButton } from 'storybook/internal/components';
 
 import {
@@ -20,8 +20,19 @@ type HomepagePresetToolbarProps = {
   storyId: HomepagePresetStoryId;
   args: HomepagePresetArgs;
   argTypes: HomepagePresetArgTypes;
+  presetKeys: readonly string[];
   fetcher?: HomepagePresetFetcher;
+  getCurrentArgs?: () => HomepagePresetArgs;
+  subscribeToArgs?: HomepagePresetArgsSubscriber;
 };
+
+export type HomepagePresetArgsUpdate = {
+  storyId: string;
+  args: HomepagePresetArgs;
+};
+export type HomepagePresetArgsSubscriber = (
+  listener: (update: HomepagePresetArgsUpdate) => void,
+) => () => void;
 
 type SaveStatus = 'checking' | 'ready' | 'saving' | 'saved' | 'failed' | 'unavailable';
 
@@ -38,15 +49,18 @@ export function HomepagePresetToolbar({
   storyId,
   args,
   argTypes,
+  presetKeys,
   fetcher = globalThis.fetch,
+  getCurrentArgs,
+  subscribeToArgs,
 }: HomepagePresetToolbarProps) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('checking');
   const [saveError, setSaveError] = useState('');
+  const [currentArgs, setCurrentArgs] = useState(args);
+  const latestArgs = useRef(args);
+  const hasChannelUpdate = useRef(false);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const parameterValues = useMemo(
-    () => filterHomepagePresetArgs(args, argTypes),
-    [args, argTypes],
-  );
+  const parameterValues = filterHomepagePresetArgs(currentArgs, argTypes, presetKeys);
   const copy = useCopyButton({
     content: JSON.stringify(parameterValues, null, 2),
     children: 'Copy JSON',
@@ -81,6 +95,21 @@ export function HomepagePresetToolbar({
     return () => controller.abort();
   }, [fetcher, storyId]);
 
+  useEffect(() => {
+    if (!hasChannelUpdate.current) {
+      latestArgs.current = args;
+      setCurrentArgs(args);
+    }
+  }, [args]);
+
+  useEffect(() => subscribeToArgs?.((update) => {
+    if (update.storyId === storyId) {
+      hasChannelUpdate.current = true;
+      latestArgs.current = update.args;
+      setCurrentArgs(update.args);
+    }
+  }), [storyId, subscribeToArgs]);
+
   useEffect(() => () => {
     if (resetTimer.current) {
       clearTimeout(resetTimer.current);
@@ -97,7 +126,15 @@ export function HomepagePresetToolbar({
     }
     setSaveStatus('saving');
     setSaveError('');
-    const request = createHomepagePresetSaveRequest(storyId, parameterValues);
+    const argsToSave = hasChannelUpdate.current
+      ? latestArgs.current
+      : getCurrentArgs?.() ?? latestArgs.current;
+    const latestParameterValues = filterHomepagePresetArgs(
+      argsToSave,
+      argTypes,
+      presetKeys,
+    );
+    const request = createHomepagePresetSaveRequest(storyId, latestParameterValues);
 
     try {
       const response = await fetcher(request.url, request.init);

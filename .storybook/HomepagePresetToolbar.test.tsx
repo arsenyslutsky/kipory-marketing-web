@@ -19,6 +19,7 @@ const baseProps = {
     renderLabel: {},
     hidden: { table: { disable: true } },
   },
+  presetKeys: ['connectorOpacity', 'beamEnabled', 'renderLabel', 'hidden'],
 };
 
 function renderToolbar(fetcher: typeof globalThis.fetch) {
@@ -90,4 +91,169 @@ it('shows the safe server error after a rejected save', async () => {
   expect(
     await screen.findByRole('button', { name: 'Save failed: Preset rejected' }),
   ).toBeEnabled();
+});
+
+it('uses args that Storybook mutates in place before saving', async () => {
+  const mutableArgs = { connectorOpacity: 0.22 };
+  const stableArgTypes = { connectorOpacity: {} };
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  const createToolbar = () => (
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={mutableArgs}
+        argTypes={stableArgTypes}
+        presetKeys={['connectorOpacity']}
+        fetcher={fetcher}
+      />
+    </ThemeProvider>
+  );
+  const { rerender } = render(createToolbar());
+  await screen.findByRole('button', { name: 'Save to Next.js' });
+
+  mutableArgs.connectorOpacity = 0.23;
+  rerender(createToolbar());
+  fireEvent.click(screen.getByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorOpacity: 0.23 } }),
+  );
+});
+
+it('saves the latest args announced by the Storybook manager channel', async () => {
+  let announceArgs: ((update: { storyId: string; args: Record<string, unknown> }) => void) | undefined;
+  const subscribeToArgs = (
+    listener: (update: { storyId: string; args: Record<string, unknown> }) => void,
+  ) => {
+    announceArgs = listener;
+    return () => undefined;
+  };
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  render(
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={{ connectorColor: '#fefefe' }}
+        argTypes={{ connectorColor: {} }}
+        presetKeys={['connectorColor']}
+        fetcher={fetcher}
+        subscribeToArgs={subscribeToArgs}
+      />
+    </ThemeProvider>,
+  );
+  await screen.findByRole('button', { name: 'Save to Next.js' });
+
+  act(() => {
+    announceArgs?.({ storyId, args: { connectorColor: '#ffffff' } });
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorColor: '#ffffff' } }),
+  );
+});
+
+it('queries authoritative manager args at the moment save is clicked', async () => {
+  let latestArgs = { connectorColor: '#fefefe' };
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  render(
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={latestArgs}
+        argTypes={{ connectorColor: {} }}
+        presetKeys={['connectorColor']}
+        fetcher={fetcher}
+        getCurrentArgs={() => latestArgs}
+      />
+    </ThemeProvider>,
+  );
+  await screen.findByRole('button', { name: 'Save to Next.js' });
+
+  latestArgs = { connectorColor: '#ffffff' };
+  fireEvent.click(screen.getByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorColor: '#ffffff' } }),
+  );
+});
+
+it('prefers a newer manager-channel update over a stale story-data snapshot', async () => {
+  let announceArgs: ((update: { storyId: string; args: Record<string, unknown> }) => void) | undefined;
+  const subscribeToArgs = (
+    listener: (update: { storyId: string; args: Record<string, unknown> }) => void,
+  ) => {
+    announceArgs = listener;
+    return () => undefined;
+  };
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  render(
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={{ connectorColor: '#fefefe' }}
+        argTypes={{ connectorColor: {} }}
+        presetKeys={['connectorColor']}
+        fetcher={fetcher}
+        getCurrentArgs={() => ({ connectorColor: '#fefefe' })}
+        subscribeToArgs={subscribeToArgs}
+      />
+    </ThemeProvider>,
+  );
+  await screen.findByRole('button', { name: 'Save to Next.js' });
+
+  act(() => {
+    announceArgs?.({ storyId, args: { connectorColor: '#ffffff' } });
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorColor: '#ffffff' } }),
+  );
+});
+
+it('does not submit component defaults that are outside the registered preset keys', async () => {
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  render(
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={{ connectorOpacity: 0.62, assetBasePath: '/assets/nodes' }}
+        argTypes={{ connectorOpacity: {}, assetBasePath: {} }}
+        presetKeys={['connectorOpacity']}
+        fetcher={fetcher}
+      />
+    </ThemeProvider>,
+  );
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorOpacity: 0.62 } }),
+  );
 });

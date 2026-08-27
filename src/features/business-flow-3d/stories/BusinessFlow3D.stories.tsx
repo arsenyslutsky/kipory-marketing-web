@@ -332,4 +332,7 @@ export const Workflow1: Story = {
 export const CurrentNextjsApp: Story = {
   name: 'Current Next.js App',
   args: businessFlow3DHomepageProps,
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
+  },
 };

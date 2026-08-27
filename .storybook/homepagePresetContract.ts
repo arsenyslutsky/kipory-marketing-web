@@ -10,6 +10,7 @@ export const HOMEPAGE_PRESET_STORY_IDS = [
 export type HomepagePresetStoryId = (typeof HOMEPAGE_PRESET_STORY_IDS)[number];
 export type HomepagePresetArgs = Record<string, unknown>;
 export type HomepagePresetArgTypes = Record<string, { table?: { disable?: boolean } }>;
+export type HomepagePresetParameter = { keys: readonly string[] };
 
 export function isHomepagePresetStoryId(
   value: string | undefined,
@@ -23,9 +24,10 @@ export function isHomepagePresetStoryId(
 export function filterHomepagePresetArgs(
   args: Record<string, unknown>,
   argTypes: HomepagePresetArgTypes,
+  presetKeys: readonly string[],
 ): HomepagePresetArgs {
   return Object.fromEntries(
-    Object.keys(argTypes)
+    presetKeys
       .filter((name) => argTypes[name]?.table?.disable !== true && name in args)
       .filter((name) => typeof args[name] !== 'function')
       .map((name) => [name, args[name]]),
