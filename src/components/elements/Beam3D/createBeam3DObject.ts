@@ -58,6 +58,7 @@ export type Beam3DObject = {
   packetShadowOpacity: number;
   position: THREE.Vector3;
   setPath: (path: ResolvedFlowPath3D) => void;
+  setTrailLength: (trailLength: number) => void;
   setVisible: (visible: boolean) => void;
   uniforms: Beam3DUniforms;
   update: (state: Beam3DUpdate) => void;
@@ -107,6 +108,10 @@ function makeRibbonGeometry(points: THREE.Vector3[], halfWidth: number, yOffset 
   geometry.setIndex(indices);
   geometry.computeBoundingSphere();
   return geometry;
+}
+
+function resolveTrailLength(trailLength: number) {
+  return trailLength <= 0 ? 0 : THREE.MathUtils.clamp(trailLength, 0.02, 1);
 }
 
 function makeGlowDiscTrailGeometry(points: THREE.Vector3[], radius: number, spacing: number, yOffset = 0) {
@@ -232,7 +237,8 @@ function beamMaterial({
       void main() {
         float delta = uProgress - vUv.x;
         float gate = smoothstep(0.0, max(uHeadFeather, .0001), delta);
-        float trail = (1.0 - smoothstep(0.0, uTrailLength, delta)) * gate;
+        float trailEnabled = step(.000001, uTrailLength);
+        float trail = (1.0 - smoothstep(0.0, max(uTrailLength, .000001), delta)) * gate * trailEnabled;
         float head = exp(-pow((vUv.x - uProgress) / mix(.022, .07, uSoftness), 2.0)) * gate;
         float shimmer = .88 + .12 * sin(vUv.x * 190.0 - uTime * 12.0);
         float fresnel = pow(1.0 - abs(dot(normalize(vNormalView), normalize(vViewDir))), 2.2);
@@ -416,7 +422,8 @@ function beamDiscGlowMaterial({
       void main() {
         float delta = uProgress - vPathProgress;
         float gate = smoothstep(0.0, .012, delta);
-        float trail = (1.0 - smoothstep(0.0, uTrailLength, delta)) * gate;
+        float trailEnabled = step(.000001, uTrailLength);
+        float trail = (1.0 - smoothstep(0.0, max(uTrailLength, .000001), delta)) * gate * trailEnabled;
         float head = exp(-pow((vPathProgress - uProgress) / .055, 2.0)) * gate;
         float radialDistance = length(vUv - vec2(0.5)) * 2.0;
         float radial = exp(-pow(radialDistance * 1.5, 2.0));
@@ -480,7 +487,7 @@ export function createBeam3DObject({
   const resolvedWidth = THREE.MathUtils.clamp(beamWidth, 0.1, 4);
   const resolvedGlow = THREE.MathUtils.clamp(glowIntensity, 0, 3);
   const resolvedSoftness = THREE.MathUtils.clamp(softness, 0, 1);
-  const resolvedTrailLength = THREE.MathUtils.clamp(trailLength, 0.02, 1);
+  const resolvedTrailLength = resolveTrailLength(trailLength);
   const isRibbon = style === 'ribbon';
   const isDark = mode === 'dark';
   const glowGain = resolvedGlow * (0.7 + 0.3 * resolvedGlow);
@@ -657,6 +664,13 @@ export function createBeam3DObject({
       .forEach((object) => { object.visible = visible && packetVisible; });
   }
 
+  function setTrailLength(nextTrailLength: number) {
+    const resolved = resolveTrailLength(nextTrailLength);
+    [core, glow, aura].forEach((object) => {
+      object.material.uniforms.uTrailLength.value = resolved;
+    });
+  }
+
   function update({
     packetVisibility = 1,
     phase = 0,
@@ -715,6 +729,7 @@ export function createBeam3DObject({
     packetShadowOpacity,
     position,
     setPath,
+    setTrailLength,
     setVisible,
     uniforms,
     update,

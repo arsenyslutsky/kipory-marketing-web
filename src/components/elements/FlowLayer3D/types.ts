@@ -53,12 +53,22 @@ export type FlowLayer3DArrivalEvent = {
   slot: number;
 };
 
+export type FlowLayer3DBeamFade = {
+  /** Normalized progress where continuation-edge fade-in reaches full opacity. */
+  startUntilProgress?: number;
+  /** Normalized progress where continuation-edge fade-out begins. */
+  endFromProgress?: number;
+};
+
 export type FlowLayer3DBeamRun = {
   arrivals?: readonly FlowLayer3DArrival[];
   delayMs: number;
   durationMs: number;
+  fade?: FlowLayer3DBeamFade;
   id: string;
   path: FlowLayer3DPath;
+  /** Normalized fraction of the active path; falls back to the shared beam style. */
+  trailLength?: number;
 };
 
 export type FlowLayer3DBeamSource = {

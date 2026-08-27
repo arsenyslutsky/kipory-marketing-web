@@ -7,6 +7,7 @@ export { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
 export type {
   FlowLayer3DArrival,
   FlowLayer3DArrivalEvent,
+  FlowLayer3DBeamFade,
   FlowLayer3DBeamRun,
   FlowLayer3DBeamSource,
   FlowLayer3DBeamStyle,

@@ -24,6 +24,7 @@ type BeamSlot = {
   beam: Beam3DObject;
   deliveredArrivalIds: Set<string>;
   generation: number;
+  nextRunStartedAtMs: number;
   pendingNextRun: boolean;
   run: FlowLayer3DBeamRun | null;
   startedAtMs: number;
@@ -77,7 +78,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   scene.background = null;
   const camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 100);
   camera.position.set(0, 20, 0);
-  camera.up.set(0, 0, -1);
+  camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
   const timer = new THREE.Timer();
   const beamSlots: BeamSlot[] = [];
@@ -121,6 +122,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       return;
     }
     slot.beam.setPath(path);
+    slot.beam.setTrailLength(run.trailLength ?? beamStyle.trailLength);
     slot.beam.setVisible(true);
   }
 
@@ -132,6 +134,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       (run) => resolvePath(run.path) !== null,
     );
     slot.generation = next.generation;
+    slot.nextRunStartedAtMs = nowMs;
     slot.pendingNextRun = next.status === 'invalid';
     assignRun(slot, next.run, nowMs);
   }
@@ -171,6 +174,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         beam,
         deliveredArrivalIds: new Set(),
         generation: 0,
+        nextRunStartedAtMs: 0,
         pendingNextRun: false,
         run: null,
         startedAtMs: 0,
@@ -213,22 +217,36 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     const time = elapsed - firstFrameElapsed;
     const nowMs = time * 1000;
     beamSlots.forEach((slot, index) => {
-      if (slot.pendingNextRun) loadNextRun(slot, index, slot.generation + 1, nowMs);
+      if (slot.pendingNextRun) {
+        loadNextRun(slot, index, slot.generation + 1, slot.nextRunStartedAtMs);
+      }
       const state = slot.run
         ? stepFlowLayer3DBeamRun(slot.run, nowMs - slot.startedAtMs, slot.deliveredArrivalIds)
-        : { arrivals: [], completed: false, progress: 0 };
+        : {
+          arrivals: [],
+          completed: false,
+          endElapsedMs: 0,
+          progress: 0,
+          started: false,
+          visibility: 0,
+        };
       state.arrivals.forEach((arrival) => {
         slot.deliveredArrivalIds.add(arrival.id);
         onArrival?.({ arrival, generation: slot.generation, runId: slot.run!.id, slot: index });
       });
+      const active = Boolean(slot.run && state.started);
+      const visibility = active ? state.visibility : 0;
       slot.beam.update({
-        packetVisibility: slot.run ? 1 : 0,
+        packetVisibility: visibility,
         phase: index,
         progress: state.progress,
         time,
-        visibility: slot.run ? 1 : 0,
+        visibility,
       });
-      if (slot.run && state.completed) loadNextRun(slot, index, slot.generation + 1, nowMs);
+      if (slot.run && state.completed) {
+        slot.nextRunStartedAtMs = slot.startedAtMs + state.endElapsedMs;
+        slot.pendingNextRun = true;
+      }
     });
     renderer.render(scene, camera);
   }

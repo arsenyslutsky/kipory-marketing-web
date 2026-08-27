@@ -232,10 +232,12 @@ export function BusinessFlowVertical({
       satellitePoints,
       showContinuationConnectors,
       speed: beamSpeed,
+      trailLengthInIllustrationUnits: beamTrailLength,
     }),
     [
       beamEmissionRandomness,
       beamSpeed,
+      beamTrailLength,
       connectorRadius,
       maxConcurrentBeams,
       satellitePoints,
@@ -257,7 +259,7 @@ export function BusinessFlowVertical({
     headGlowBlur: beamHeadGlowBlur,
     headGlowOpacity: beamHeadGlowOpacity,
     headGlowRadius: beamHeadGlowRadius,
-    trailLength: Math.min(1, Math.max(0, beamTrailLength / 100)),
+    trailLength: 0,
   }), [
     beamColor,
     beamEnabled,
@@ -265,7 +267,6 @@ export function BusinessFlowVertical({
     beamHeadGlowOpacity,
     beamHeadGlowRadius,
     beamHighlightColor,
-    beamTrailLength,
     connectorWidth,
   ]);
   const burstContext = useMemo<BurstContext>(() => ({

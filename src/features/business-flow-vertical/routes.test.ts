@@ -59,6 +59,24 @@ it('includes both continuation edges in a complete beam route', () => {
   ]);
 });
 
+it('carries literal start and end continuation fade progress only on continued runs', () => {
+  const satellitePoints = [[50, 18], [50, 82]] as const;
+  const continued = createSource({
+    connectorRadius: 0,
+    satellitePoints,
+    showContinuationConnectors: true,
+  }).next(0, 0)!;
+  const ordinary = createSource({
+    connectorRadius: 0,
+    satellitePoints,
+    showContinuationConnectors: false,
+  }).next(0, 0)!;
+
+  expect(continued.fade?.startUntilProgress).toBeCloseTo(22.8 / 210);
+  expect(continued.fade?.endFromProgress).toBeCloseTo(187.2 / 210);
+  expect(ordinary.fade).toBeUndefined();
+});
+
 it('emits arrivals in strictly increasing route progress', () => {
   const arrivals = createSource().next(0, 0)!.arrivals!;
 
@@ -89,6 +107,16 @@ it('clamps speed to one tenth and scales durations above that floor', () => {
 
   expect(zeroSpeedDuration).toBe(floorSpeedDuration);
   expect(doubleSpeedDuration * 20).toBeCloseTo(floorSpeedDuration);
+});
+
+it('converts legacy illustration-unit trail length into route progress', () => {
+  const source = createSource({
+    connectorRadius: 0,
+    satellitePoints: [[50, 18], [50, 82]],
+    trailLengthInIllustrationUnits: 21,
+  });
+
+  expect(source.next(0, 0)?.trailLength).toBe(0.25);
 });
 
 it('floors and caps concurrent beam slots', () => {

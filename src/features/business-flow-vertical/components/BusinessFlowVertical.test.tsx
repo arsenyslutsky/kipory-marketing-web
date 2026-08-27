@@ -15,9 +15,13 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
       headGlowBlur?: number;
       headGlowOpacity?: number;
       headGlowRadius?: number;
+      trailLength: number;
     };
     paths: Array<{ curve?: number }>;
-    beamSource: { slots: number };
+    beamSource: {
+      slots: number;
+      next: (slot: number, generation: number) => { trailLength?: number } | null;
+    };
     onArrival?: (event: {
       arrival: { id: string; point: readonly [number, number]; progress: number };
       generation: number;
@@ -36,7 +40,9 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
       data-head-glow-radius={beam.headGlowRadius}
       data-paths={paths.length}
       data-reduced-motion={String(reducedMotion)}
+      data-run-trail={beamSource.next(0, 0)?.trailLength}
       data-slots={beamSource.slots}
+      data-style-trail={beam.trailLength}
       onClick={() => onArrival?.({
         arrival: { id: 'server', point: [0.2, 0.5], progress: 0.5 },
         generation: 3,
@@ -87,6 +93,37 @@ it('preserves independent beam trail and head-glow controls', () => {
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-blur', '12');
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-opacity', '0.35');
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-radius', '48');
+});
+
+it('keeps a zero trail disabled and converts legacy trail units per complete route', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  const view = render(
+    <BusinessFlowVertical
+      beamTrailLength={0}
+      connectorRadius={0}
+      numberOfNodesBottom={1}
+      numberOfNodesTop={1}
+    />,
+  );
+
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0');
+
+  view.rerender(
+    <BusinessFlowVertical
+      beamTrailLength={21}
+      connectorRadius={0}
+      numberOfNodesBottom={1}
+      numberOfNodesTop={1}
+    />,
+  );
+
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0.25');
 });
 
 it('passes live reduced-motion preference to the shared layer and cleans up its listener', () => {

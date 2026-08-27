@@ -15,6 +15,7 @@ export type VerticalBeamSourceOptions = {
   satellitePoints: readonly PillarPoint[];
   showContinuationConnectors: boolean;
   speed: number;
+  trailLengthInIllustrationUnits?: number;
 };
 
 type CentralNode = keyof typeof coloredPoints;
@@ -39,6 +40,7 @@ const coloredRoutes: readonly (readonly PillarPoint[])[] = [
 ];
 
 const centralOrder: readonly CentralNode[] = ['server', 'graph', 'vector', 'intelligence'];
+const continuationFadeBoundary = 12;
 const minimumEmissionPause = 0.12;
 const emissionPauseVariation = 1.08;
 
@@ -46,6 +48,69 @@ const normalize = ([x, y]: PillarPoint): FlowLayer3DPoint => [x / 100, y / 100];
 
 function distance(a: PillarPoint, b: PillarPoint) {
   return Math.hypot(b[0] - a[0], b[1] - a[1]);
+}
+
+function moveToward(from: PillarPoint, to: PillarPoint, amount: number): PillarPoint {
+  const length = distance(from, to);
+  if (length === 0) return from;
+  return [
+    from[0] + ((to[0] - from[0]) / length) * amount,
+    from[1] + ((to[1] - from[1]) / length) * amount,
+  ];
+}
+
+function roundedRouteLength(rawPoints: readonly PillarPoint[], cornerRadius: number) {
+  const points = rawPoints.filter((point, index) => (
+    index === 0 || distance(point, rawPoints[index - 1]) > 0.001
+  ));
+  if (points.length < 2) return 0;
+  const resolvedRadius = Math.max(0, cornerRadius);
+  if (points.length === 2 || resolvedRadius === 0) {
+    return points.slice(1).reduce(
+      (length, point, index) => length + distance(points[index], point),
+      0,
+    );
+  }
+
+  let length = 0;
+  let cursor = points[0];
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const previous = points[index - 1];
+    const corner = points[index];
+    const next = points[index + 1];
+    const trim = Math.min(
+      resolvedRadius,
+      distance(previous, corner) / 2,
+      distance(corner, next) / 2,
+    );
+    const entry = moveToward(corner, previous, trim);
+    const exit = moveToward(corner, next, trim);
+    length += distance(cursor, entry);
+    let curvePoint = entry;
+    for (let step = 1; step <= 32; step += 1) {
+      const t = step / 32;
+      const inverse = 1 - t;
+      const nextCurvePoint: PillarPoint = [
+        inverse * inverse * entry[0] + 2 * inverse * t * corner[0] + t * t * exit[0],
+        inverse * inverse * entry[1] + 2 * inverse * t * corner[1] + t * t * exit[1],
+      ];
+      length += distance(curvePoint, nextCurvePoint);
+      curvePoint = nextCurvePoint;
+    }
+    cursor = exit;
+  }
+
+  return length + distance(cursor, points.at(-1)!);
+}
+
+function legacyTrailLengthToProgress(
+  trailLengthInIllustrationUnits: number,
+  route: readonly PillarPoint[],
+  connectorRadius: number,
+) {
+  const routeLength = roundedRouteLength(route, connectorRadius);
+  if (routeLength === 0) return 0;
+  return Math.min(1, Math.max(0, trailLengthInIllustrationUnits) / routeLength);
 }
 
 function routeToSatellite(point: PillarPoint): PillarPoint[] {
@@ -187,6 +252,30 @@ function approximateScreenLength(route: readonly PillarPoint[]) {
   );
 }
 
+function continuationFade(route: readonly PillarPoint[]) {
+  const first = route[0];
+  const last = route.at(-1)!;
+  const totalLength = approximateScreenLength(route);
+  if (totalLength === 0) return undefined;
+  const startBoundary: PillarPoint = [
+    first[0],
+    first[1] < 50
+      ? first[1] + continuationFadeBoundary
+      : first[1] - continuationFadeBoundary,
+  ];
+  const endBoundary: PillarPoint = [
+    last[0],
+    last[1] < 50
+      ? last[1] + continuationFadeBoundary
+      : last[1] - continuationFadeBoundary,
+  ];
+
+  return {
+    endFromProgress: 1 - screenSegmentLength(endBoundary, last) / totalLength,
+    startUntilProgress: screenSegmentLength(first, startBoundary) / totalLength,
+  };
+}
+
 function routeProgressAtPoint(route: readonly PillarPoint[], arrivalPoint: PillarPoint) {
   const arrivalIndex = route.findIndex((point) => distance(point, arrivalPoint) < 0.001);
   const totalLength = approximateScreenLength(route);
@@ -229,6 +318,7 @@ function createBeamRun(
   showContinuationConnectors: boolean,
   emissionRandomness: number,
   connectorRadius: number,
+  trailLengthInIllustrationUnits: number,
   random: () => number,
 ) {
   const route = completeBeamRoute(trace, satellitePoints, showContinuationConnectors);
@@ -249,12 +339,18 @@ function createBeamRun(
     arrivals,
     delayMs: emissionDelay(trace, slot, emissionRandomness, random) * 1000,
     durationMs,
+    ...(showContinuationConnectors ? { fade: continuationFade(route) } : {}),
     id: `vertical-${slot}:${trace.generation}`,
     path: {
       id: `vertical-beam-${slot}:${trace.generation}`,
       points: route.map(normalize),
       curve: Math.min(100, Math.max(0, connectorRadius * 20)),
     },
+    trailLength: legacyTrailLengthToProgress(
+      trailLengthInIllustrationUnits,
+      route,
+      connectorRadius,
+    ),
   };
 }
 
@@ -298,6 +394,7 @@ export function createBusinessFlowVerticalBeamSource({
   satellitePoints,
   showContinuationConnectors,
   speed,
+  trailLengthInIllustrationUnits = 0,
 }: VerticalBeamSourceOptions): FlowLayer3DBeamSource {
   const sourceIndexes = satellitePoints.flatMap((point, index) => point[1] < 50 ? [index] : []);
   const targetIndexes = satellitePoints.flatMap((point, index) => point[1] > 50 ? [index] : []);
@@ -328,6 +425,7 @@ export function createBusinessFlowVerticalBeamSource({
         showContinuationConnectors,
         Math.min(100, Math.max(0, emissionRandomness)),
         connectorRadius,
+        trailLengthInIllustrationUnits,
         random,
       );
     },

@@ -15,6 +15,7 @@ function createObject(options: {
   packetHaloBlur: number;
   packetHaloOpacity: number;
   packetHaloSize: number;
+  trailLength?: number;
 }) {
   const start = new THREE.Vector3(0, 0, 0);
   const end = new THREE.Vector3(1, 0, 0);
@@ -46,4 +47,33 @@ it('applies packet halo blur, opacity, and size independently', () => {
   expect(beam.packetHalo.material.uniforms.uBlur.value).toBe(0.25);
   expect(beam.packetHalo.material.uniforms.uOpacity.value).toBe(0.4);
   expect(beam.packetHalo.scale.x).toBeCloseTo(1.72);
+});
+
+it('supports an exactly disabled trail without changing the existing default', () => {
+  const packetOptions = {
+    packetHaloBlur: 0,
+    packetHaloOpacity: 0.4,
+    packetHaloSize: 1,
+  };
+  const disabledTrail = createObject({ ...packetOptions, trailLength: 0 });
+  const defaultTrail = createObject(packetOptions);
+
+  expect(disabledTrail.core.material.uniforms.uTrailLength.value).toBe(0);
+  expect(disabledTrail.glow.material.uniforms.uTrailLength.value).toBe(0);
+  expect(disabledTrail.aura.material.uniforms.uTrailLength.value).toBe(0);
+  expect(defaultTrail.core.material.uniforms.uTrailLength.value).toBe(0.38);
+});
+
+it('updates every trail material for a route-specific normalized length', () => {
+  const beam = createObject({
+    packetHaloBlur: 0,
+    packetHaloOpacity: 0.4,
+    packetHaloSize: 1,
+  });
+
+  beam.setTrailLength(0.25);
+
+  expect(beam.core.material.uniforms.uTrailLength.value).toBe(0.25);
+  expect(beam.glow.material.uniforms.uTrailLength.value).toBe(0.25);
+  expect(beam.aura.material.uniforms.uTrailLength.value).toBe(0.25);
 });
