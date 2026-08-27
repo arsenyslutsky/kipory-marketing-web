@@ -1,12 +1,18 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
+import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
 import { BusinessFlowVertical } from './BusinessFlowVertical';
+
+let capturedNodes: readonly FlowLayer3DNode[] | undefined;
+let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
     beam,
     paths,
     beamSource,
+    nodes,
+    nodeStyle,
     onArrival,
     reducedMotion,
   }: {
@@ -18,6 +24,8 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
       trailLength: number;
     };
     paths: Array<{ curve?: number }>;
+    nodes?: readonly FlowLayer3DNode[];
+    nodeStyle?: FlowLayer3DNodeStyle;
     beamSource: {
       slots: number;
       next: (slot: number, generation: number) => { trailLength?: number } | null;
@@ -29,33 +37,41 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
       slot: number;
     }) => void;
     reducedMotion?: boolean;
-  }) => (
-    <button
-      type="button"
-      data-testid="flow-layer"
-      data-beam-width={beam.beamWidth}
-      data-curve={paths[0]?.curve}
-      data-head-glow-blur={beam.headGlowBlur}
-      data-head-glow-opacity={beam.headGlowOpacity}
-      data-head-glow-radius={beam.headGlowRadius}
-      data-paths={paths.length}
-      data-reduced-motion={String(reducedMotion)}
-      data-run-trail={beamSource.next(0, 0)?.trailLength}
-      data-slots={beamSource.slots}
-      data-style-trail={beam.trailLength}
-      onClick={() => onArrival?.({
-        arrival: { id: 'server', point: [0.2, 0.5], progress: 0.5 },
-        generation: 3,
-        runId: 'vertical-0:3',
-        slot: 0,
-      })}
-    />
-  ),
+  }) => {
+    capturedNodes = nodes;
+    capturedNodeStyle = nodeStyle;
+    return (
+      <button
+        type="button"
+        data-testid="flow-layer"
+        data-beam-width={beam.beamWidth}
+        data-curve={paths[0]?.curve}
+        data-head-glow-blur={beam.headGlowBlur}
+        data-head-glow-opacity={beam.headGlowOpacity}
+        data-head-glow-radius={beam.headGlowRadius}
+        data-paths={paths.length}
+        data-reduced-motion={String(reducedMotion)}
+        data-run-trail={beamSource.next(0, 0)?.trailLength}
+        data-slots={beamSource.slots}
+        data-style-trail={beam.trailLength}
+        onClick={() => onArrival?.({
+          arrival: { id: 'server', point: [0.2, 0.5], progress: 0.5 },
+          generation: 3,
+          runId: 'vertical-0:3',
+          slot: 0,
+        })}
+      />
+    );
+  },
 }));
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  capturedNodes = undefined;
+  capturedNodeStyle = undefined;
+  vi.unstubAllGlobals();
+});
 
-it('renders one shared layer while retaining central and surrounding icons', () => {
+it('renders the central hierarchy and satellite documents in one shared Node3D layer', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -71,7 +87,18 @@ it('renders one shared layer while retaining central and surrounding icons', () 
   expect(screen.getAllByTestId('flow-layer')).toHaveLength(1);
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-paths', '11');
   expect(screen.getByLabelText('Vertical business flow')).toBeInTheDocument();
-  expect(screen.getAllByRole('img')).toHaveLength(4);
+  expect(capturedNodes).toHaveLength(8);
+  expect(capturedNodes?.slice(0, 4).every((node) => node.shape === 'square')).toBe(true);
+  expect(capturedNodes?.slice(4).every((node) => node.shape === 'rectangle')).toBe(true);
+  expect(capturedNodeStyle).toMatchObject({ assetBasePath: '/assets/nodes' });
+  expect(document.querySelectorAll('svg')).toHaveLength(0);
+  expect(screen.getByRole('list', { name: 'Central flow nodes' })).toBeInTheDocument();
+  expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+    'Server',
+    'Graph',
+    'Vector',
+    'Intelligence',
+  ]);
 });
 
 it('preserves independent beam trail and head-glow controls', () => {

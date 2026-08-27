@@ -5,65 +5,21 @@ import {
   type FlowLayer3DArrival,
   type FlowLayer3DArrivalEvent,
   type FlowLayer3DBeamSource,
+  type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  businessFlowVerticalCentralNodes,
+  createBusinessFlowVerticalNodes,
+  createBusinessFlowVerticalSatellites,
+} from '../nodes';
 import {
   createBusinessFlowVerticalBeamSource,
   createBusinessFlowVerticalPaths,
   type PillarPoint,
 } from '../routes';
-import {
-  PillarIcon,
-  type PillarIconFillMode,
-  type PillarIconName,
-} from './PillarIcon';
-import {
-  PillarSurroundingIcon,
-  type PillarSurroundingIconName,
-} from './PillarSurroundingIcon';
+import type { PillarIconFillMode } from './PillarIcon';
 import styles from './BusinessFlowVertical.module.css';
-
-const pillars: Array<{ name: PillarIconName; label: string }> = [
-  { name: 'server', label: 'Server' },
-  { name: 'graph', label: 'Graph' },
-  { name: 'vector', label: 'Vector' },
-  { name: 'intelligence', label: 'Intelligence' },
-];
-
-const surroundingIconNames: PillarSurroundingIconName[] = [
-  'download',
-  'profile',
-  'profile-alt',
-];
-
-function rowPoint(index: number, count: number, y: number, spacing: number) {
-  const inset = 8;
-  const availableWidth = 100 - inset * 2;
-  const baseX = count === 1 ? 50 : inset + (availableWidth * index) / (count - 1);
-
-  return { x: 50 + (baseX - 50) * spacing, y };
-}
-
-function createSurroundingIcons(
-  requestedTopCount: number,
-  requestedBottomCount: number,
-  requestedSpacing: number,
-) {
-  const topCount = Math.max(0, Math.floor(requestedTopCount));
-  const bottomCount = Math.max(0, Math.floor(requestedBottomCount));
-  const spacing = Math.min(1, Math.max(0, requestedSpacing));
-
-  return [
-    ...Array.from({ length: topCount }, (_, index) => ({
-      name: surroundingIconNames[index % surroundingIconNames.length],
-      ...rowPoint(index, topCount, 18, spacing),
-    })),
-    ...Array.from({ length: bottomCount }, (_, index) => ({
-      name: surroundingIconNames[(topCount + index) % surroundingIconNames.length],
-      ...rowPoint(index, bottomCount, 82, spacing),
-    })),
-  ];
-}
 
 export type BusinessFlowVerticalProps = {
   auxiliaryIconFillColor?: string;
@@ -111,13 +67,7 @@ type IllustrationStyle = CSSProperties & {
   '--pillars-grid-density': string;
   '--pillars-grid-opacity': string;
   '--pillars-height': string;
-  '--pillars-icon-size': string;
   '--pillars-width': string;
-};
-
-type SurroundingIconStyle = CSSProperties & {
-  '--surrounding-x': string;
-  '--surrounding-y': string;
 };
 
 type BurstStyle = CSSProperties & {
@@ -210,14 +160,56 @@ export function BusinessFlowVertical({
   width = '20rem',
 }: BusinessFlowVerticalProps) {
   const reducedMotion = useReducedMotionPreference();
-  const surroundingIcons = useMemo(
-    () => createSurroundingIcons(numberOfNodesTop, numberOfNodesBottom, auxiliaryNodeSpacing),
+  const satellites = useMemo(
+    () => createBusinessFlowVerticalSatellites(
+      numberOfNodesTop,
+      numberOfNodesBottom,
+      auxiliaryNodeSpacing,
+    ),
     [auxiliaryNodeSpacing, numberOfNodesBottom, numberOfNodesTop],
   );
   const satellitePoints = useMemo(
-    () => surroundingIcons.map(({ x, y }) => [x, y] as PillarPoint),
-    [surroundingIcons],
+    () => satellites.map(({ x, y }) => [x, y] as PillarPoint),
+    [satellites],
   );
+  const gradient = useMemo(() => ({
+    angle: 117,
+    start: gradientStartColor,
+    mid: gradientMidColor,
+    end: gradientEndColor,
+  }), [gradientEndColor, gradientMidColor, gradientStartColor]);
+  const nodes = useMemo(() => createBusinessFlowVerticalNodes({
+    auxiliaryIconColor: auxiliaryIconFillColor,
+    centralIconColor: centralIconFillColor,
+    centralIconFillMode,
+    centralIconStrokeOpacity,
+    gradient,
+    iconSize,
+    satellites,
+    strokeWidth,
+  }), [
+    auxiliaryIconFillColor,
+    centralIconFillColor,
+    centralIconFillMode,
+    centralIconStrokeOpacity,
+    gradient,
+    iconSize,
+    satellites,
+    strokeWidth,
+  ]);
+  const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    assetBasePath: '/assets/nodes',
+    frontGradient: gradient,
+    mode: 'dark',
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    progressBarHeight: 15,
+    progressMode: 'outline',
+    progressPadding: 1,
+    sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
+    sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
+  }), [gradient]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
   const paths = useMemo(
     () => createBusinessFlowVerticalPaths(satellitePoints, showContinuationConnectors)
@@ -306,7 +298,6 @@ export function BusinessFlowVertical({
     '--pillars-grid-density': `${gridDensity}px`,
     '--pillars-grid-opacity': String(gridOpacity),
     '--pillars-height': cssSize(height),
-    '--pillars-icon-size': `${iconSize}px`,
     '--pillars-width': cssSize(width),
   };
   const resolvedBurstFadeTime = Math.max(1, burstFadeTime);
@@ -326,6 +317,8 @@ export function BusinessFlowVertical({
         beamSource={beamSource}
         className={styles.flowLayer}
         connector={connector}
+        nodes={nodes}
+        nodeStyle={nodeStyle}
         onArrival={onArrival}
         paths={paths}
         reducedMotion={reducedMotion}
@@ -350,45 +343,11 @@ export function BusinessFlowVertical({
           </span>
         ))}
       </div>
-      <div className={styles.surroundingLayer} aria-hidden="true">
-        {surroundingIcons.map((icon, index) => {
-          const surroundingStyle: SurroundingIconStyle = {
-            '--surrounding-x': `${icon.x}%`,
-            '--surrounding-y': `${icon.y}%`,
-          };
-
-          return (
-            <PillarSurroundingIcon
-              className={styles.surroundingIcon}
-              fill={auxiliaryIconFillColor}
-              key={`${icon.name}-${index}`}
-              name={icon.name}
-              strokeWidth={strokeWidth / 4}
-              style={surroundingStyle}
-            />
-          );
-        })}
-      </div>
-      <div className={styles.composition}>
-        <div className={styles.grid} role="list">
-          {pillars.map((pillar) => (
-            <article className={styles.card} role="listitem" key={pillar.name}>
-              <PillarIcon
-                className={styles.icon}
-                fillColor={centralIconFillColor}
-                fillMode={centralIconFillMode}
-                name={pillar.name}
-                strokeOpacity={centralIconStrokeOpacity}
-                title={`${pillar.label} icon`}
-                strokeWidth={strokeWidth}
-                gradientStartColor={gradientStartColor}
-                gradientMidColor={gradientMidColor}
-                gradientEndColor={gradientEndColor}
-              />
-            </article>
-          ))}
-        </div>
-      </div>
+      <ul className={styles.semanticList} aria-label="Central flow nodes">
+        {businessFlowVerticalCentralNodes.map(({ id, label }) => (
+          <li key={id}>{label}</li>
+        ))}
+      </ul>
     </section>
   );
 }
