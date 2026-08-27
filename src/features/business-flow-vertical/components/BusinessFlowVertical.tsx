@@ -185,6 +185,7 @@ export function BusinessFlowVertical({
     centralIconStrokeOpacity,
     gradient,
     iconSize,
+    iconStrokeColor: color,
     satellites,
     strokeWidth,
   }), [
@@ -192,6 +193,7 @@ export function BusinessFlowVertical({
     centralIconFillColor,
     centralIconFillMode,
     centralIconStrokeOpacity,
+    color,
     gradient,
     iconSize,
     satellites,

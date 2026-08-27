@@ -36,12 +36,14 @@ export function createBusinessFlowHorizontalNodes({
   centralIconColor,
   centralIconStrokeOpacity,
   iconSize,
+  iconStrokeColor,
   strokeWidth,
 }: {
   auxiliaryIconColor: string;
   centralIconColor: string;
   centralIconStrokeOpacity: number;
   iconSize: number;
+  iconStrokeColor: string;
   strokeWidth: number;
 }): readonly FlowLayer3DNode[] {
   const scale = iconSize / 40;
@@ -56,10 +58,12 @@ export function createBusinessFlowHorizontalNodes({
       icon: `${node.icon}.svg`,
       iconColor: central ? centralIconColor : auxiliaryIconColor,
       iconOpacity: 1,
+      iconStrokeColor,
       ...(central && {
         iconStrokeOpacity: centralIconStrokeOpacity,
         iconStrokeWidth: strokeWidth,
       }),
+      ...(!central && { iconStrokeWidth: strokeWidth / 4 }),
       id: node.id,
       position: [node.x / 320, node.y / 608],
       shape: dimensions.shape,

@@ -49,6 +49,7 @@ export type CreateNode3DObjectOptions = {
   iconFillMode?: Node3DIconFillMode;
   iconGradient?: Node3DResolvedGradient;
   iconOpacity: number;
+  iconStrokeColor?: string;
   iconStrokeOpacity?: number;
   iconStrokeWidth?: number;
   id: string;
@@ -84,6 +85,7 @@ export function createNode3DObject({
   iconFillMode,
   iconGradient,
   iconOpacity,
+  iconStrokeColor,
   iconStrokeOpacity,
   iconStrokeWidth,
   id,
@@ -117,6 +119,7 @@ export function createNode3DObject({
   const nodeCornerRadiusPixels = THREE.MathUtils.clamp(nodeCornerRadius, 0, 50);
   const baseIconOpacity = THREE.MathUtils.clamp(iconOpacity, 0, 1);
   const resolvedIconColor = iconColor ?? palette.icon;
+  const resolvedIconStrokeColor = iconStrokeColor ?? resolvedIconColor;
   const resolvedIconStrokeOpacity = iconStrokeOpacity ?? 1;
   const resolvedIconStrokeWidth = iconStrokeWidth;
 
@@ -443,6 +446,7 @@ export function createNode3DObject({
         color: resolvedIconColor,
         fillMode: iconFillMode ?? 'solid',
         gradient: iconGradient,
+        strokeColor: resolvedIconStrokeColor,
         strokeOpacity: resolvedIconStrokeOpacity,
         strokeWidth: resolvedIconStrokeWidth,
       }, `${id}-icon-gradient`);

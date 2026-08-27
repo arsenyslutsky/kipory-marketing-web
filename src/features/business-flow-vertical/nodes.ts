@@ -69,6 +69,7 @@ export function createBusinessFlowVerticalNodes({
   centralIconStrokeOpacity,
   gradient,
   iconSize,
+  iconStrokeColor,
   satellites,
   strokeWidth,
 }: {
@@ -78,6 +79,7 @@ export function createBusinessFlowVerticalNodes({
   centralIconStrokeOpacity: number;
   gradient: Node3DResolvedGradient;
   iconSize: number;
+  iconStrokeColor: string;
   satellites: readonly BusinessFlowVerticalSatellite[];
   strokeWidth: number;
 }): readonly FlowLayer3DNode[] {
@@ -92,6 +94,7 @@ export function createBusinessFlowVerticalNodes({
       iconFillMode: centralIconFillMode === 'gradient' ? 'gradient' as const : 'solid' as const,
       iconGradient: gradient,
       iconOpacity: 1,
+      iconStrokeColor,
       iconStrokeOpacity: centralIconStrokeOpacity,
       iconStrokeWidth: strokeWidth,
       id: node.id,
@@ -107,6 +110,7 @@ export function createBusinessFlowVerticalNodes({
       iconColor: auxiliaryIconColor,
       iconFillMode: 'solid' as const,
       iconOpacity: 0.72,
+      iconStrokeColor,
       iconStrokeWidth: strokeWidth / 4,
       id: `satellite-${index}`,
       position: [satellite.x / 100, satellite.y / 100] as const,

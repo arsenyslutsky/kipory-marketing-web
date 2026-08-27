@@ -16,6 +16,7 @@ export type Node3DIconStyle = {
   color: string;
   fillMode: Node3DIconFillMode;
   gradient?: Node3DResolvedGradient;
+  strokeColor?: string;
   strokeOpacity: number;
   strokeWidth?: number;
 };
@@ -37,6 +38,7 @@ export type Node3DProps = {
   icon?: string;
   iconColor?: string;
   iconOpacity?: number;
+  iconStrokeColor?: string;
   iconStrokeOpacity?: number;
   iconStrokeWidth?: number;
   interactive?: boolean;
@@ -72,8 +74,8 @@ export type Node3DSceneElements = {
 };
 
 export type Node3DSceneOptions = Required<Omit<Node3DProps,
-  'className' | 'height' | 'width' | 'iconColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
->> & Pick<Node3DProps, 'iconColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
+  'className' | 'height' | 'width' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
+>> & Pick<Node3DProps, 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
   elements: Node3DSceneElements;
 };
 

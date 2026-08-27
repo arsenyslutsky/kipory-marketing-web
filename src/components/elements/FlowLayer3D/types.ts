@@ -19,6 +19,7 @@ export type FlowLayer3DNode = {
   iconFillMode?: Node3DIconFillMode;
   iconGradient?: Node3DResolvedGradient;
   iconOpacity: number;
+  iconStrokeColor?: string;
   iconStrokeOpacity?: number;
   iconStrokeWidth?: number;
   id: string;

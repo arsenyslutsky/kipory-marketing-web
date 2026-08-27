@@ -51,6 +51,23 @@ it('renders one shared Node3D layer instead of DOM icon SVGs', () => {
   expect(screen.getByRole('img', { name: /Horizontal business flow/i })).toBeInTheDocument();
 });
 
+it('maps its public color to every node stroke without changing the role fill colors', () => {
+  render(
+    <BusinessFlowHorizontal
+      auxiliaryIconFillColor="#111111"
+      centralIconFillColor="#222222"
+      color="#abcdef"
+    />,
+  );
+
+  expect(capturedNodes).toHaveLength(10);
+  expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
+  expect(capturedNodes?.filter((node) => node.id.startsWith('terminal')).every((node) => node.iconColor === '#111111'))
+    .toBe(true);
+  expect(capturedNodes?.filter((node) => !node.id.startsWith('terminal')).every((node) => node.iconColor === '#222222'))
+    .toBe(true);
+});
+
 it('passes current reduced-motion preference to the shared layer and cleans up its listener', () => {
   const listeners = new Set<(event: MediaQueryListEvent) => void>();
   const addEventListener = vi.fn((_: 'change', listener: (event: MediaQueryListEvent) => void) => {

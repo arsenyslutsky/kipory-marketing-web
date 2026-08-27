@@ -36,12 +36,13 @@ export function styleNode3DIconSvg(svg: SVGSVGElement, style: Node3DIconStyle, g
   }
 
   const strokeOpacity = Math.min(1, Math.max(0, style.strokeOpacity));
+  const strokeColor = style.strokeColor ?? style.color;
   svg.querySelectorAll<SVGElement>('[fill]').forEach((element) => {
     if (element.getAttribute('fill') !== 'none') element.setAttribute('fill', fill);
   });
   svg.querySelectorAll<SVGElement>('[stroke]').forEach((element) => {
     if (element.getAttribute('stroke') === 'none') return;
-    element.setAttribute('stroke', style.color);
+    element.setAttribute('stroke', strokeColor);
     element.setAttribute('stroke-opacity', String(strokeOpacity));
     if (style.strokeWidth !== undefined && Number.isFinite(style.strokeWidth) && style.strokeWidth >= 0) {
       element.setAttribute('stroke-width', String(style.strokeWidth));

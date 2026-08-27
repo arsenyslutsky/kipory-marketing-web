@@ -101,6 +101,28 @@ it('renders the central hierarchy and satellite documents in one shared Node3D l
   ]);
 });
 
+it('maps its public color to every node stroke without changing central or satellite fills', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(
+    <BusinessFlowVertical
+      auxiliaryIconFillColor="#111111"
+      centralIconFillColor="#222222"
+      color="#abcdef"
+      numberOfNodesBottom={1}
+      numberOfNodesTop={1}
+    />,
+  );
+
+  expect(capturedNodes).toHaveLength(6);
+  expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
+  expect(capturedNodes?.slice(0, 4).every((node) => node.iconColor === '#222222')).toBe(true);
+  expect(capturedNodes?.slice(4).every((node) => node.iconColor === '#111111')).toBe(true);
+});
+
 it('preserves independent beam trail and head-glow controls', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),

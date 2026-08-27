@@ -137,11 +137,13 @@ export function BusinessFlowHorizontal({
     centralIconColor: centralIconFillColor,
     centralIconStrokeOpacity,
     iconSize,
+    iconStrokeColor: color,
     strokeWidth,
   }), [
     auxiliaryIconFillColor,
     centralIconFillColor,
     centralIconStrokeOpacity,
+    color,
     iconSize,
     strokeWidth,
   ]);

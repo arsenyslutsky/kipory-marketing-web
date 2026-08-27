@@ -22,6 +22,28 @@ describe('styleNode3DIconSvg', () => {
     expect(svg.querySelectorAll('[stroke]')[0]?.getAttribute('stroke-width')).toBe('2.5');
   });
 
+  it('allows an SVG icon stroke color distinct from its fill color and defaults it to the fill color', () => {
+    const distinct = parse('<svg xmlns="http://www.w3.org/2000/svg"><path id="icon" fill="#000" stroke="#000"/></svg>');
+    styleNode3DIconSvg(distinct, {
+      color: '#123456',
+      fillMode: 'solid',
+      strokeColor: '#fedcba',
+      strokeOpacity: 1,
+    }, 'distinct-stroke');
+
+    expect(distinct.querySelector('#icon')?.getAttribute('fill')).toBe('#123456');
+    expect(distinct.querySelector('#icon')?.getAttribute('stroke')).toBe('#fedcba');
+
+    const legacy = parse('<svg xmlns="http://www.w3.org/2000/svg"><path id="icon" fill="#000" stroke="#000"/></svg>');
+    styleNode3DIconSvg(legacy, {
+      color: '#123456',
+      fillMode: 'solid',
+      strokeOpacity: 1,
+    }, 'legacy-stroke');
+
+    expect(legacy.querySelector('#icon')?.getAttribute('stroke')).toBe('#123456');
+  });
+
   it('injects one gradient and uses it only for non-none fills', () => {
     const svg = parse('<svg xmlns="http://www.w3.org/2000/svg"><path id="filled" fill="#000"/><path id="line" fill="none"/></svg>');
     styleNode3DIconSvg(svg, {
