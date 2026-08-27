@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
+import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from '../Beam3D/createBeam3DObject';
 import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
@@ -138,6 +138,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       viewportHeight,
       worldHeight,
     });
+    nodeObjects.group.traverse((object) => {
+      if (object instanceof CSS3DObject) object.element.style.pointerEvents = 'none';
+    });
     scene.add(nodeObjects.group);
   }
 
@@ -235,7 +238,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     renderer.setSize(width, height, false);
     cssRenderer.setSize(width, height);
     if (sizeChanged) rebuildNodes(height);
-    if (aspectChanged) {
+    if (aspectChanged || !connectorObjects) {
       rebuildConnectors();
       beamSlots.forEach((slot) => {
         if (!slot.run) return;

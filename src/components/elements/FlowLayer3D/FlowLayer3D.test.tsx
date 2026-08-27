@@ -5,7 +5,10 @@ import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 
 vi.mock('./createFlowLayer3DScene', () => ({ createFlowLayer3DScene: vi.fn() }));
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.clearAllMocks();
+});
 
 const beam = {
   beamColor: '#449c40',
@@ -18,6 +21,7 @@ const beam = {
 
 const beamSource = { slots: 0, next: () => null };
 const connector = { color: '#fff', opacity: 0.5, stroke: 'dashed' as const, width: 1.25 };
+const emptyPaths: readonly [] = [];
 const nodes = [{
   cardDepth: 40,
   height: 12,
@@ -79,6 +83,46 @@ it('mounts one shared CSS3D layer and passes serializable nodes to the scene', (
     cssLayer: expect.any(HTMLElement),
     nodes: [expect.objectContaining({ id: 'server' })],
   }));
+});
+
+it('does not recreate an omitted-node scene for an unchanged rerender', () => {
+  const destroy = vi.fn();
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy });
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    paths={emptyPaths}
+  />);
+
+  view.rerender(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    paths={emptyPaths}
+  />);
+
+  expect(createFlowLayer3DScene).toHaveBeenCalledOnce();
+  expect(destroy).not.toHaveBeenCalled();
+});
+
+it('does not retry a failed omitted-node scene when error state renders', async () => {
+  const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  vi.mocked(createFlowLayer3DScene).mockImplementation(() => {
+    throw new Error('WebGL unavailable');
+  });
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    paths={emptyPaths}
+  />);
+
+  await view.findByTestId('flow-layer-node-fallback');
+  await waitFor(() => {
+    expect(createFlowLayer3DScene).toHaveBeenCalledOnce();
+  });
+  expect(diagnostic).toHaveBeenCalledOnce();
 });
 
 it('renders CSS-pixel node fallbacks after a WebGL failure and clears them after recovery', async () => {

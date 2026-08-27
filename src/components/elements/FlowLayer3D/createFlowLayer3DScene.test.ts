@@ -64,7 +64,7 @@ import {
   createBeam3DFlareTexture,
   createBeam3DObject,
 } from '../Beam3D/createBeam3DObject';
-import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
+import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { createFlowLayer3DNodes, type FlowLayer3DNodes } from './createFlowLayer3DNodes';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
@@ -518,6 +518,45 @@ it('starts beam timing at zero and advances by the animation-frame delta without
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });
 
+it('builds connectors for an initially square viewport', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  const connectors: FlowLayer3DObjects = {
+    connectors: [],
+    destroy: vi.fn(),
+    group: new THREE.Group(),
+  };
+  vi.mocked(createFlowLayer3DObjects).mockReturnValueOnce(connectors);
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 320 },
+    clientWidth: { value: 320 },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    paths: [],
+  });
+
+  expect(createFlowLayer3DObjects).toHaveBeenCalledOnce();
+
+  controller.destroy();
+});
+
 it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and preserves beam slots', () => {
   const animationFrames: FrameRequestCallback[] = [];
   let resize: (() => void) | undefined;
@@ -532,12 +571,14 @@ it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and p
     return { disconnect, observe: vi.fn() };
   }));
 
-  const createNodesGroup = (): FlowLayer3DNodes => ({
-    destroy: vi.fn(),
-    group: new THREE.Group(),
-    nodes: [],
-  });
-  const firstNodes = createNodesGroup();
+  const nodeCssElement = document.createElement('div');
+  const nodeCssObject = new CSS3DObject(nodeCssElement);
+  const createNodesGroup = (cssObject?: CSS3DObject): FlowLayer3DNodes => {
+    const group = new THREE.Group();
+    if (cssObject) group.add(cssObject);
+    return { destroy: vi.fn(), group, nodes: [] };
+  };
+  const firstNodes = createNodesGroup(nodeCssObject);
   const secondNodes = createNodesGroup();
   const thirdNodes = createNodesGroup();
   vi.mocked(createFlowLayer3DNodes)
@@ -616,6 +657,7 @@ it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and p
   expect(cssLayer).toContainElement(cssRenderer.domElement);
   expect(renderer.setSize).toHaveBeenCalledWith(320, 640, false);
   expect(cssRenderer.setSize).toHaveBeenCalledWith(320, 640);
+  expect(nodeCssElement.style.pointerEvents).toBe('none');
 
   const firstFrame = animationFrames.shift();
   if (!firstFrame) throw new Error('Expected the first animation frame.');

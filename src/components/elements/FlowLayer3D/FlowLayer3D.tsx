@@ -3,20 +3,23 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 import styles from './FlowLayer3D.module.css';
-import type { FlowLayer3DProps, FlowLayer3DSceneController } from './types';
+import type { FlowLayer3DNode, FlowLayer3DProps, FlowLayer3DSceneController } from './types';
+
+const emptyNodes: readonly FlowLayer3DNode[] = [];
 
 export function FlowLayer3D({
   beam,
   beamSource,
   className,
   connector,
-  nodes = [],
+  nodes,
   nodeStyle,
   onArrival,
   paths,
   reducedMotion,
   worldHeight,
 }: FlowLayer3DProps) {
+  const flowNodes = nodes ?? emptyNodes;
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
@@ -37,7 +40,7 @@ export function FlowLayer3D({
         connector,
         container: containerRef.current,
         cssLayer: cssLayerRef.current,
-        nodes,
+        nodes: flowNodes,
         nodeStyle,
         onArrival,
         paths,
@@ -55,7 +58,7 @@ export function FlowLayer3D({
       active = false;
       controller?.destroy();
     };
-  }, [beam, beamSource, connector, nodeStyle, nodes, onArrival, paths, reducedMotion, worldHeight]);
+  }, [beam, beamSource, connector, flowNodes, nodeStyle, onArrival, paths, reducedMotion, worldHeight]);
 
   const rootClassName = className ? `${styles.root} ${className}` : styles.root;
   return (
@@ -64,7 +67,7 @@ export function FlowLayer3D({
       <div ref={cssLayerRef} className={styles.cssLayer} data-flow-layer-css3d />
       {error && (
         <div className={styles.fallbackLayer} data-testid="flow-layer-node-fallback">
-          {nodes.map((node) => (
+          {flowNodes.map((node) => (
             <span
               className={styles.fallbackNode}
               key={node.id}
