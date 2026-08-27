@@ -691,3 +691,103 @@ it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and p
   expect(disconnect).toHaveBeenCalledOnce();
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });
+
+it('tears down once and reports a post-mount node rebuild failure from ResizeObserver', () => {
+  let resize: (() => void) | undefined;
+  const cancelAnimationFrame = vi.fn();
+  const disconnect = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 17));
+  vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrame);
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver(callback: () => void) {
+    resize = callback;
+    return { disconnect, observe: vi.fn() };
+  }));
+
+  const firstNodes: FlowLayer3DNodes = {
+    destroy: vi.fn(),
+    group: new THREE.Group(),
+    nodes: [],
+  };
+  vi.mocked(createFlowLayer3DNodes)
+    .mockReturnValueOnce(firstNodes)
+    .mockImplementationOnce(() => {
+      throw new Error('resize node rebuild failed');
+    });
+  const connectors: FlowLayer3DObjects = {
+    connectors: [],
+    destroy: vi.fn(),
+    group: new THREE.Group(),
+  };
+  vi.mocked(createFlowLayer3DObjects).mockReturnValueOnce(connectors);
+  const onError = vi.fn();
+  const removeCssRenderer = vi.spyOn(cssRenderer.domElement, 'remove');
+  let width = 320;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { get: () => width },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodes: [{
+      cardDepth: 48,
+      height: 10,
+      icon: 'server.svg',
+      iconColor: '#1d281d',
+      iconOpacity: 1,
+      id: 'server',
+      position: [0.2, 0.5],
+      shape: 'square',
+      tier: 1,
+      width: 48,
+    }],
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 117, end: '#052f24', mid: '#03492b', start: '#066b43' },
+      mode: 'dark',
+      nodeCornerRadius: 10,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      progressBarHeight: 15,
+      progressMode: 'outline',
+      progressPadding: 1,
+      sideXGradient: { angle: 360, end: '#5c899b', mid: '#10402e', start: '#31775a' },
+      sideZGradient: { angle: 177, end: '#0e4b81', mid: '#366480', start: '#427298' },
+    },
+    onError,
+    paths: [],
+  });
+
+  width = 400;
+  expect(() => resize?.()).not.toThrow();
+
+  expect(onError).toHaveBeenCalledOnce();
+  expect(onError).toHaveBeenCalledWith(expect.objectContaining({
+    message: 'resize node rebuild failed',
+  }));
+  expect(firstNodes.destroy).toHaveBeenCalledOnce();
+  expect(connectors.destroy).toHaveBeenCalledOnce();
+  expect(cancelAnimationFrame).toHaveBeenCalledOnce();
+  expect(disconnect).toHaveBeenCalledOnce();
+  expect(removeCssRenderer).toHaveBeenCalledOnce();
+  expect(renderer.dispose).toHaveBeenCalledOnce();
+
+  controller.destroy();
+
+  expect(cancelAnimationFrame).toHaveBeenCalledOnce();
+  expect(disconnect).toHaveBeenCalledOnce();
+  expect(removeCssRenderer).toHaveBeenCalledOnce();
+  expect(renderer.dispose).toHaveBeenCalledOnce();
+});

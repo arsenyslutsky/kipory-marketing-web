@@ -20,7 +20,9 @@ it('creates medium central squares and small document satellites', () => {
 
   expect(satellites.map(({ x, y }) => [x, y])).toEqual([[8, 18], [92, 18], [8, 82], [92, 82]]);
   expect(nodes).toHaveLength(8);
-  expect(nodes.slice(0, 4).every((node) => node.shape === 'square' && node.width === 48)).toBe(true);
+  expect(nodes.slice(0, 4).every((node) => (
+    node.shape === 'square' && node.width === 48 && node.cardDepth === node.width
+  ))).toBe(true);
   expect(nodes.slice(4).every((node) => node.shape === 'rectangle' && node.width === 30)).toBe(true);
   expect(nodes[0]).toMatchObject({ icon: 'server.svg', position: [0.2, 0.5] });
 });
@@ -39,10 +41,10 @@ it('preserves all business icon descriptors across central and satellite roles',
   });
 
   const cases = [
-    ['server.svg', 'central', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
-    ['graph.svg', 'central', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
-    ['vector.svg', 'central', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
-    ['intelligence.svg', 'central', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
+    ['server.svg', 'central', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
+    ['graph.svg', 'central', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
+    ['vector.svg', 'central', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
+    ['intelligence.svg', 'central', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
     ['download.svg', 'satellite', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],
     ['profile.svg', 'satellite', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],
     ['profile-alt.svg', 'satellite', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],

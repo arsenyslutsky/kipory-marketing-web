@@ -32,6 +32,13 @@ export function FlowLayer3D({
     queueMicrotask(() => {
       if (active) setError('');
     });
+    const reportError = (error: unknown) => {
+      if (process.env.NODE_ENV !== 'production') console.error(error);
+      const message = error instanceof Error ? error.message : 'Unable to render FlowLayer3D.';
+      queueMicrotask(() => {
+        if (active) setError(message);
+      });
+    };
     try {
       controller = createFlowLayer3DScene({
         beam,
@@ -43,16 +50,13 @@ export function FlowLayer3D({
         nodes: flowNodes,
         nodeStyle,
         onArrival,
+        onError: reportError,
         paths,
         reducedMotion,
         worldHeight,
       });
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production') console.error(error);
-      const message = error instanceof Error ? error.message : 'Unable to render FlowLayer3D.';
-      queueMicrotask(() => {
-        if (active) setError(message);
-      });
+      reportError(error);
     }
     return () => {
       active = false;
@@ -70,17 +74,35 @@ export function FlowLayer3D({
           {flowNodes.map((node) => (
             <span
               className={styles.fallbackNode}
+              data-flow-node-fallback-body
+              data-flow-node-shape={node.shape}
               key={node.id}
               style={{
                 '--flow-node-aspect': String(node.width / node.cardDepth),
-                '--flow-node-color': node.iconColor,
+                '--flow-node-body-end': nodeStyle?.frontGradient.end ?? '#052f24',
+                '--flow-node-body-mid': nodeStyle?.frontGradient.mid ?? '#03492b',
+                '--flow-node-body-start': nodeStyle?.frontGradient.start ?? '#066b43',
                 '--flow-node-height': `${node.cardDepth}px`,
-                '--flow-node-icon': `url("${(nodeStyle?.assetBasePath ?? '/assets/nodes').replace(/\/$/, '')}/${node.icon}")`,
+                '--flow-node-icon-color': node.iconStrokeColor ?? '#f3f5ef',
+                '--flow-node-icon-opacity': String(Math.min(1, Math.max(0, node.iconOpacity))),
+                '--flow-node-radius': `${Math.max(2, Math.min(
+                  nodeStyle?.nodeCornerRadius ?? 8,
+                  node.width / 2,
+                  node.cardDepth / 2,
+                ))}px`,
                 '--flow-node-width': `${node.width}px`,
                 '--flow-node-x': `${node.position[0] * 100}%`,
                 '--flow-node-y': `${node.position[1] * 100}%`,
               } as CSSProperties}
-            />
+            >
+              <span
+                className={styles.fallbackIcon}
+                data-flow-node-fallback-icon
+                style={{
+                  '--flow-node-icon': `url("${(nodeStyle?.assetBasePath ?? '/assets/nodes').replace(/\/$/, '')}/${node.icon}")`,
+                } as CSSProperties}
+              />
+            </span>
           ))}
         </div>
       )}

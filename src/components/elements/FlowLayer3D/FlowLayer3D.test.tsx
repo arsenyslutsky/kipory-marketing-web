@@ -1,5 +1,6 @@
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
+import { businessFlowHorizontalHomepageProps } from '@/features/business-flow-horizontal/presets';
 import { FlowLayer3D } from './FlowLayer3D';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 
@@ -33,6 +34,17 @@ const nodes = [{
   shape: 'square' as const,
   tier: 2,
   width: 48,
+}];
+const productionFallbackNodes = [{
+  ...nodes[0],
+  cardDepth: 34,
+  icon: 'download.svg',
+  iconColor: businessFlowHorizontalHomepageProps.auxiliaryIconFillColor,
+  iconOpacity: 0.72,
+  iconStrokeColor: businessFlowHorizontalHomepageProps.color,
+  id: 'terminal-1',
+  shape: 'rectangle' as const,
+  width: 30,
 }];
 const nodeStyle = {
   assetBasePath: '/assets/nodes',
@@ -125,6 +137,35 @@ it('does not retry a failed omitted-node scene when error state renders', async 
   expect(diagnostic).toHaveBeenCalledOnce();
 });
 
+it('activates the fallback when the scene reports a post-mount rebuild failure', async () => {
+  const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  let reportSceneError: ((error: unknown) => void) | undefined;
+  vi.mocked(createFlowLayer3DScene).mockImplementation((options) => {
+    reportSceneError = options.onError;
+    return { destroy: vi.fn() };
+  });
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    nodeStyle={nodeStyle}
+    nodes={productionFallbackNodes}
+    paths={[]}
+  />);
+
+  expect(view.queryByTestId('flow-layer-node-fallback')).not.toBeInTheDocument();
+  expect(reportSceneError).toBeTypeOf('function');
+
+  act(() => {
+    reportSceneError?.(new Error('resize node rebuild failed'));
+  });
+
+  expect(await view.findByTestId('flow-layer-node-fallback')).toBeInTheDocument();
+  expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({
+    message: 'resize node rebuild failed',
+  }));
+});
+
 it('renders CSS-pixel node fallbacks after a WebGL failure and clears them after recovery', async () => {
   const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => undefined);
   vi.mocked(createFlowLayer3DScene).mockImplementation(() => {
@@ -162,5 +203,37 @@ it('renders CSS-pixel node fallbacks after a WebGL failure and clears them after
 
   await waitFor(() => {
     expect(view.queryByTestId('flow-layer-node-fallback')).not.toBeInTheDocument();
+  });
+});
+
+it('renders a visible fallback body and a separate contrasting icon with production colors', async () => {
+  vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  vi.mocked(createFlowLayer3DScene).mockImplementation(() => {
+    throw new Error('WebGL unavailable');
+  });
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    nodeStyle={nodeStyle}
+    nodes={productionFallbackNodes}
+    paths={[]}
+  />);
+
+  const fallback = await view.findByTestId('flow-layer-node-fallback');
+  const body = fallback.querySelector<HTMLElement>('[data-flow-node-fallback-body]');
+  const icon = fallback.querySelector<HTMLElement>('[data-flow-node-fallback-icon]');
+
+  expect(body).toBeInTheDocument();
+  expect(body).toHaveAttribute('data-flow-node-shape', 'rectangle');
+  expect(body).toHaveStyle({
+    '--flow-node-body-end': '#111',
+    '--flow-node-body-mid': '#222',
+    '--flow-node-body-start': '#333',
+    '--flow-node-icon-color': businessFlowHorizontalHomepageProps.color,
+  });
+  expect(icon).toBeInTheDocument();
+  expect(icon).toHaveStyle({
+    '--flow-node-icon': 'url("/assets/nodes/download.svg")',
   });
 });

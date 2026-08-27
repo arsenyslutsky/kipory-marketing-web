@@ -76,6 +76,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     nodes = [],
     nodeStyle,
     onArrival,
+    onError,
     paths,
     reducedMotion = false,
     worldHeight = 20,
@@ -114,23 +115,27 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   }
 
   function rebuildConnectors() {
-    connectorObjects?.destroy();
-    if (connectorObjects) scene.remove(connectorObjects.group);
-    connectorObjects = createFlowLayer3DObjects({
+    const nextConnectorObjects = createFlowLayer3DObjects({
       aspectRatio,
       connector,
       paths,
       worldHeight,
     });
-    scene.add(connectorObjects.group);
+    const previousConnectorObjects = connectorObjects;
+    connectorObjects = nextConnectorObjects;
+    scene.add(nextConnectorObjects.group);
+    previousConnectorObjects?.destroy();
+    if (previousConnectorObjects) scene.remove(previousConnectorObjects.group);
   }
 
   function rebuildNodes(viewportHeight: number) {
-    nodeObjects?.destroy();
-    if (nodeObjects) scene.remove(nodeObjects.group);
-    nodeObjects = undefined;
-    if (!nodeStyle || nodes.length === 0) return;
-    nodeObjects = createFlowLayer3DNodes({
+    if (!nodeStyle || nodes.length === 0) {
+      nodeObjects?.destroy();
+      if (nodeObjects) scene.remove(nodeObjects.group);
+      nodeObjects = undefined;
+      return;
+    }
+    const nextNodeObjects = createFlowLayer3DNodes({
       aspectRatio,
       nodeStyle,
       nodes,
@@ -138,10 +143,14 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       viewportHeight,
       worldHeight,
     });
-    nodeObjects.group.traverse((object) => {
+    nextNodeObjects.group.traverse((object) => {
       if (object instanceof CSS3DObject) object.element.style.pointerEvents = 'none';
     });
-    scene.add(nodeObjects.group);
+    const previousNodeObjects = nodeObjects;
+    nodeObjects = nextNodeObjects;
+    scene.add(nextNodeObjects.group);
+    previousNodeObjects?.destroy();
+    if (previousNodeObjects) scene.remove(previousNodeObjects.group);
   }
 
   function assignRun(slot: BeamSlot, run: FlowLayer3DBeamRun | null, nowMs: number) {
@@ -250,6 +259,16 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     measuredHeight = height;
   }
 
+  function handleResize() {
+    if (destroyed) return;
+    try {
+      resize();
+    } catch (error) {
+      destroy();
+      onError?.(error);
+    }
+  }
+
   function animate(timestamp: DOMHighResTimeStamp) {
     if (destroyed) return;
     frameId = requestAnimationFrame(animate);
@@ -318,7 +337,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   }
 
   try {
-    resizeObserver = new ResizeObserver(resize);
+    resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
     resize();
     createBeams();

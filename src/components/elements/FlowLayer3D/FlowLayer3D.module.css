@@ -29,9 +29,28 @@
   top: var(--flow-node-y);
   width: var(--flow-node-width);
   height: var(--flow-node-height);
-  display: block;
-  background-color: var(--flow-node-color);
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--flow-node-body-start), var(--flow-node-body-mid) 52%, var(--flow-node-body-end));
+  border: 1px solid var(--flow-node-icon-color);
+  border-radius: var(--flow-node-radius);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(255 255 255 / 16%);
   transform: translate(-50%, -50%);
+}
+
+.fallbackNode[data-flow-node-shape='hexagon'] {
+  border-radius: 0;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+
+.fallbackIcon {
+  width: 58%;
+  height: 58%;
+  display: block;
+  background-color: var(--flow-node-icon-color);
+  opacity: var(--flow-node-icon-opacity);
   mask: var(--flow-node-icon) center / contain no-repeat;
   -webkit-mask: var(--flow-node-icon) center / contain no-repeat;
 }

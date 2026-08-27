@@ -27,7 +27,7 @@ export const businessFlowHorizontalLayoutNodeById: Record<string, BusinessFlowHo
 
 const roleDimensions = {
   collector: { cardDepth: 48, height: 12, shape: 'hexagon', tier: 0, width: 58 },
-  relay: { cardDepth: 40, height: 10, shape: 'square', tier: 1, width: 48 },
+  relay: { cardDepth: 48, height: 10, shape: 'square', tier: 1, width: 48 },
   terminal: { cardDepth: 34, height: 8, shape: 'rectangle', tier: 2, width: 30 },
 } as const;
 
@@ -57,7 +57,7 @@ export function createBusinessFlowHorizontalNodes({
       height: dimensions.height * scale,
       icon: `${node.icon}.svg`,
       iconColor: central ? centralIconColor : auxiliaryIconColor,
-      iconOpacity: 1,
+      iconOpacity: central ? 1 : 0.72,
       iconStrokeColor,
       ...(central && {
         iconStrokeOpacity: centralIconStrokeOpacity,

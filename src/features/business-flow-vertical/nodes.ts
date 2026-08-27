@@ -29,7 +29,7 @@ const surroundingIconNames: readonly PillarSurroundingIconName[] = [
 ];
 
 const roleDimensions = {
-  central: { cardDepth: 40, height: 10, shape: 'square', tier: 1, width: 48 },
+  central: { cardDepth: 48, height: 10, shape: 'square', tier: 1, width: 48 },
   satellite: { cardDepth: 34, height: 8, shape: 'rectangle', tier: 2, width: 30 },
 } as const;
 

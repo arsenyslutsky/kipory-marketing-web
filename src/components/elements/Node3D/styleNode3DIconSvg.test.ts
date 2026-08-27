@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { styleNode3DIconSvg } from './styleNode3DIconSvg';
 
@@ -6,6 +8,33 @@ function parse(markup: string) {
 }
 
 describe('styleNode3DIconSvg', () => {
+  it.each([
+    ['download.svg', 2],
+    ['profile.svg', 3],
+    ['profile-alt.svg', 3],
+  ])('applies the requested fill to the real %s silhouette while preserving its stroke-only paths', (
+    asset,
+    strokeOnlyPathCount,
+  ) => {
+    const markup = readFileSync(
+      resolve(process.cwd(), 'public/assets/nodes', asset),
+      'utf8',
+    );
+    const svg = parse(markup);
+
+    styleNode3DIconSvg(svg, {
+      color: '#123456',
+      fillMode: 'solid',
+      strokeColor: '#fedcba',
+      strokeOpacity: 0.72,
+    }, `${asset}-gradient`);
+
+    expect(svg.querySelector('g')?.getAttribute('fill')).toBe('#123456');
+    expect(svg.querySelectorAll('path[fill="#123456"]').length).toBeGreaterThan(0);
+    expect(svg.querySelectorAll('path[fill="none"]')).toHaveLength(strokeOnlyPathCount);
+    expect(svg.querySelectorAll('path:not([fill="none"])').length).toBeGreaterThan(0);
+  });
+
   it('applies solid fill and stroke controls without filling stroke-only paths', () => {
     const svg = parse('<svg xmlns="http://www.w3.org/2000/svg"><path id="filled" fill="#000" stroke="#000"/><path id="line" fill="none" stroke="#000"/></svg>');
     styleNode3DIconSvg(svg, {

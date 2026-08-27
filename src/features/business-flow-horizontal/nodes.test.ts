@@ -21,7 +21,9 @@ it('maps collector, relays, and terminals to the approved Node3D hierarchy', () 
   });
   const relays = nodes.filter((node) => node.id.startsWith('relay'));
   const terminals = nodes.filter((node) => node.id.startsWith('terminal'));
-  expect(relays.every((node) => node.shape === 'square' && node.width === 48)).toBe(true);
+  expect(relays.every((node) => (
+    node.shape === 'square' && node.width === 48 && node.cardDepth === node.width
+  ))).toBe(true);
   expect(terminals.every((node) => node.shape === 'rectangle' && node.width === 30)).toBe(true);
 });
 
@@ -37,9 +39,9 @@ it('preserves all business icon descriptors, including terminal stroke-width sca
 
   const cases = [
     ['intelligence.svg', 'collector', 'hexagon', 58, 48, 12, 0, '#1d281d', 1.5],
-    ['server.svg', 'relay', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
-    ['graph.svg', 'relay', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
-    ['vector.svg', 'relay', 'square', 48, 40, 10, 1, '#1d281d', 1.5],
+    ['server.svg', 'relay', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
+    ['graph.svg', 'relay', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
+    ['vector.svg', 'relay', 'square', 48, 48, 10, 1, '#1d281d', 1.5],
     ['download.svg', 'terminal', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],
     ['profile.svg', 'terminal', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],
     ['profile-alt.svg', 'terminal', 'rectangle', 30, 34, 8, 2, '#212121', 0.375],
@@ -53,7 +55,7 @@ it('preserves all business icon descriptors, including terminal stroke-width sca
         cardDepth,
         height,
         iconColor,
-        iconOpacity: 1,
+        iconOpacity: role === 'terminal' ? 0.72 : 1,
         iconStrokeColor: '#f3f5ef',
         iconStrokeWidth,
         shape,
@@ -83,4 +85,18 @@ it('retains central stroke opacity while central and terminal icons use the soli
   expect(terminalNodes).toHaveLength(6);
   expect(terminalNodes.every((node) => !('iconStrokeOpacity' in node))).toBe(true);
   expect(terminalNodes.every((node) => !('iconFillMode' in node))).toBe(true);
+});
+
+it('restores the subdued terminal icon opacity used by the horizontal hierarchy', () => {
+  const terminals = createBusinessFlowHorizontalNodes({
+    auxiliaryIconColor: '#212121',
+    centralIconColor: '#1d281d',
+    centralIconStrokeOpacity: 0.52,
+    iconSize: 40,
+    iconStrokeColor: '#f3f5ef',
+    strokeWidth: 1.5,
+  }).filter((node) => node.id.startsWith('terminal'));
+
+  expect(terminals).toHaveLength(6);
+  expect(terminals.every((node) => node.iconOpacity === 0.72)).toBe(true);
 });
