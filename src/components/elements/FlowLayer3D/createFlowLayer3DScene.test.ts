@@ -9,12 +9,28 @@ const renderer = vi.hoisted(() => ({
   setSize: vi.fn(),
 }));
 
+const cssRenderer = vi.hoisted(() => ({
+  domElement: document.createElement('div'),
+  render: vi.fn(),
+  setSize: vi.fn(),
+}));
+
 vi.mock('three', async (importOriginal) => {
   const actual = await importOriginal<typeof import('three')>();
   return {
     ...actual,
     WebGLRenderer: vi.fn(function MockWebGLRenderer() {
       return renderer;
+    }),
+  };
+});
+
+vi.mock('three/addons/renderers/CSS3DRenderer.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('three/addons/renderers/CSS3DRenderer.js')>();
+  return {
+    ...actual,
+    CSS3DRenderer: vi.fn(function MockCSS3DRenderer() {
+      return cssRenderer;
     }),
   };
 });
@@ -28,11 +44,30 @@ vi.mock('../Beam3D/createBeam3DObject', async (importOriginal) => {
   };
 });
 
+vi.mock('./createFlowLayer3DNodes', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./createFlowLayer3DNodes')>();
+  return { ...actual, createFlowLayer3DNodes: vi.fn(actual.createFlowLayer3DNodes) };
+});
+
+vi.mock('./createFlowLayer3DObjects', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./createFlowLayer3DObjects')>();
+  return { ...actual, createFlowLayer3DObjects: vi.fn(actual.createFlowLayer3DObjects) };
+});
+
+vi.mock('../Node3D/node3DGradientTextureCache', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../Node3D/node3DGradientTextureCache')>();
+  return { ...actual, disposeNode3DGradientTextures: vi.fn(actual.disposeNode3DGradientTextures) };
+});
+
 import * as THREE from 'three';
 import {
   createBeam3DFlareTexture,
   createBeam3DObject,
 } from '../Beam3D/createBeam3DObject';
+import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
+import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
+import { createFlowLayer3DNodes, type FlowLayer3DNodes } from './createFlowLayer3DNodes';
+import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 import { normalizedPointToWorld } from './resolveFlowLayer3D';
 
@@ -60,6 +95,7 @@ it('disposes the renderer when renderer configuration fails', () => {
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [],
   })).toThrow('pixel-ratio setup failed');
 
@@ -89,6 +125,7 @@ it('leaves the shared beam flare for scene-level cleanup', () => {
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [path],
   });
 
@@ -125,6 +162,7 @@ it('projects normalized left and top points to the matching screen edges', () =>
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container,
+    cssLayer: document.createElement('div'),
     paths: [],
   });
 
@@ -187,6 +225,7 @@ it('keeps delayed trail and packet hidden until the exact delay boundary', () =>
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [path],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
@@ -250,6 +289,7 @@ it('renders a completed path before assigning the next run and keeps the next ru
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [firstPath, nextPath],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
@@ -313,6 +353,7 @@ it('applies a run-specific trail length and restores the shared fallback for lat
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [path],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
@@ -371,6 +412,7 @@ it('applies start and end continuation fading to both trail and packet visibilit
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [path],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
@@ -446,6 +488,7 @@ it('starts beam timing at zero and advances by the animation-frame delta without
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
     container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
     paths: [path],
   });
 
@@ -471,6 +514,138 @@ it('starts beam timing at zero and advances by the animation-frame delta without
   expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('THREE.Clock'));
 
   controller.destroy();
+  expect(disconnect).toHaveBeenCalledOnce();
+  expect(renderer.dispose).toHaveBeenCalledOnce();
+});
+
+it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and preserves beam slots', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  let resize: (() => void) | undefined;
+  const disconnect = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver(callback: () => void) {
+    resize = callback;
+    return { disconnect, observe: vi.fn() };
+  }));
+
+  const createNodesGroup = (): FlowLayer3DNodes => ({
+    destroy: vi.fn(),
+    group: new THREE.Group(),
+    nodes: [],
+  });
+  const firstNodes = createNodesGroup();
+  const secondNodes = createNodesGroup();
+  const thirdNodes = createNodesGroup();
+  vi.mocked(createFlowLayer3DNodes)
+    .mockReturnValueOnce(firstNodes)
+    .mockReturnValueOnce(secondNodes)
+    .mockReturnValueOnce(thirdNodes);
+  const createConnectorGroup = (): FlowLayer3DObjects => ({
+    connectors: [],
+    destroy: vi.fn(),
+    group: new THREE.Group(),
+  });
+  const firstConnectors = createConnectorGroup();
+  const secondConnectors = createConnectorGroup();
+  vi.mocked(createFlowLayer3DObjects)
+    .mockReturnValueOnce(firstConnectors)
+    .mockReturnValueOnce(secondConnectors);
+  vi.mocked(createBeam3DFlareTexture).mockReturnValueOnce(
+    new THREE.CanvasTexture(document.createElement('canvas')),
+  );
+  const removeCssRenderer = vi.spyOn(cssRenderer.domElement, 'remove');
+  let width = 320;
+  let height = 640;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { get: () => height },
+    clientWidth: { get: () => width },
+  });
+  const cssLayer = document.createElement('div');
+  const path = { id: 'route', points: [[0, 0.5], [1, 0.5]] } as const;
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: true,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: {
+      slots: 1,
+      next: () => ({ delayMs: 0, durationMs: 1000, id: 'active', path }),
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer,
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'dark',
+      nodeCornerRadius: 12,
+      outlineOpacity: 0.5,
+      outlineWidth: 1,
+      progressBarHeight: 8,
+      progressMode: 'outline',
+      progressPadding: 2,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    nodes: [{
+      cardDepth: 40,
+      height: 12,
+      icon: 'server.svg',
+      iconColor: '#f3f5ef',
+      iconOpacity: 1,
+      id: 'server',
+      position: [0.2, 0.5],
+      shape: 'square',
+      tier: 2,
+      width: 48,
+    }],
+    paths: [path],
+  });
+
+  expect(CSS3DRenderer).toHaveBeenCalledOnce();
+  expect(cssLayer).toContainElement(cssRenderer.domElement);
+  expect(renderer.setSize).toHaveBeenCalledWith(320, 640, false);
+  expect(cssRenderer.setSize).toHaveBeenCalledWith(320, 640);
+
+  const firstFrame = animationFrames.shift();
+  if (!firstFrame) throw new Error('Expected the first animation frame.');
+  firstFrame(1000);
+  expect(cssRenderer.render).toHaveBeenCalledWith(...renderer.render.mock.calls[0]!);
+
+  width = 400;
+  height = 800;
+  resize?.();
+  expect(createFlowLayer3DNodes).toHaveBeenCalledTimes(2);
+  expect(createFlowLayer3DObjects).toHaveBeenCalledTimes(1);
+  expect(firstNodes.destroy).toHaveBeenCalledOnce();
+
+  const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
+  if (!beam) throw new Error('Expected one active beam slot.');
+  const setPath = vi.spyOn(beam, 'setPath');
+  width = 640;
+  resize?.();
+  expect(createFlowLayer3DNodes).toHaveBeenCalledTimes(3);
+  expect(createFlowLayer3DObjects).toHaveBeenCalledTimes(2);
+  expect(firstConnectors.destroy).toHaveBeenCalledOnce();
+  expect(setPath).toHaveBeenCalledOnce();
+  expect(createBeam3DObject).toHaveBeenCalledOnce();
+
+  controller.destroy();
+
+  expect(removeCssRenderer).toHaveBeenCalledOnce();
+  expect(thirdNodes.destroy).toHaveBeenCalledOnce();
+  expect(secondConnectors.destroy).toHaveBeenCalledOnce();
+  expect(disposeNode3DGradientTextures).toHaveBeenCalledWith(renderer);
   expect(disconnect).toHaveBeenCalledOnce();
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });

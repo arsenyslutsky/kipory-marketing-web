@@ -1,5 +1,7 @@
 .root,
-.canvas {
+.canvas,
+.cssLayer,
+.fallbackLayer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -7,6 +9,29 @@
   pointer-events: none;
 }
 
-.canvas {
+.canvas,
+.cssLayer {
   display: block;
+  z-index: 0;
+}
+
+.cssLayer {
+  overflow: hidden;
+}
+
+.fallbackLayer {
+  z-index: 1;
+}
+
+.fallbackNode {
+  position: absolute;
+  left: var(--flow-node-x);
+  top: var(--flow-node-y);
+  width: var(--flow-node-width);
+  height: var(--flow-node-height);
+  display: block;
+  background-color: var(--flow-node-color);
+  transform: translate(-50%, -50%);
+  mask: var(--flow-node-icon) center / contain no-repeat;
+  -webkit-mask: var(--flow-node-icon) center / contain no-repeat;
 }

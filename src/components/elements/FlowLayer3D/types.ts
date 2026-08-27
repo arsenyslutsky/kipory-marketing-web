@@ -135,6 +135,8 @@ export type FlowLayer3DProps = {
   beamSource: FlowLayer3DBeamSource;
   className?: string;
   connector: FlowLayer3DConnectorStyle;
+  nodes?: readonly FlowLayer3DNode[];
+  nodeStyle?: FlowLayer3DNodeStyle;
   onArrival?: (event: FlowLayer3DArrivalEvent) => void;
   paths: readonly FlowLayer3DPath[];
   reducedMotion?: boolean;
@@ -144,6 +146,7 @@ export type FlowLayer3DProps = {
 export type FlowLayer3DSceneOptions = Omit<FlowLayer3DProps, 'className'> & {
   canvas: HTMLCanvasElement;
   container: HTMLElement;
+  cssLayer: HTMLElement;
 };
 
 export type FlowLayer3DSceneController = { destroy: () => void };

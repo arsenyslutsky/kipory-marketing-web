@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from '../Beam3D/createBeam3DObject';
+import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 import { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
+import { createFlowLayer3DNodes, type FlowLayer3DNodes } from './createFlowLayer3DNodes';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
@@ -50,6 +53,18 @@ function createRenderer(canvas: HTMLCanvasElement) {
   }
 }
 
+function createCssRenderer(cssLayer: HTMLElement) {
+  const cssRenderer = new CSS3DRenderer();
+  Object.assign(cssRenderer.domElement.style, {
+    inset: '0',
+    overflow: 'hidden',
+    pointerEvents: 'none',
+    position: 'absolute',
+  });
+  cssLayer.append(cssRenderer.domElement);
+  return cssRenderer;
+}
+
 export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLayer3DSceneController {
   const {
     beam: beamStyle,
@@ -57,12 +72,22 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     canvas,
     connector,
     container,
+    cssLayer,
+    nodes = [],
+    nodeStyle,
     onArrival,
     paths,
     reducedMotion = false,
     worldHeight = 20,
   } = options;
   const renderer = createRenderer(canvas);
+  let cssRenderer: CSS3DRenderer;
+  try {
+    cssRenderer = createCssRenderer(cssLayer);
+  } catch (error) {
+    renderer.dispose();
+    throw error;
+  }
 
   const scene = new THREE.Scene();
   scene.background = null;
@@ -73,11 +98,14 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   const timer = new THREE.Timer();
   const beamSlots: BeamSlot[] = [];
   let connectorObjects: FlowLayer3DObjects | undefined;
+  let nodeObjects: FlowLayer3DNodes | undefined;
   let frameId = 0;
   let firstFrameElapsed: number | undefined;
   let destroyed = false;
   let aspectRatio = 1;
   let flareTexture: THREE.Texture | undefined;
+  let measuredHeight = 0;
+  let measuredWidth = 0;
   let resizeObserver: ResizeObserver | undefined;
 
   function resolvePath(path: FlowLayer3DBeamRun['path']) {
@@ -95,6 +123,22 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       worldHeight,
     });
     scene.add(connectorObjects.group);
+  }
+
+  function rebuildNodes(viewportHeight: number) {
+    nodeObjects?.destroy();
+    if (nodeObjects) scene.remove(nodeObjects.group);
+    nodeObjects = undefined;
+    if (!nodeStyle || nodes.length === 0) return;
+    nodeObjects = createFlowLayer3DNodes({
+      aspectRatio,
+      nodeStyle,
+      nodes,
+      renderer,
+      viewportHeight,
+      worldHeight,
+    });
+    scene.add(nodeObjects.group);
   }
 
   function assignRun(slot: BeamSlot, run: FlowLayer3DBeamRun | null, nowMs: number) {
@@ -179,6 +223,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     const width = Math.max(container.clientWidth, 1);
     const height = Math.max(container.clientHeight, 1);
     const nextAspectRatio = width / height;
+    const sizeChanged = width !== measuredWidth || height !== measuredHeight;
     const aspectChanged = Math.abs(nextAspectRatio - aspectRatio) > 0.0001;
     aspectRatio = nextAspectRatio;
     const halfHeight = worldHeight / 2;
@@ -188,6 +233,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     camera.bottom = -halfHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
+    cssRenderer.setSize(width, height);
+    if (sizeChanged) rebuildNodes(height);
     if (aspectChanged) {
       rebuildConnectors();
       beamSlots.forEach((slot) => {
@@ -196,6 +243,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         if (path) slot.beam.setPath(path);
       });
     }
+    measuredWidth = width;
+    measuredHeight = height;
   }
 
   function animate(timestamp: DOMHighResTimeStamp) {
@@ -239,6 +288,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       }
     });
     renderer.render(scene, camera);
+    cssRenderer.render(scene, camera);
   }
 
   function destroy() {
@@ -246,6 +296,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     destroyed = true;
     cancelAnimationFrame(frameId);
     resizeObserver?.disconnect();
+    nodeObjects?.destroy();
+    if (nodeObjects) scene.remove(nodeObjects.group);
+    nodeObjects = undefined;
     connectorObjects?.destroy();
     if (connectorObjects) scene.remove(connectorObjects.group);
     const excludedBeamTextures = flareTexture ? new Set([flareTexture]) : undefined;
@@ -256,15 +309,16 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     flareTexture?.dispose();
     flareTexture = undefined;
     beamSlots.length = 0;
+    disposeNode3DGradientTextures(renderer);
+    cssRenderer.domElement.remove();
     renderer.dispose();
   }
 
   try {
-    rebuildConnectors();
-    createBeams();
     resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
     resize();
+    createBeams();
     frameId = requestAnimationFrame(animate);
   } catch (error) {
     destroy();
