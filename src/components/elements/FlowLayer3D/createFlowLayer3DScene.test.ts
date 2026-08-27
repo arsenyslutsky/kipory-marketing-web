@@ -66,6 +66,37 @@ it('disposes the renderer when renderer configuration fails', () => {
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });
 
+it('leaves the shared beam flare for scene-level cleanup', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  const flareTexture = new THREE.CanvasTexture(document.createElement('canvas'));
+  const disposeFlareTexture = vi.spyOn(flareTexture, 'dispose');
+  vi.mocked(createBeam3DFlareTexture).mockReturnValueOnce(flareTexture);
+  const path = { id: 'flare-route', points: [[0, 0.5], [1, 0.5]] } as const;
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: true,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 2, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container: document.createElement('div'),
+    paths: [path],
+  });
+
+  controller.destroy();
+
+  expect(disposeFlareTexture).toHaveBeenCalledOnce();
+});
+
 it('projects normalized left and top points to the matching screen edges', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {

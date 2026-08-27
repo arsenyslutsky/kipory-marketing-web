@@ -38,3 +38,18 @@ it('disposes owned render resources while retaining renderer-managed gradients a
   expect(disposeManagedTexture).not.toHaveBeenCalled();
   expect(element.isConnected).toBe(false);
 });
+
+it('disposes a repeated ordinary texture once per root cleanup', () => {
+  const root = new THREE.Group();
+  const texture = new THREE.Texture();
+  const material = new THREE.MeshBasicMaterial({ map: texture });
+  const shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: { map: { value: texture } },
+  });
+  root.add(new THREE.Mesh(new THREE.BoxGeometry(), [material, shaderMaterial]));
+  const disposeTexture = vi.spyOn(texture, 'dispose');
+
+  disposeFlowLayer3DObjectResources(root);
+
+  expect(disposeTexture).toHaveBeenCalledOnce();
+});

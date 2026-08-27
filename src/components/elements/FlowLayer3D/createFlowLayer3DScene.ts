@@ -248,8 +248,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     resizeObserver?.disconnect();
     connectorObjects?.destroy();
     if (connectorObjects) scene.remove(connectorObjects.group);
+    const excludedBeamTextures = flareTexture ? new Set([flareTexture]) : undefined;
     beamSlots.forEach(({ beam }) => {
-      disposeFlowLayer3DObjectResources(beam.group);
+      disposeFlowLayer3DObjectResources(beam.group, { excludedTextures: excludedBeamTextures });
       scene.remove(beam.group);
     });
     flareTexture?.dispose();
