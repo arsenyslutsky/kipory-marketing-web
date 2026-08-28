@@ -1,13 +1,14 @@
 import { afterEach, expect, it, vi } from 'vitest';
 
 const renderer = vi.hoisted(() => ({
+  capabilities: { getMaxAnisotropy: vi.fn(() => 1) },
   dispose: vi.fn(),
   outputColorSpace: undefined,
   render: vi.fn(),
   setClearColor: vi.fn(),
   setPixelRatio: vi.fn(),
   setSize: vi.fn(),
-  shadowMap: { enabled: false, type: undefined as number | undefined },
+  shadowMap: { enabled: false, needsUpdate: false, type: undefined as number | undefined },
 }));
 
 const cssRenderer = vi.hoisted(() => ({
@@ -74,6 +75,7 @@ import { normalizedPointToWorld } from './resolveFlowLayer3D';
 
 afterEach(() => {
   renderer.shadowMap.enabled = false;
+  renderer.shadowMap.needsUpdate = false;
   renderer.shadowMap.type = undefined;
   vi.restoreAllMocks();
   vi.clearAllMocks();
@@ -115,10 +117,142 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
   vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
     return { disconnect: vi.fn(), observe: vi.fn() };
   }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg" />',
+  }));
   const container = document.createElement('div');
   Object.defineProperties(container, {
     clientHeight: { value: 640 },
     clientWidth: { value: 320 },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodes: [
+      {
+        cardDepth: 40,
+        height: 12,
+        icon: 'rectangle.svg',
+        iconColor: '#f3f5ef',
+        iconOpacity: 1,
+        id: 'rectangle',
+        position: [0.25, 0.4],
+        shape: 'rectangle',
+        tier: 1,
+        width: 48,
+      },
+      {
+        cardDepth: 40,
+        height: 12,
+        icon: 'circle.svg',
+        iconColor: '#f3f5ef',
+        iconOpacity: 1,
+        id: 'circle',
+        position: [0.75, 0.6],
+        shape: 'circle',
+        tier: 1,
+        width: 48,
+      },
+    ],
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'dark',
+      nodeCornerRadius: 12,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      progressBarHeight: 8,
+      progressMode: 'outline',
+      progressPadding: 2,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    paths: [],
+  });
+
+  const firstFrame = animationFrames.shift();
+  if (!firstFrame) throw new Error('Expected the first animation frame.');
+  firstFrame(1000);
+
+  const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
+  if (!scene) throw new Error('Expected the flow scene to render.');
+  const light = scene.children.find((object): object is THREE.DirectionalLight => (
+    object instanceof THREE.DirectionalLight
+  ));
+  const catcher = scene.children.find((object): object is THREE.Mesh => (
+    object instanceof THREE.Mesh && object.material instanceof THREE.ShadowMaterial
+  ));
+  if (!light || !catcher || !(catcher.material instanceof THREE.ShadowMaterial)) {
+    throw new Error('Expected a directional shadow light and receiving plane.');
+  }
+
+  expect(renderer.shadowMap.enabled).toBe(true);
+  expect(renderer.shadowMap.needsUpdate).toBe(true);
+  expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
+  expect(light.castShadow).toBe(true);
+  expect(light.position.x).toBeLessThan(0);
+  expect(light.position.y).toBeGreaterThan(0);
+  expect(light.position.z).toBeLessThan(0);
+  expect(catcher.receiveShadow).toBe(true);
+  expect(catcher.position.y).toBeLessThan(0.29);
+  expect(catcher.material.transparent).toBe(true);
+  expect(catcher.material.opacity).toBeGreaterThan(0);
+
+  const flowNodes = vi.mocked(createFlowLayer3DNodes).mock.results[0]?.value?.nodes as FlowLayer3DNodes['nodes'] | undefined;
+  if (!flowNodes) throw new Error('Expected the representative flow nodes to render.');
+  const rectangleBody = flowNodes[0]?.children.find((object): object is THREE.Mesh => (
+    object instanceof THREE.Mesh && object.geometry.type === 'RoundedBoxGeometry'
+  ));
+  const circleBody = flowNodes[1]?.children.find((object): object is THREE.Mesh => (
+    object instanceof THREE.Mesh && object.geometry.type === 'CylinderGeometry'
+  ));
+  expect(rectangleBody?.castShadow).toBe(true);
+  expect(circleBody?.castShadow).toBe(true);
+
+  const disposeGeometry = vi.spyOn(catcher.geometry, 'dispose');
+  const disposeMaterial = vi.spyOn(catcher.material, 'dispose');
+  const disposeShadowMap = vi.fn();
+  const disposeShadowMapPass = vi.fn();
+  light.shadow.map = { dispose: disposeShadowMap } as unknown as THREE.WebGLRenderTarget;
+  light.shadow.mapPass = { dispose: disposeShadowMapPass } as unknown as THREE.WebGLRenderTarget;
+  controller.destroy();
+
+  expect(disposeGeometry).toHaveBeenCalledOnce();
+  expect(disposeMaterial).toHaveBeenCalledOnce();
+  expect(disposeShadowMap).toHaveBeenCalledOnce();
+  expect(disposeShadowMapPass).toHaveBeenCalledOnce();
+});
+
+it('keeps every visible edge inside the directional-light shadow frustum in a wide viewport', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 320 },
+    clientWidth: { value: 1600 },
   });
   const controller = createFlowLayer3DScene({
     beam: {
@@ -140,36 +274,33 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
   const firstFrame = animationFrames.shift();
   if (!firstFrame) throw new Error('Expected the first animation frame.');
   firstFrame(1000);
-
   const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
-  if (!scene) throw new Error('Expected the flow scene to render.');
-  const light = scene.children.find((object): object is THREE.DirectionalLight => (
+  const light = scene?.children.find((object): object is THREE.DirectionalLight => (
     object instanceof THREE.DirectionalLight
   ));
-  const catcher = scene.children.find((object): object is THREE.Mesh => (
-    object instanceof THREE.Mesh && object.material instanceof THREE.ShadowMaterial
-  ));
-  if (!light || !catcher || !(catcher.material instanceof THREE.ShadowMaterial)) {
-    throw new Error('Expected a directional shadow light and receiving plane.');
-  }
+  if (!scene || !light) throw new Error('Expected the flow scene shadow light to render.');
 
-  expect(renderer.shadowMap.enabled).toBe(true);
-  expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
-  expect(light.castShadow).toBe(true);
-  expect(light.position.x).toBeLessThan(0);
-  expect(light.position.y).toBeGreaterThan(0);
-  expect(light.position.z).toBeLessThan(0);
-  expect(catcher.receiveShadow).toBe(true);
-  expect(catcher.position.y).toBeLessThan(0.29);
-  expect(catcher.material.transparent).toBe(true);
-  expect(catcher.material.opacity).toBeGreaterThan(0);
+  scene.updateMatrixWorld(true);
+  light.shadow.updateMatrices(light);
+  const shadowCamera = light.shadow.camera;
+  const visibleCorners = [
+    new THREE.Vector3(-50, 0, -10),
+    new THREE.Vector3(-50, 0, 10),
+    new THREE.Vector3(50, 0, -10),
+    new THREE.Vector3(50, 0, 10),
+  ];
 
-  const disposeGeometry = vi.spyOn(catcher.geometry, 'dispose');
-  const disposeMaterial = vi.spyOn(catcher.material, 'dispose');
+  visibleCorners.forEach((corner) => {
+    const projected = corner.clone().project(shadowCamera);
+    expect(projected.x).toBeGreaterThanOrEqual(-1);
+    expect(projected.x).toBeLessThanOrEqual(1);
+    expect(projected.y).toBeGreaterThanOrEqual(-1);
+    expect(projected.y).toBeLessThanOrEqual(1);
+    expect(projected.z).toBeGreaterThanOrEqual(-1);
+    expect(projected.z).toBeLessThanOrEqual(1);
+  });
+
   controller.destroy();
-
-  expect(disposeGeometry).toHaveBeenCalledOnce();
-  expect(disposeMaterial).toHaveBeenCalledOnce();
 });
 
 it('disposes shadow resources when flow-scene initialization fails', () => {

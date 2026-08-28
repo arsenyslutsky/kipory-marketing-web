@@ -100,12 +100,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   camera.lookAt(0, 0, 0);
   const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
   shadowLight.position.set(-6, 14, -5);
+  const shadowDirection = shadowLight.position.clone().normalize();
   shadowLight.castShadow = true;
   shadowLight.shadow.mapSize.set(1024, 1024);
-  shadowLight.shadow.camera.left = -14;
-  shadowLight.shadow.camera.right = 14;
-  shadowLight.shadow.camera.top = 14;
-  shadowLight.shadow.camera.bottom = -14;
   shadowLight.shadow.bias = -0.0003;
   shadowLight.shadow.normalBias = 0.025;
   shadowLight.shadow.radius = 8;
@@ -260,6 +257,46 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
   }
 
+  function resizeShadowFrustum(halfWidth: number, halfHeight: number) {
+    const shadowPadding = Math.min(8, Math.max(2.5, worldHeight * 0.24));
+    const shadowDistance = Math.max(16, Math.hypot(halfWidth, halfHeight) + shadowPadding + 1);
+    shadowLight.position.copy(shadowDirection).multiplyScalar(shadowDistance);
+    scene.updateMatrixWorld(true);
+    shadowLight.shadow.updateMatrices(shadowLight);
+
+    const shadowCamera = shadowLight.shadow.camera;
+    const visibleCorners = [
+      new THREE.Vector3(-halfWidth, 0, -halfHeight),
+      new THREE.Vector3(-halfWidth, 0, halfHeight),
+      new THREE.Vector3(halfWidth, 0, -halfHeight),
+      new THREE.Vector3(halfWidth, 0, halfHeight),
+    ];
+    let left = Infinity;
+    let right = -Infinity;
+    let top = -Infinity;
+    let bottom = Infinity;
+    let near = Infinity;
+    let far = -Infinity;
+    visibleCorners.forEach((corner) => {
+      const point = corner.applyMatrix4(shadowCamera.matrixWorldInverse);
+      left = Math.min(left, point.x);
+      right = Math.max(right, point.x);
+      top = Math.max(top, point.y);
+      bottom = Math.min(bottom, point.y);
+      near = Math.min(near, -point.z);
+      far = Math.max(far, -point.z);
+    });
+    shadowCamera.left = left - shadowPadding;
+    shadowCamera.right = right + shadowPadding;
+    shadowCamera.top = top + shadowPadding;
+    shadowCamera.bottom = bottom - shadowPadding;
+    shadowCamera.near = Math.max(0.1, near - shadowPadding);
+    shadowCamera.far = far + shadowPadding;
+    shadowCamera.updateProjectionMatrix();
+    shadowLight.shadow.needsUpdate = true;
+    renderer.shadowMap.needsUpdate = true;
+  }
+
   function resize() {
     const width = Math.max(container.clientWidth, 1);
     const height = Math.max(container.clientHeight, 1);
@@ -273,6 +310,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     camera.top = halfHeight;
     camera.bottom = -halfHeight;
     camera.updateProjectionMatrix();
+    resizeShadowFrustum(halfHeight * aspectRatio, halfHeight);
     renderer.setSize(width, height, false);
     cssRenderer.setSize(width, height);
     if (sizeChanged) rebuildNodes(height);
@@ -364,6 +402,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     scene.remove(shadowLight, shadowLight.target, shadowCatcher);
     shadowCatcherGeometry.dispose();
     shadowCatcherMaterial.dispose();
+    shadowLight.dispose();
     cssRenderer.domElement.remove();
     renderer.dispose();
   }
