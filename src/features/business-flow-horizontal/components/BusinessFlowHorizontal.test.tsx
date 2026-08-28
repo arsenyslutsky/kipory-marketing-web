@@ -106,6 +106,13 @@ it('renders homepage node processing progress as bars', () => {
   expect(capturedNodeStyle?.progressMode).toBe('bar');
 });
 
+it('renders the homepage illustration another twenty percent wider without exceeding its container', () => {
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+
+  const illustration = screen.getByRole('img', { name: /Horizontal business flow/i });
+  expect(illustration.style.getPropertyValue('--camera-width')).toBe('min(28.8rem, 100%)');
+});
+
 it('propagates the complete homepage beam effect to the shared layer', () => {
   render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
 

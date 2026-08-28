@@ -51,7 +51,7 @@
 .deliveryIllustration { min-width: 0; min-height: 38rem; overflow: hidden; }
 .systemSection { background: var(--ink); }
 .useCaseSection { padding-block: 60px; color: var(--type-color-alternate-primary); scroll-margin-top: 72px; }
-.useCaseLayout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.useCaseLayout { grid-template-columns: minmax(0, 2.1fr) minmax(0, 2.9fr); }
 .useCaseLayout .capabilityContent { grid-column: 2; grid-row: 1; }
 .useCaseLayout .capabilityContent .sectionTitle { width: 100%; }
 .useCaseLayout .deliveryIllustration { grid-column: 1; grid-row: 1; }
