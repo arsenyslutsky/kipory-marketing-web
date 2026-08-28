@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { defaultColors } from '@/features/business-flow-3d/config';
 import { createNode3DObject } from '../Node3D/createNode3DObject';
+import type { Node3DProgressControl } from '../Node3D/createNode3DObject';
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DNode } from './resolveFlowLayer3DNode';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from './types';
@@ -9,6 +10,7 @@ export type FlowLayer3DNodes = {
   destroy: () => void;
   group: THREE.Group;
   nodes: THREE.Group[];
+  setProgress: (progressByNode: ReadonlyMap<string, number>) => void;
 };
 
 export function createFlowLayer3DNodes({
@@ -28,6 +30,8 @@ export function createFlowLayer3DNodes({
 }): FlowLayer3DNodes {
   const group = new THREE.Group();
   const nodes: THREE.Group[] = [];
+  const progressControls = new Map<string, Node3DProgressControl>();
+  const configuredProgress = new Map<string, number | undefined>();
   const theme = defaultColors[nodeStyle.mode];
   let destroyed = false;
 
@@ -63,6 +67,11 @@ export function createFlowLayer3DNodes({
         theme,
       });
       nodes.push(nodeObject);
+      const progressControl = nodeObject.userData.nodeProgressControl as Node3DProgressControl | undefined;
+      if (progressControl) {
+        progressControls.set(node.id, progressControl);
+        configuredProgress.set(node.id, progress);
+      }
       group.add(nodeObject);
     });
   } catch (error) {
@@ -80,5 +89,12 @@ export function createFlowLayer3DNodes({
     },
     group,
     nodes,
+    setProgress(progressByNode) {
+      progressControls.forEach((control, id) => {
+        control.setProgress(
+          progressByNode.has(id) ? progressByNode.get(id) : configuredProgress.get(id),
+        );
+      });
+    },
   };
 }

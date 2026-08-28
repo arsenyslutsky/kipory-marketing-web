@@ -201,10 +201,17 @@ function beamArrivalPoints(
   const targetPoint = satellitePoints[trace.targetIndex];
   const targetParent = satelliteParent(targetPoint);
 
+  const centralArrivals = centralTraversal(sourceParent, targetParent).map((point) => ({
+    id: centralOrder.find((id) => distance(coloredPoints[id], point) < 0.001)!,
+    point,
+  }));
+
   return [
-    ...(showContinuationConnectors ? [sourcePoint] : []),
-    ...centralTraversal(sourceParent, targetParent),
-    targetPoint,
+    ...(showContinuationConnectors
+      ? [{ id: `satellite-${trace.sourceIndex}`, point: sourcePoint }]
+      : []),
+    ...centralArrivals,
+    { id: `satellite-${trace.targetIndex}`, point: targetPoint },
   ];
 }
 
@@ -329,10 +336,10 @@ function createBeamRun(
     trace,
     satellitePoints,
     showContinuationConnectors,
-  ).map((point, index) => ({
-    id: `${point[0]}-${point[1]}-${index}`,
-    point: normalize(point),
-    progress: routeProgressAtPoint(route, point),
+  ).map((arrival) => ({
+    id: arrival.id,
+    point: normalize(arrival.point),
+    progress: routeProgressAtPoint(route, arrival.point),
   }));
 
   return {

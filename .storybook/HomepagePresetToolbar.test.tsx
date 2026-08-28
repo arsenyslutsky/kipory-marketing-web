@@ -44,7 +44,7 @@ it('submits filtered current args and shows saving then saved states', async () 
 
   renderToolbar(fetcher);
 
-  expect(await screen.findByRole('button', { name: 'Copy illustration parameters as JSON' })).toBeEnabled();
+  expect(await screen.findByRole('button', { name: 'Copy homepage parameters as JSON' })).toBeEnabled();
   const saveButton = await screen.findByRole('button', { name: 'Save to Next.js' });
   fireEvent.click(saveButton);
   expect(screen.getByRole('button', { name: 'Saving…' })).toHaveAttribute(
@@ -76,7 +76,7 @@ it('keeps copy available and disables saving outside the local development serve
       name: 'Save unavailable: use the local Storybook development server',
     }),
   ).toHaveAttribute('aria-disabled', 'true');
-  expect(screen.getByRole('button', { name: 'Copy illustration parameters as JSON' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Copy homepage parameters as JSON' })).toBeEnabled();
 });
 
 it('shows the safe server error after a rejected save', async () => {

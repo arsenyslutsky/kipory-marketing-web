@@ -65,8 +65,8 @@ export function HomepagePresetToolbar({
     content: JSON.stringify(parameterValues, null, 2),
     children: 'Copy JSON',
     childrenOnCopy: 'Copied',
-    ariaLabel: 'Copy illustration parameters as JSON',
-    ariaLabelOnCopy: 'Illustration parameter JSON copied to clipboard',
+    ariaLabel: 'Copy homepage parameters as JSON',
+    ariaLabelOnCopy: 'Homepage parameter JSON copied to clipboard',
   });
 
   useEffect(() => {
@@ -194,7 +194,7 @@ export function HomepagePresetToolbar({
         {...copy.buttonProps}
         padding="small"
         variant="ghost"
-        tooltip="Copy all current illustration parameter values as JSON"
+        tooltip="Copy all current homepage parameter values as JSON"
       >
         <CopyIcon />
         {copy.children}

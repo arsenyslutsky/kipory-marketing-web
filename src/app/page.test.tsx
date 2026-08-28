@@ -2,9 +2,11 @@ import { readFileSync } from 'node:fs';
 import type { PropsWithChildren } from 'react';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
+import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import HomePage from './page';
 
 const {
+  glowLinkRender,
   horizontalHomepageProps,
   horizontalRender,
   threeDHomepageProps,
@@ -12,6 +14,7 @@ const {
   verticalHomepageProps,
   verticalRender,
 } = vi.hoisted(() => ({
+  glowLinkRender: vi.fn(),
   horizontalHomepageProps: {
     beamSpeed: 1.4,
     height: '38rem',
@@ -31,7 +34,10 @@ vi.mock('@/components/site/HeroScrollEffects', () => ({
 }));
 vi.mock('@/components/site/BackToTop', () => ({ BackToTop: () => null }));
 vi.mock('@/components/ui/GlowLink', () => ({
-  GlowLink: ({ children, href }: PropsWithChildren<{ href: string }>) => <a href={href}>{children}</a>,
+  GlowLink: ({ children, href, ...props }: PropsWithChildren<{ href: string }>) => {
+    glowLinkRender(props);
+    return <a href={href}>{children}</a>;
+  },
 }));
 vi.mock('@/features/business-flow-3d', () => ({
   BusinessFlow3D: (props: Record<string, unknown>) => {
@@ -56,6 +62,7 @@ vi.mock('@/features/business-flow-horizontal', () => ({
 }));
 
 beforeEach(() => {
+  glowLinkRender.mockClear();
   horizontalRender.mockClear();
   threeDRender.mockClear();
   verticalRender.mockClear();
@@ -72,4 +79,22 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDHomepageProps));
   expect(verticalRender.mock.calls[0][0]).toEqual(expect.objectContaining(verticalHomepageProps));
   expect(horizontalRender).toHaveBeenCalledWith(expect.objectContaining(horizontalHomepageProps));
+  expect(glowLinkRender).toHaveBeenCalledWith(expect.objectContaining(glowLinkHomepageProps));
+});
+
+it('routes homepage conversion links to the waiting list instead of retired pages', () => {
+  render(<HomePage />);
+
+  const destinationPaths = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+  expect(screen.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', '#pillars');
+  expect(destinationPaths).toContain('/waitlist');
+  expect(destinationPaths).not.toContain('/product');
+  expect(destinationPaths).not.toContain('/about');
+});
+
+it('uses the accelerated-fit delivery label', () => {
+  render(<HomePage />);
+
+  expect(screen.getByText('Designed to fit and accelerate')).toBeInTheDocument();
+  expect(screen.queryByText('Designed around real flow')).not.toBeInTheDocument();
 });

@@ -1,5 +1,6 @@
 import type { FlowLayer3DBeamSource, FlowLayer3DPath } from '@/components/elements/FlowLayer3D';
 import {
+  businessFlowHorizontalLayoutNodes,
   businessFlowHorizontalLayoutNodeById,
   type BusinessFlowHorizontalLayoutNode,
 } from './nodes';
@@ -245,13 +246,17 @@ export function createBusinessFlowHorizontalBeamSource({
       const route = routes[(slot + generation * slots) % routes.length];
       const durationMs = cycleMs * (route.short ? 0.12 : 0.2);
       const point = route.points.at(-1)!;
+      const targetNode = businessFlowHorizontalLayoutNodes.find((node) => (
+        node.x / illustrationWidth === point[0]
+        && node.y / illustrationHeight === point[1]
+      ));
 
       return {
         id: `${route.id}:${generation}`,
         delayMs: emissionDelay(generation, slot, emissionRandomness, random) * 1000,
         durationMs,
         path: route,
-        arrivals: [{ id: route.id, point, progress: 1 }],
+        arrivals: [{ id: targetNode?.id ?? route.id, point, progress: 1 }],
         trailLength: trailLengthToProgress(trailLengthInIllustrationUnits, route),
       };
     },

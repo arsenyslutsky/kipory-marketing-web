@@ -71,7 +71,9 @@ import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCa
 import { createFlowLayer3DNodes, type FlowLayer3DNodes } from './createFlowLayer3DNodes';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
-import { normalizedPointToWorld } from './resolveFlowLayer3D';
+import { projectFlowLayer3DArrivals } from './projectFlowLayer3DArrivals';
+import { normalizedPointToWorld, resolveFlowLayer3DPath } from './resolveFlowLayer3D';
+import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 
 afterEach(() => {
   renderer.shadowMap.enabled = false;
@@ -105,6 +107,198 @@ it('disposes the renderer when renderer configuration fails', () => {
   })).toThrow('pixel-ratio setup failed');
 
   expect(renderer.dispose).toHaveBeenCalledOnce();
+});
+
+it('aggregates concurrent node processing, publishes 100%, then clears the indicator', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg" />',
+  }));
+  vi.spyOn(Math, 'random').mockReturnValue(0.5);
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: true,
+      glowIntensity: 1,
+      trailLength: 0,
+    },
+    beamSource: {
+      slots: 2,
+      next: (slot, generation) => generation === 0 ? {
+        arrivals: [{ id: 'target', point: [0.5, 0.5], progress: 0.5 }],
+        delayMs: slot * 100,
+        durationMs: 1000,
+        id: 'processing-run',
+        path: { id: 'processing-path', points: [[0, 0.5], [1, 0.5]] },
+      } : null,
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodes: [{
+      cardDepth: 40,
+      height: 12,
+      icon: 'target.svg',
+      iconColor: '#f3f5ef',
+      iconOpacity: 1,
+      id: 'target',
+      position: [0.5, 0.5],
+      shape: 'square',
+      tier: 1,
+      width: 48,
+    }],
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'dark',
+      nodeCornerRadius: 12,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      progressBarHeight: 8,
+      progressMaxDelay: 500,
+      progressMinDelay: 500,
+      progressMode: 'bar',
+      progressPadding: 1,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    paths: [{ id: 'processing-path', points: [[0, 0.5], [1, 0.5]] }],
+  });
+
+  const flowNodes = vi.mocked(createFlowLayer3DNodes).mock.results[0]?.value as (
+    FlowLayer3DNodes & { setProgress?: (progress: ReadonlyMap<string, number>) => void }
+  ) | undefined;
+  if (!flowNodes) throw new Error('Expected flow nodes.');
+  const setProgress = vi.fn();
+  flowNodes.setProgress = setProgress;
+
+  for (const timestamp of [1000, 1500, 1600, 1850, 2000, 2100, 2116]) {
+    const frame = animationFrames.shift();
+    if (!frame) throw new Error('Expected animation frame.');
+    frame(timestamp);
+  }
+
+  const publishedProgress = setProgress.mock.calls.map(([progress]) => progress.get('target'));
+  expect(publishedProgress[0]).toBeUndefined();
+  expect(publishedProgress[1]).toBeCloseTo(0);
+  expect(publishedProgress[2]).toBeCloseTo(0.1);
+  expect(publishedProgress[3]).toBeCloseTo(0.6);
+  expect(publishedProgress[4]).toBeCloseTo(0.9);
+  expect(publishedProgress.slice(5)).toEqual([1, undefined]);
+  controller.destroy();
+});
+
+it('reprojects an active run arrival after an aspect-ratio resize', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  let resize: (() => void) | undefined;
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver(callback: () => void) {
+    resize = callback;
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg" />',
+  }));
+  const route = {
+    curve: 80,
+    id: 'responsive-path',
+    points: [[0.1, 0.2], [0.7, 0.2], [0.7, 0.9]] as const,
+  };
+  const arrival = { id: 'corner', point: [0.7, 0.2] as const, progress: 0.5 };
+  let width = 320;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { get: () => 320 },
+    clientWidth: { get: () => width },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40', beamHighlightColor: '#c9ebc7', beamWidth: 1,
+      enabled: true, glowIntensity: 1, trailLength: 0,
+    },
+    beamSource: {
+      slots: 1,
+      next: (_slot, generation) => generation === 0 ? {
+        arrivals: [arrival],
+        delayMs: 0,
+        durationMs: 1000,
+        id: 'responsive-run',
+        path: route,
+      } : null,
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodes: [{
+      cardDepth: 40, height: 12, icon: 'corner.svg', iconColor: '#fff', iconOpacity: 1,
+      id: 'corner', position: arrival.point, shape: 'square', tier: 1, width: 48,
+    }],
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'dark', nodeCornerRadius: 12, outlineOpacity: 0, outlineWidth: 1,
+      progressBarHeight: 8, progressMaxDelay: 500, progressMinDelay: 500,
+      progressMode: 'bar', progressPadding: 1,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    paths: [route],
+  });
+  const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
+  if (!beam || !resize) throw new Error('Expected an active beam and resize observer.');
+  const firstFrame = animationFrames.shift();
+  if (!firstFrame) throw new Error('Expected the initial animation frame.');
+  firstFrame(1000);
+
+  width = 640;
+  resize();
+  const resolved = resolveFlowLayer3DPath(route, { aspectRatio: 2, worldHeight: 20 });
+  if (!resolved) throw new Error('Expected the resized route.');
+  const [projected] = projectFlowLayer3DArrivals(
+    [arrival],
+    resolveFlowPath3D(resolved.path),
+    { aspectRatio: 2, worldHeight: 20 },
+  );
+  const arrivalFrame = animationFrames.shift();
+  if (!arrivalFrame) throw new Error('Expected the resized arrival frame.');
+  arrivalFrame(1000 + projected.progress * 1000);
+
+  expect(beam.uniforms.uProgress.value).toBeCloseTo(projected.progress);
+  controller.destroy();
 });
 
 it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
@@ -812,7 +1006,7 @@ it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and p
   const createNodesGroup = (cssObject?: CSS3DObject): FlowLayer3DNodes => {
     const group = new THREE.Group();
     if (cssObject) group.add(cssObject);
-    return { destroy: vi.fn(), group, nodes: [] };
+    return { destroy: vi.fn(), group, nodes: [], setProgress: vi.fn() };
   };
   const firstNodes = createNodesGroup(nodeCssObject);
   const secondNodes = createNodesGroup();
@@ -943,6 +1137,7 @@ it('tears down once and reports a post-mount node rebuild failure from ResizeObs
     destroy: vi.fn(),
     group: new THREE.Group(),
     nodes: [],
+    setProgress: vi.fn(),
   };
   vi.mocked(createFlowLayer3DNodes)
     .mockReturnValueOnce(firstNodes)

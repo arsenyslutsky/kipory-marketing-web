@@ -39,6 +39,8 @@ export type FlowLayer3DNodeStyle = {
   outlineOpacity: number;
   outlineWidth: number;
   progressBarHeight: number;
+  progressMaxDelay?: number;
+  progressMinDelay?: number;
   progressMode: Node3DProgressMode;
   progressPadding: number;
   sideXGradient: Node3DResolvedGradient;
@@ -98,6 +100,7 @@ export type FlowLayer3DBeamStyle = {
 export type FlowLayer3DArrival = {
   id: string;
   point: FlowLayer3DPoint;
+  processingDelayMs?: number;
   progress: number;
 };
 

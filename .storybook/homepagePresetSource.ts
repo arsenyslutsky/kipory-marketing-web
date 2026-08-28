@@ -26,6 +26,10 @@ const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarge
     relativePath: 'src/features/business-flow-horizontal/presets.ts',
     exportName: 'businessFlowHorizontalHomepageProps',
   },
+  'ui-glowlink--current-nextjs-app': {
+    relativePath: 'src/components/ui/GlowLink.presets.ts',
+    exportName: 'glowLinkHomepageProps',
+  },
 };
 
 export class HomepagePresetSourceError extends Error {}

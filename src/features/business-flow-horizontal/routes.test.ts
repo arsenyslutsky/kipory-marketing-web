@@ -128,7 +128,7 @@ it('emits arrivals at route endpoints and rejects invalid slots', () => {
   const run = source.next(0, 0)!;
 
   expect(run.arrivals).toEqual([{
-    id: 'aux-top',
+    id: 'collector',
     point: [248 / 320, 304 / 608],
     progress: 1,
   }]);

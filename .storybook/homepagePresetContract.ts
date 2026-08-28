@@ -5,6 +5,7 @@ export const HOMEPAGE_PRESET_STORY_IDS = [
   'animated-illustrations-businessflow3d--current-nextjs-app',
   'animated-illustrations-businessflowvertical--current-nextjs-app',
   'animated-illustrations-businessflowhorizontal--current-nextjs-app',
+  'ui-glowlink--current-nextjs-app',
 ] as const;
 
 export type HomepagePresetStoryId = (typeof HOMEPAGE_PRESET_STORY_IDS)[number];

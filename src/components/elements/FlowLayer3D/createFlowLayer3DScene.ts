@@ -4,11 +4,13 @@ import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from 
 import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 import { advanceFlowLayer3DBeamSlot } from './advanceFlowLayer3DBeamSlot';
+import { addNodeProcessingDelays } from './addNodeProcessingDelays';
 import { createFlowLayer3DNodes, type FlowLayer3DNodes } from './createFlowLayer3DNodes';
 import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowLayer3DObjects';
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import { resolveFlowLayer3DBeamStyle } from './resolveFlowLayer3DBeamStyle';
+import { projectFlowLayer3DArrivals } from './projectFlowLayer3DArrivals';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
 import type {
   FlowLayer3DBeamRun,
@@ -27,6 +29,7 @@ const flareStops = [
 type BeamSlot = {
   beam: Beam3DObject;
   deliveredArrivalIds: Set<string>;
+  deliveredProcessingCompletionIds: Set<string>;
   generation: number;
   nextRunStartedAtMs: number;
   pendingNextRun: boolean;
@@ -180,21 +183,36 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   }
 
   function assignRun(slot: BeamSlot, run: FlowLayer3DBeamRun | null, nowMs: number) {
-    slot.run = run;
+    let nextRun = run && nodeStyle
+      ? addNodeProcessingDelays(
+        run,
+        nodeStyle.progressMinDelay ?? 0,
+        nodeStyle.progressMaxDelay ?? 0,
+      )
+      : run;
     slot.startedAtMs = nowMs;
     slot.deliveredArrivalIds.clear();
-    if (!run) {
+    slot.deliveredProcessingCompletionIds.clear();
+    if (!nextRun) {
+      slot.run = null;
       slot.beam.setVisible(false);
       return;
     }
-    const path = resolvePath(run.path);
+    const path = resolvePath(nextRun.path);
     if (!path) {
       slot.run = null;
       slot.beam.setVisible(false);
       return;
     }
+    if (nextRun.arrivals?.length) {
+      nextRun = {
+        ...nextRun,
+        arrivals: projectFlowLayer3DArrivals(nextRun.arrivals, path, { aspectRatio, worldHeight }),
+      };
+    }
+    slot.run = nextRun;
     slot.beam.setPath(path);
-    slot.beam.setTrailLength(run.trailLength ?? beamStyle.trailLength);
+    slot.beam.setTrailLength(slot.run.trailLength ?? beamStyle.trailLength);
     slot.beam.setVisible(true);
   }
 
@@ -245,6 +263,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       const slot: BeamSlot = {
         beam,
         deliveredArrivalIds: new Set(),
+        deliveredProcessingCompletionIds: new Set(),
         generation: 0,
         nextRunStartedAtMs: 0,
         pendingNextRun: false,
@@ -319,7 +338,18 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       beamSlots.forEach((slot) => {
         if (!slot.run) return;
         const path = resolvePath(slot.run.path);
-        if (path) slot.beam.setPath(path);
+        if (!path) return;
+        slot.beam.setPath(path);
+        if (slot.run.arrivals?.length) {
+          slot.run = {
+            ...slot.run,
+            arrivals: projectFlowLayer3DArrivals(
+              slot.run.arrivals,
+              path,
+              { aspectRatio, worldHeight },
+            ),
+          };
+        }
       });
     }
     measuredWidth = width;
@@ -344,6 +374,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     firstFrameElapsed ??= elapsed;
     const time = elapsed - firstFrameElapsed;
     const nowMs = time * 1000;
+    const nodeProgressBatches = new Map<string, number[]>();
     beamSlots.forEach((slot, index) => {
       if (slot.pendingNextRun) {
         loadNextRun(slot, index, slot.generation + 1, slot.nextRunStartedAtMs);
@@ -352,6 +383,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         ? stepFlowLayer3DBeamRun(slot.run, nowMs - slot.startedAtMs, slot.deliveredArrivalIds)
         : {
           arrivals: [],
+          activeProcessing: undefined,
+          completedProcessingIds: [],
           completed: false,
           endElapsedMs: 0,
           progress: 0,
@@ -361,6 +394,18 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
       state.arrivals.forEach((arrival) => {
         slot.deliveredArrivalIds.add(arrival.id);
         onArrival?.({ arrival, generation: slot.generation, runId: slot.run!.id, slot: index });
+      });
+      if (state.activeProcessing) {
+        const batch = nodeProgressBatches.get(state.activeProcessing.id) ?? [];
+        batch.push(state.activeProcessing.progress);
+        nodeProgressBatches.set(state.activeProcessing.id, batch);
+      }
+      state.completedProcessingIds.forEach((id) => {
+        if (slot.deliveredProcessingCompletionIds.has(id)) return;
+        slot.deliveredProcessingCompletionIds.add(id);
+        const batch = nodeProgressBatches.get(id) ?? [];
+        batch.push(1);
+        nodeProgressBatches.set(id, batch);
       });
       const active = Boolean(slot.run && state.started);
       const visibility = active ? state.visibility : 0;
@@ -376,6 +421,12 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         slot.pendingNextRun = true;
       }
     });
+    nodeObjects?.setProgress?.(new Map(
+      [...nodeProgressBatches].map(([id, batch]) => [
+        id,
+        batch.reduce((sum, value) => sum + value, 0) / batch.length,
+      ]),
+    ));
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
   }

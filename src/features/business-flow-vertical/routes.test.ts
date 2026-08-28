@@ -79,6 +79,14 @@ it('includes both continuation edges in a complete beam route', () => {
     [0.8, 0.5],
     [0.8, 0.82],
   ]);
+  expect(run.arrivals?.map((arrival) => arrival.id)).toEqual([
+    'satellite-0',
+    'server',
+    'graph',
+    'vector',
+    'intelligence',
+    'satellite-3',
+  ]);
 });
 
 it('carries literal start and end continuation fade progress only on continued runs', () => {

@@ -74,7 +74,23 @@ const meta = {
     nodeProgressMode: {
       control: 'inline-radio',
       options: ['bar', 'outline'],
-      table: { category: 'Central Nodes' },
+      description: 'Shape of the processing indicator shown while a beam pauses at a node.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressSize: {
+      control: { type: 'range', min: 0, max: 100, step: 1 },
+      description: 'Thickness of the bar or outline processing indicator.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressMinDelay: {
+      control: { type: 'number', min: 0, step: 100 },
+      description: 'Minimum time in milliseconds that a beam pauses at a processing node.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressMaxDelay: {
+      control: { type: 'number', min: 0, step: 100 },
+      description: 'Maximum time in milliseconds that a beam pauses at a processing node.',
+      table: { category: 'Progress' },
     },
     gradientStartColor: {
       control: 'color',

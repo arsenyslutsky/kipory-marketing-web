@@ -26,7 +26,10 @@ export const businessFlowHorizontalHomepageProps = {
   height: '38rem',
   iconSize: 40,
   maxConcurrentBeams: 5,
+  nodeProgressMaxDelay: 1800,
+  nodeProgressMinDelay: 500,
   nodeProgressMode: 'bar',
+  nodeProgressSize: 15,
   strokeWidth: 1.5,
   width: 'min(28.8rem, 100%)',
 } satisfies BusinessFlowHorizontalProps;

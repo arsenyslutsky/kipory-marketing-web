@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { GlowLink } from '@/components/ui/GlowLink';
+import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import {
   BusinessFlowVertical,
   businessFlowVerticalHomepageProps,
@@ -79,8 +80,8 @@ export default function HomePage() {
               Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
             </p>
             <div className={styles.heroActions}>
-              <GlowLink href="/contact">Request access <span>↗</span></GlowLink>
-              <Link className="button button--outline" href="/product">Explore the product</Link>
+              <GlowLink {...glowLinkHomepageProps} href="/waitlist">Join waiting list <span>↗</span></GlowLink>
+              <Link className="button button--outline" href="#pillars">Let’s talk</Link>
             </div>
             <LearnMoreLink className={styles.heroLearnMore} href="#pillars" scrollShiftRem={10} />
           </div>
@@ -134,14 +135,14 @@ export default function HomePage() {
           <div className={`${styles.capabilityLayout} ${styles.useCaseLayout}`}>
             <div className={styles.capabilityContent}>
               <div className={styles.sectionHeader}>
-                <p className="eyebrow">Designed around real flow</p>
+                <p className="eyebrow">Designed to fit and accelerate</p>
                 <h2 id="delivery-title" className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
                   Everything your team needs to run ahead without compromises.
                 </h2>
               </div>
               <div className={styles.useCaseList}>
                 {useCases.map((item, index) => (
-                  <Link href="/product" key={item}>
+                  <Link href="/waitlist" key={item}>
                     <CountBox value={String(index + 1).padStart(2, '0')} />
                     <span className={styles.useCaseCopy}>
                       <strong>{item}</strong>

@@ -56,7 +56,10 @@ export type BusinessFlowVerticalProps = {
   maxConcurrentBeams?: number;
   numberOfNodesBottom?: number;
   numberOfNodesTop?: number;
+  nodeProgressMaxDelay?: number;
+  nodeProgressMinDelay?: number;
   nodeProgressMode?: Node3DProgressMode;
+  nodeProgressSize?: number;
   auxiliaryNodeSpacing?: number;
   showContinuationConnectors?: boolean;
   strokeWidth?: number;
@@ -156,7 +159,10 @@ export function BusinessFlowVertical({
   maxConcurrentBeams = 24,
   numberOfNodesBottom = 10,
   numberOfNodesTop = 10,
+  nodeProgressMaxDelay = 1800,
+  nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
+  nodeProgressSize = 15,
   auxiliaryNodeSpacing = 1,
   showContinuationConnectors = false,
   strokeWidth = 5,
@@ -209,12 +215,20 @@ export function BusinessFlowVertical({
     nodeCornerRadius: 10,
     outlineOpacity: 0,
     outlineWidth: 1,
-    progressBarHeight: 15,
+    progressBarHeight: nodeProgressSize,
+    progressMaxDelay: nodeProgressMaxDelay,
+    progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
     sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
     sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
-  }), [gradient, nodeProgressMode]);
+  }), [
+    gradient,
+    nodeProgressMaxDelay,
+    nodeProgressMinDelay,
+    nodeProgressMode,
+    nodeProgressSize,
+  ]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
   const paths = useMemo(
     () => createBusinessFlowVerticalPaths(satellitePoints, showContinuationConnectors)

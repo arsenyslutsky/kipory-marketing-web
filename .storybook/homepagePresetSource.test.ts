@@ -91,6 +91,11 @@ it.each([
     'src/features/business-flow-horizontal/presets.ts',
     'businessFlowHorizontalHomepageProps',
   ],
+  [
+    'ui-glowlink--current-nextjs-app' as const,
+    'src/components/ui/GlowLink.presets.ts',
+    'glowLinkHomepageProps',
+  ],
 ])('maps %s to its canonical preset', (storyId, relativePath, exportName) => {
   expect(getHomepagePresetTarget(storyId)).toEqual({ relativePath, exportName });
 });
@@ -135,6 +140,45 @@ export const businessFlowHorizontalHomepageProps = {
       ),
     ).rejects.toThrow('must be a string, finite number, or boolean');
     expect(await readFile(targetPath, 'utf8')).toBe(savedSource);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it('persists GlowLink control values into the registered homepage preset', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-glow-link-preset-'));
+  const target = getHomepagePresetTarget('ui-glowlink--current-nextjs-app');
+  const targetPath = join(projectRoot, target.relativePath);
+  const initialSource = `import type { GlowLinkVisualProps } from './GlowLink';
+
+export const glowLinkHomepageProps = {
+  glowActive: false,
+  glowBlur: 15,
+  glowColor: '#449c40',
+} satisfies GlowLinkVisualProps;
+`;
+
+  try {
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, initialSource, 'utf8');
+
+    await saveHomepagePreset(projectRoot, 'ui-glowlink--current-nextjs-app', {
+      glowActive: true,
+      glowBlur: 24,
+      glowColor: '#5fd85a',
+    });
+
+    expect(await readFile(targetPath, 'utf8')).toBe(
+      `import type { GlowLinkVisualProps } from './GlowLink';
+
+export const glowLinkHomepageProps = {
+  glowActive: true,
+  glowBlur: 24,
+  glowColor: '#5fd85a',
+} satisfies GlowLinkVisualProps;
+`,
+    );
+    expect(await readdir(dirname(targetPath))).toEqual(['GlowLink.presets.ts']);
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }

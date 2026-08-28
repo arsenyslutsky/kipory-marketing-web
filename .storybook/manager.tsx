@@ -19,7 +19,7 @@ import {
   type HomepagePresetParameter,
 } from './homepagePresetContract.ts';
 
-const ADDON_ID = 'kipory/homepage-illustration-parameters';
+const ADDON_ID = 'kipory/homepage-parameters';
 const TOOL_ID = `${ADDON_ID}/tool`;
 
 function HomepagePresetTool() {
@@ -65,7 +65,7 @@ function HomepagePresetTool() {
 addons.register(ADDON_ID, () => {
   addons.add(TOOL_ID, {
     type: types.TOOL,
-    title: 'Save homepage illustration parameters',
+    title: 'Save homepage parameters',
     render: HomepagePresetTool,
   });
 });

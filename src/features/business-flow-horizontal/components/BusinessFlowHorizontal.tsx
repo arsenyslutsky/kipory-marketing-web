@@ -44,7 +44,10 @@ export type BusinessFlowHorizontalProps = {
   height?: CSSProperties['height'];
   iconSize?: number;
   maxConcurrentBeams?: number;
+  nodeProgressMaxDelay?: number;
+  nodeProgressMinDelay?: number;
   nodeProgressMode?: Node3DProgressMode;
+  nodeProgressSize?: number;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
@@ -135,7 +138,10 @@ export function BusinessFlowHorizontal({
   height = '38rem',
   iconSize = 40,
   maxConcurrentBeams = 24,
+  nodeProgressMaxDelay = 1800,
+  nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
+  nodeProgressSize = 15,
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
@@ -197,12 +203,14 @@ export function BusinessFlowHorizontal({
     nodeCornerRadius: 10,
     outlineOpacity: 0,
     outlineWidth: 1,
-    progressBarHeight: 15,
+    progressBarHeight: nodeProgressSize,
+    progressMaxDelay: nodeProgressMaxDelay,
+    progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
     sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
     sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
-  }), [nodeProgressMode]);
+  }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
   const burstContext = useMemo<BurstContext>(() => ({
     beamEnabled,
     beamSource,

@@ -12,6 +12,7 @@ describe('homepage preset contract', () => {
     'animated-illustrations-businessflow3d--current-nextjs-app',
     'animated-illustrations-businessflowvertical--current-nextjs-app',
     'animated-illustrations-businessflowhorizontal--current-nextjs-app',
+    'ui-glowlink--current-nextjs-app',
   ])('accepts the supported story %s', (storyId) => {
     expect(isHomepagePresetStoryId(storyId)).toBe(true);
   });

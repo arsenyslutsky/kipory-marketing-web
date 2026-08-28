@@ -128,3 +128,55 @@ it('cleans up already-created nodes when construction fails', () => {
   expect(disposeMaterial).toHaveBeenCalledOnce();
   expect(firstNode.parent).toBeNull();
 });
+
+it('updates progress controls by node id and restores configured progress for inactive nodes', () => {
+  const serverProgress = vi.fn();
+  const graphProgress = vi.fn();
+  vi.mocked(createNode3DObject)
+    .mockImplementationOnce(() => {
+      const node = new THREE.Group();
+      node.userData = {
+        id: 'server',
+        nodeProgressControl: { setProgress: serverProgress },
+      };
+      return node;
+    })
+    .mockImplementationOnce(() => {
+      const node = new THREE.Group();
+      node.userData = {
+        id: 'graph',
+        nodeProgressControl: { setProgress: graphProgress },
+      };
+      return node;
+    });
+
+  const flowNodes = createFlowLayer3DNodes({
+    aspectRatio: 1,
+    nodeStyle,
+    nodes: [
+      {
+        cardDepth: 40, height: 12, icon: 'server.svg', iconColor: '#fff', iconOpacity: 1,
+        id: 'server', position: [0.2, 0.5], progress: 0.25, shape: 'square', tier: 1, width: 48,
+      },
+      {
+        cardDepth: 40, height: 12, icon: 'graph.svg', iconColor: '#fff', iconOpacity: 1,
+        id: 'graph', position: [0.8, 0.5], shape: 'square', tier: 1, width: 48,
+      },
+    ],
+    renderer: {} as THREE.WebGLRenderer,
+    viewportHeight: 640,
+  }) as ReturnType<typeof createFlowLayer3DNodes> & {
+    setProgress?: (progressByNode: ReadonlyMap<string, number>) => void;
+  };
+
+  expect(flowNodes.setProgress).toBeTypeOf('function');
+  flowNodes.setProgress?.(new Map([['server', 0.4]]));
+
+  expect(serverProgress).toHaveBeenLastCalledWith(0.4);
+  expect(graphProgress).toHaveBeenLastCalledWith(undefined);
+
+  flowNodes.setProgress?.(new Map());
+
+  expect(serverProgress).toHaveBeenLastCalledWith(0.25);
+  expect(graphProgress).toHaveBeenLastCalledWith(undefined);
+});

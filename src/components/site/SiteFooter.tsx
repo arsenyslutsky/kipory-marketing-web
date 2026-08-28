@@ -15,13 +15,12 @@ export function SiteFooter() {
         <div className="site-footer__links">
           <div>
             <span className="site-footer__link-heading">Explore</span>
-            <Link href="/product">Product</Link>
-            <Link href="/about">About</Link>
+            <Link href="/">Home</Link>
           </div>
           <div>
             <span className="site-footer__link-heading">Connect</span>
             <Link href="/contact">Contact</Link>
-            <Link href="/contact">Request access</Link>
+            <Link href="/waitlist">Join waiting list</Link>
           </div>
         </div>
       </div>

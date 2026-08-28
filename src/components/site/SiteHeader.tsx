@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { BrandMark } from './BrandMark';
 
 const navigation = [
-  { href: '/product', label: 'Product' },
-  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ] as const;
 
@@ -22,8 +20,8 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link className="button button--compact button--light" href="/contact">
-          Sign-in
+        <Link className="button button--compact button--light site-header__cta" href="/waitlist">
+          Join waiting list
         </Link>
       </div>
     </header>

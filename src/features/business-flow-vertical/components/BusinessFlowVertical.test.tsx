@@ -132,7 +132,35 @@ it('renders homepage node processing progress as bars', () => {
   })));
   render(<BusinessFlowVertical {...businessFlowVerticalHomepageProps} />);
 
-  expect(capturedNodeStyle?.progressMode).toBe('bar');
+  expect(capturedNodeStyle).toMatchObject({
+    progressBarHeight: 15,
+    progressMaxDelay: 1800,
+    progressMinDelay: 500,
+    progressMode: 'bar',
+  });
+});
+
+it('propagates custom node progress size, type, and delay range to the shared layer', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(
+    <BusinessFlowVertical
+      nodeProgressMaxDelay={2400}
+      nodeProgressMinDelay={800}
+      nodeProgressMode="outline"
+      nodeProgressSize={24}
+    />,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    progressBarHeight: 24,
+    progressMaxDelay: 2400,
+    progressMinDelay: 800,
+    progressMode: 'outline',
+  });
 });
 
 it('preserves independent beam trail and head-glow controls', () => {
