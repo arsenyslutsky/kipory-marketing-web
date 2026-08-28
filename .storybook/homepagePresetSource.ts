@@ -13,6 +13,8 @@ type Primitive = string | number | boolean;
 type PresetEntry = { key: string; value: Primitive };
 type HomepagePresetTarget = { relativePath: string; exportName: string };
 
+const presetSaveQueues = new Map<string, Promise<void>>();
+
 const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarget> = {
   'animated-illustrations-businessflow3d--current-nextjs-app': {
     relativePath: 'src/features/business-flow-3d/presets.ts',
@@ -29,6 +31,34 @@ const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarge
   'ui-glowlink--current-nextjs-app': {
     relativePath: 'src/components/ui/GlowLink.presets.ts',
     exportName: 'glowLinkHomepageProps',
+  },
+  'marketing-sitecontainer--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'siteContainerHomepageProps',
+  },
+  'marketing-section--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'marketingSectionHomepageProps',
+  },
+  'marketing-splitlayout--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'splitLayoutHomepageProps',
+  },
+  'marketing-pagehero--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'pageHeroHomepageProps',
+  },
+  'marketing-sectionheader--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'sectionHeaderHomepageProps',
+  },
+  'marketing-numberedrow--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'numberedRowHomepageProps',
+  },
+  'marketing-formfield--current-nextjs-app': {
+    relativePath: 'src/components/marketing/presets.ts',
+    exportName: 'formFieldHomepageProps',
   },
 };
 
@@ -205,15 +235,28 @@ export async function saveHomepagePreset(
 ): Promise<void> {
   const target = getHomepagePresetTarget(storyId);
   const targetPath = resolve(projectRoot, target.relativePath);
-  const source = await readFile(targetPath, 'utf8');
-  const updatedSource = rewriteHomepagePresetSource(source, target.exportName, args);
-  const temporaryPath = `${targetPath}.${process.pid}-${randomUUID()}.tmp`;
+  const previousSave = presetSaveQueues.get(targetPath) ?? Promise.resolve();
+  const currentSave = previousSave.catch(() => undefined).then(async () => {
+    const source = await readFile(targetPath, 'utf8');
+    const updatedSource = rewriteHomepagePresetSource(source, target.exportName, args);
+    const temporaryPath = `${targetPath}.${process.pid}-${randomUUID()}.tmp`;
+
+    try {
+      await writeFile(temporaryPath, updatedSource, 'utf8');
+      await rename(temporaryPath, targetPath);
+    } catch (error) {
+      await unlink(temporaryPath).catch(() => undefined);
+      throw error;
+    }
+  });
+
+  presetSaveQueues.set(targetPath, currentSave);
 
   try {
-    await writeFile(temporaryPath, updatedSource, 'utf8');
-    await rename(temporaryPath, targetPath);
-  } catch (error) {
-    await unlink(temporaryPath).catch(() => undefined);
-    throw error;
+    await currentSave;
+  } finally {
+    if (presetSaveQueues.get(targetPath) === currentSave) {
+      presetSaveQueues.delete(targetPath);
+    }
   }
 }

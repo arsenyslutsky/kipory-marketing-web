@@ -1,4 +1,18 @@
 import type { Metadata } from 'next';
+import {
+  FormField,
+  MarketingSection,
+  PageHero,
+  SiteContainer,
+  SplitLayout,
+} from '@/components/marketing';
+import {
+  formFieldHomepageProps,
+  marketingSectionHomepageProps,
+  pageHeroHomepageProps,
+  siteContainerHomepageProps,
+  splitLayoutHomepageProps,
+} from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import styles from '../marketing.module.css';
 
@@ -10,44 +24,45 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main id="main-content" className={styles.main}>
-      <section className={`${styles.pageHero} ${styles.waitlistHero}`}>
-        <div className={`site-container ${styles.pageHeroGrid} ${styles.waitlistHeroGrid}`}>
-          <div className={styles.pageHeroHeading}>
-            <h1 className={styles.pageTitle}>Show us how your system moves.</h1>
-            <p className={styles.pageSubtitle}>SHOW US WHERE WORK STOPS.</p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        {...pageHeroHomepageProps}
+        title="Show us how your system moves."
+        subtitle="SHOW US WHERE WORK STOPS."
+      />
 
-      <section className={`${styles.section} ${styles.lightSection} ${styles.waitlistFormSection}`}>
-        <div className={`site-container ${styles.contactGrid}`}>
-          <div className={styles.contactNotes}>
-            <p className="eyebrow">Start a conversation</p>
-            <strong>What happens next</strong>
-            <p>Share a little about the flow you want to understand. We will use it to shape a focused first conversation.</p>
-          </div>
-          <SubmissionForm
-            className={styles.contactForm}
-            ariaLabel="Contact Kipory"
-            panelSize="tall"
-            successStatus="MESSAGE SENT"
-            successTitle="WE'LL TAKE IT FROM HERE."
-            successBody="Thanks for the context. Our team will review your note and follow up by email."
-          >
-            <div className={styles.field}>
-              <label htmlFor="first-name">First name</label>
+      <MarketingSection {...marketingSectionHomepageProps}>
+        <SiteContainer {...siteContainerHomepageProps}>
+          <SplitLayout
+            {...splitLayoutHomepageProps}
+            contentRatio={0.75}
+            visualRatio={1.25}
+            gap={118}
+            content={(
+              <div className={styles.contactNotes}>
+                <p className="eyebrow">Start a conversation</p>
+                <strong>What happens next</strong>
+                <p>Share a little about the flow you want to understand. We will use it to shape a focused first conversation.</p>
+              </div>
+            )}
+            visual={(
+              <SubmissionForm
+                className={styles.contactForm}
+                ariaLabel="Contact Kipory"
+                panelSize="tall"
+                successStatus="MESSAGE SENT"
+                successTitle="WE'LL TAKE IT FROM HERE."
+                successBody="Thanks for the context. Our team will review your note and follow up by email."
+              >
+                <FormField {...formFieldHomepageProps} label="First name" htmlFor="first-name">
               <input id="first-name" name="firstName" autoComplete="given-name" required />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="last-name">Last name</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Last name" htmlFor="last-name">
               <input id="last-name" name="lastName" autoComplete="family-name" required />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="company">Company</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Company" htmlFor="company">
               <input id="company" name="company" autoComplete="organization" required />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="role">Role</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Role" htmlFor="role">
               <select id="role" name="role" defaultValue="" required>
                 <option value="" disabled>Select your role</option>
                 <option value="development-engineering">Development / Engineering</option>
@@ -57,13 +72,11 @@ export default function ContactPage() {
                 <option value="operations">Operations</option>
                 <option value="other">Other</option>
               </select>
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="company-email">Company email</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Company email" htmlFor="company-email" wide>
               <input id="company-email" name="email" type="email" autoComplete="email" required />
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="inquiry-reason">Reason for inquiry</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Reason for inquiry" htmlFor="inquiry-reason" wide>
               <select id="inquiry-reason" name="inquiryReason" defaultValue="" required>
                 <option value="" disabled>Select a reason</option>
                 <option value="product-demo">Product demo</option>
@@ -73,20 +86,21 @@ export default function ContactPage() {
                 <option value="press-media">Press and media</option>
                 <option value="other">Other</option>
               </select>
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="comments">Comments</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Comments" htmlFor="comments" wide>
               <textarea id="comments" name="comments" />
-            </div>
-            <button className="button button--accent" type="submit">
-              Send message
-              <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M4 12 12 4M6 4h6v6" />
-              </svg>
-            </button>
-          </SubmissionForm>
-        </div>
-      </section>
+                </FormField>
+                <button className="button button--accent" type="submit">
+                  Send message
+                  <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M4 12 12 4M6 4h6v6" />
+                  </svg>
+                </button>
+              </SubmissionForm>
+            )}
+          />
+        </SiteContainer>
+      </MarketingSection>
     </main>
   );
 }

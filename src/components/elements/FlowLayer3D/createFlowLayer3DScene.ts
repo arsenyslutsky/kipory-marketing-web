@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from '../Beam3D/createBeam3DObject';
 import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
@@ -18,13 +19,7 @@ import type {
   FlowLayer3DSceneOptions,
 } from './types';
 
-const flareStops = [
-  'rgba(255,255,255,1)',
-  'rgba(201,235,199,.96)',
-  'rgba(68,156,64,.62)',
-  'rgba(68,156,64,.18)',
-  'rgba(68,156,64,0)',
-] as const;
+const flareStops = businessFlowPalette.flareStops;
 
 type BeamSlot = {
   beam: Beam3DObject;

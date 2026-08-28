@@ -8,6 +8,7 @@ import {
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   businessFlowVerticalCentralNodes,
@@ -126,32 +127,32 @@ function useReducedMotionPreference() {
 }
 
 export function BusinessFlowVertical({
-  auxiliaryIconFillColor = '#000000',
-  beamColor = '#449c40',
+  auxiliaryIconFillColor = businessFlowPalette.black,
+  beamColor = businessFlowPalette.beam,
   beamEmissionRandomness = 100,
   beamEnabled = true,
   beamHeadGlowBlur = 0,
   beamHeadGlowOpacity = 1,
   beamHeadGlowRadius = 0,
-  beamHighlightColor = '#c9ebc7',
+  beamHighlightColor = businessFlowPalette.beamHighlight,
   beamSpeed = 1,
   beamTrailLength = 0,
   burstFadeTime = 920,
   burstRadius = 32,
   burstStrength = 1,
   className,
-  color = 'var(--paper)',
-  centralIconFillColor = '#000000',
+  color = businessFlowPalette.iconStroke,
+  centralIconFillColor = businessFlowPalette.black,
   centralIconFillMode = 'gradient',
   centralIconStrokeOpacity = 1,
-  connectorColor = '#ffffff',
+  connectorColor = businessFlowPalette.connector,
   connectorOpacity = 0.62,
   connectorRadius = 1.75,
   connectorWidth = 1.25,
-  gradientEndColor = '#052f24',
-  gradientMidColor = '#03492b',
-  gradientStartColor = '#066b43',
-  gridColor = '#39473f',
+  gradientEndColor = businessFlowPalette.frontGradient.end,
+  gradientMidColor = businessFlowPalette.frontGradient.mid,
+  gradientStartColor = businessFlowPalette.frontGradient.start,
+  gridColor = businessFlowPalette.grid,
   gridDensity = 30,
   gridOpacity = 0.2,
   height = '38rem',
@@ -220,8 +221,8 @@ export function BusinessFlowVertical({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-    sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
-    sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
+    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
+    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
   }), [
     gradient,
     nodeProgressMaxDelay,

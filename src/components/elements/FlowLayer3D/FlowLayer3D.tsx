@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 import styles from './FlowLayer3D.module.css';
 import type { FlowLayer3DNode, FlowLayer3DProps, FlowLayer3DSceneController } from './types';
@@ -79,11 +80,11 @@ export function FlowLayer3D({
               key={node.id}
               style={{
                 '--flow-node-aspect': String(node.width / node.cardDepth),
-                '--flow-node-body-end': nodeStyle?.frontGradient.end ?? '#052f24',
-                '--flow-node-body-mid': nodeStyle?.frontGradient.mid ?? '#03492b',
-                '--flow-node-body-start': nodeStyle?.frontGradient.start ?? '#066b43',
+                '--flow-node-body-end': nodeStyle?.frontGradient.end ?? businessFlowPalette.frontGradient.end,
+                '--flow-node-body-mid': nodeStyle?.frontGradient.mid ?? businessFlowPalette.frontGradient.mid,
+                '--flow-node-body-start': nodeStyle?.frontGradient.start ?? businessFlowPalette.frontGradient.start,
                 '--flow-node-height': `${node.cardDepth}px`,
-                '--flow-node-icon-color': node.iconStrokeColor ?? '#f3f5ef',
+                '--flow-node-icon-color': node.iconStrokeColor ?? businessFlowPalette.iconStroke,
                 '--flow-node-icon-opacity': String(Math.min(1, Math.max(0, node.iconOpacity))),
                 '--flow-node-radius': `${Math.max(2, Math.min(
                   nodeStyle?.nodeCornerRadius ?? 8,

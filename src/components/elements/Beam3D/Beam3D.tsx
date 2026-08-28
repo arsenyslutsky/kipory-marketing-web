@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { createBeam3DScene } from './createBeam3DScene';
 import styles from './Beam3D.module.css';
 import type { Beam3DProps, Beam3DSceneOptions } from './types';
@@ -27,7 +28,7 @@ function cssSize(value: CSSProperties['width']): string {
 }
 
 export function Beam3D({
-  beamColor = '#449c40',
+  beamColor = businessFlowPalette.beam,
   beamWidth = 1,
   cameraPitch = 33.19,
   cameraYaw = 0,
@@ -35,17 +36,17 @@ export function Beam3D({
   className,
   delayBeforeDissapear = 0,
   direction = 'forward',
-  flareColor = '#ffffff',
+  flareColor = businessFlowPalette.flare,
   glowIntensity = 1,
   height = '28rem',
-  highlightColor = '#c9ebc7',
+  highlightColor = businessFlowPalette.beamHighlight,
   interactive = true,
   mode = 'dark',
-  packetColor = '#f1fbf0',
+  packetColor = businessFlowPalette.packetCore,
   packetCoreShape = 'circle',
   packetCoreSize = 1,
   packetHaloBlur = 0,
-  packetHaloColor = '#449c40',
+  packetHaloColor = businessFlowPalette.packetHalo,
   packetHaloSize = 1,
   packetShadow = 0,
   packetVisible = true,

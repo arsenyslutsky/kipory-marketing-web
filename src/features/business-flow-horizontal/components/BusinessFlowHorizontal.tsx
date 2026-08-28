@@ -8,6 +8,7 @@ import {
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBusinessFlowHorizontalNodes } from '../nodes';
@@ -112,27 +113,27 @@ function useReducedMotionPreference() {
 }
 
 export function BusinessFlowHorizontal({
-  auxiliaryIconFillColor = '#212121',
-  beamColor = '#449c40',
+  auxiliaryIconFillColor = businessFlowPalette.auxiliaryIconFill,
+  beamColor = businessFlowPalette.beam,
   beamEmissionRandomness = 100,
   beamEnabled = true,
   beamHeadGlowBlur = 0,
   beamHeadGlowOpacity = 1,
   beamHeadGlowRadius = 0,
-  beamHighlightColor = '#c9ebc7',
+  beamHighlightColor = businessFlowPalette.beamHighlight,
   beamSpeed = 1.4,
   beamTrailLength = 0,
   burstFadeTime = 920,
   burstRadius = 32,
   burstStrength = 1,
-  centralIconFillColor = '#1d281d',
+  centralIconFillColor = businessFlowPalette.centralIconFill,
   centralIconStrokeOpacity = 0.52,
   className,
-  color = '#f3f5ef',
-  connectorColor = '#ffffff',
+  color = businessFlowPalette.iconStroke,
+  connectorColor = businessFlowPalette.connector,
   connectorOpacity = 0.22,
   connectorWidth = 1.25,
-  gridColor = '#39473f',
+  gridColor = businessFlowPalette.grid,
   gridDensity = 30,
   gridOpacity = 0,
   height = '38rem',
@@ -198,7 +199,7 @@ export function BusinessFlowHorizontal({
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
     assetBasePath: '/assets/nodes',
-    frontGradient: { angle: 117, start: '#066b43', mid: '#03492b', end: '#052f24' },
+    frontGradient: { angle: 117, ...businessFlowPalette.frontGradient },
     mode: 'dark',
     nodeCornerRadius: 10,
     outlineOpacity: 0,
@@ -208,8 +209,8 @@ export function BusinessFlowHorizontal({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-    sideXGradient: { angle: 360, start: '#31775a', mid: '#10402e', end: '#5c899b' },
-    sideZGradient: { angle: 177, start: '#427298', mid: '#366480', end: '#0e4b81' },
+    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
+    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
   }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
   const burstContext = useMemo<BurstContext>(() => ({
     beamEnabled,

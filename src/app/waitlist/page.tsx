@@ -1,4 +1,18 @@
 import type { Metadata } from 'next';
+import {
+  FormField,
+  MarketingSection,
+  PageHero,
+  SiteContainer,
+  SplitLayout,
+} from '@/components/marketing';
+import {
+  formFieldHomepageProps,
+  marketingSectionHomepageProps,
+  pageHeroHomepageProps,
+  siteContainerHomepageProps,
+  splitLayoutHomepageProps,
+} from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import styles from '../marketing.module.css';
 
@@ -10,49 +24,53 @@ export const metadata: Metadata = {
 export default function WaitlistPage() {
   return (
     <main id="main-content" className={styles.main}>
-      <section className={`${styles.pageHero} ${styles.waitlistHero}`}>
-        <div className={`site-container ${styles.pageHeroGrid} ${styles.waitlistHeroGrid}`}>
-          <div className={styles.pageHeroHeading}>
-            <h1 className={styles.pageTitle}>Join the waiting list.</h1>
-            <p className={styles.pageSubtitle}>SEE THE FLOW SOONER.</p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        {...pageHeroHomepageProps}
+        title="Join the waiting list."
+        subtitle="SEE THE FLOW SOONER."
+      />
 
-      <section className={`${styles.section} ${styles.lightSection} ${styles.waitlistFormSection}`}>
-        <div className={`site-container ${styles.contactGrid}`}>
-          <div className={styles.contactNotes}>
-            <strong>What happens next</strong>
-            <p>Tell us who you are and where you work. We will use your email to follow up about Kipory access.</p>
-          </div>
-          <SubmissionForm
-            className={styles.contactForm}
-            ariaLabel="Join the Kipory waiting list"
-            successStatus="ACCESS REQUESTED"
-            successTitle="YOU'RE ON THE LIST."
-            successBody="Thanks for joining. We'll keep you informed as Kipory access expands."
-          >
-            <div className={styles.field}>
-              <label htmlFor="name">Name</label>
+      <MarketingSection {...marketingSectionHomepageProps}>
+        <SiteContainer {...siteContainerHomepageProps}>
+          <SplitLayout
+            {...splitLayoutHomepageProps}
+            contentRatio={0.75}
+            visualRatio={1.25}
+            gap={118}
+            content={(
+              <div className={styles.contactNotes}>
+                <strong>What happens next</strong>
+                <p>Tell us who you are and where you work. We will use your email to follow up about Kipory access.</p>
+              </div>
+            )}
+            visual={(
+              <SubmissionForm
+                className={styles.contactForm}
+                ariaLabel="Join the Kipory waiting list"
+                successStatus="ACCESS REQUESTED"
+                successTitle="YOU'RE ON THE LIST."
+                successBody="Thanks for joining. We'll keep you informed as Kipory access expands."
+              >
+                <FormField {...formFieldHomepageProps} label="Name" htmlFor="name">
               <input id="name" name="name" autoComplete="name" required />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="email">Work email</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Work email" htmlFor="email">
               <input id="email" name="email" type="email" autoComplete="email" required />
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="company">Company (optional)</label>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Company (optional)" htmlFor="company" wide>
               <input id="company" name="company" autoComplete="organization" />
-            </div>
-            <button className="button button--accent" type="submit">
-              Join waitlist
-              <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M4 12 12 4M6 4h6v6" />
-              </svg>
-            </button>
-          </SubmissionForm>
-        </div>
-      </section>
+                </FormField>
+                <button className="button button--accent" type="submit">
+                  Join waitlist
+                  <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M4 12 12 4M6 4h6v6" />
+                  </svg>
+                </button>
+              </SubmissionForm>
+            )}
+          />
+        </SiteContainer>
+      </MarketingSection>
     </main>
   );
 }

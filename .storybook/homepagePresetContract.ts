@@ -6,6 +6,13 @@ export const HOMEPAGE_PRESET_STORY_IDS = [
   'animated-illustrations-businessflowvertical--current-nextjs-app',
   'animated-illustrations-businessflowhorizontal--current-nextjs-app',
   'ui-glowlink--current-nextjs-app',
+  'marketing-sitecontainer--current-nextjs-app',
+  'marketing-section--current-nextjs-app',
+  'marketing-splitlayout--current-nextjs-app',
+  'marketing-pagehero--current-nextjs-app',
+  'marketing-sectionheader--current-nextjs-app',
+  'marketing-numberedrow--current-nextjs-app',
+  'marketing-formfield--current-nextjs-app',
 ] as const;
 
 export type HomepagePresetStoryId = (typeof HOMEPAGE_PRESET_STORY_IDS)[number];

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { createConnector3DScene } from './createConnector3DScene';
 import styles from './Connector3D.module.css';
 import type { Connector3DProps, Connector3DSceneOptions } from './types';
@@ -30,7 +31,7 @@ export function Connector3D({
   cameraYaw = 0,
   cameraZoom = 1,
   className,
-  color = '#ffffff',
+  color = businessFlowPalette.connector,
   connectorWidth = 1,
   direction = 'forward',
   fading = false,

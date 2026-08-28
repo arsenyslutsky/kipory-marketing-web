@@ -1,4 +1,5 @@
 import type { BusinessFlow3DProps } from './types';
+import { businessFlowPalette } from '../business-flow-palette';
 
 export const businessFlow3DHomepageProps = {
   mode: 'dark',
@@ -25,13 +26,13 @@ export const businessFlow3DHomepageProps = {
   nodeFrontGradientAngle: 117,
   nodeSideXGradientAngle: 360,
   nodeSideZGradientAngle: 177,
-  nodeFrontGradientStartColor: '#066b43',
-  nodeFrontGradientMidColor: '#03492b',
-  nodeFrontGradientEndColor: '#052f24',
-  nodeSideXGradientEndColor: '#5c899b',
-  nodeSideZGradientStartColor: '#427298',
-  nodeSideZGradientMidColor: '#366480',
-  nodeSideZGradientEndColor: '#0e4b81',
+  nodeFrontGradientStartColor: businessFlowPalette.frontGradient.start,
+  nodeFrontGradientMidColor: businessFlowPalette.frontGradient.mid,
+  nodeFrontGradientEndColor: businessFlowPalette.frontGradient.end,
+  nodeSideXGradientEndColor: businessFlowPalette.sideXGradient.end,
+  nodeSideZGradientStartColor: businessFlowPalette.sideZGradient.start,
+  nodeSideZGradientMidColor: businessFlowPalette.sideZGradient.mid,
+  nodeSideZGradientEndColor: businessFlowPalette.sideZGradient.end,
   perspectiveEffect: 75,
   cameraPitch: 33.19,
   cameraYaw: 0.35,

@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { SiteContainer } from '@/components/marketing';
+import { siteContainerHomepageProps } from '@/components/marketing/presets';
 import { BrandMark } from './BrandMark';
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div className="site-container site-footer__top">
+      <SiteContainer {...siteContainerHomepageProps} className="site-footer__top">
         <div>
           <Link className="brand" href="/" aria-label="Kipory home">
             <BrandMark className="brand__mark" />
@@ -23,10 +25,10 @@ export function SiteFooter() {
             <Link href="/waitlist">Join waiting list</Link>
           </div>
         </div>
-      </div>
-      <div className="site-container site-footer__bottom">
+      </SiteContainer>
+      <SiteContainer {...siteContainerHomepageProps} className="site-footer__bottom">
         <span>© {new Date().getFullYear()} Kipory</span>
-      </div>
+      </SiteContainer>
     </footer>
   );
 }

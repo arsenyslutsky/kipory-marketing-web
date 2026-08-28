@@ -5,8 +5,15 @@ import { businessFlowHorizontalHomepageProps } from '../presets';
 const meta = {
   title: 'Animated Illustrations/BusinessFlowHorizontal',
   component: BusinessFlowHorizontal,
+  decorators: [
+    (Story) => (
+      <div style={{ display: 'grid', minHeight: '100vh', placeItems: 'center', width: '100%' }}>
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
-    layout: 'centered',
+    layout: 'fullscreen',
     controls: { sort: 'none' },
   },
   argTypes: {
@@ -115,7 +122,7 @@ const meta = {
       table: { category: 'Beams' },
     },
     beamTrailLength: {
-      control: { type: 'range', min: 0, max: 40, step: 0.5 },
+      control: { type: 'range', min: 0, max: 320, step: 1 },
       description:
         'Length of the glowing trail behind each beam, measured along its connector path in illustration pixels. Use 0 for an orb only.',
       table: { category: 'Beams' },

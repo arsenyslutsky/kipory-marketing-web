@@ -96,6 +96,13 @@ it.each([
     'src/components/ui/GlowLink.presets.ts',
     'glowLinkHomepageProps',
   ],
+  ['marketing-sitecontainer--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'siteContainerHomepageProps'],
+  ['marketing-section--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'marketingSectionHomepageProps'],
+  ['marketing-splitlayout--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'splitLayoutHomepageProps'],
+  ['marketing-pagehero--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'pageHeroHomepageProps'],
+  ['marketing-sectionheader--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'sectionHeaderHomepageProps'],
+  ['marketing-numberedrow--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'numberedRowHomepageProps'],
+  ['marketing-formfield--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'formFieldHomepageProps'],
 ])('maps %s to its canonical preset', (storyId, relativePath, exportName) => {
   expect(getHomepagePresetTarget(storyId)).toEqual({ relativePath, exportName });
 });
@@ -179,6 +186,76 @@ export const glowLinkHomepageProps = {
 `,
     );
     expect(await readdir(dirname(targetPath))).toEqual(['GlowLink.presets.ts']);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it('updates one marketing block preset without changing its sibling presets', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-marketing-block-preset-'));
+  const target = getHomepagePresetTarget('marketing-pagehero--current-nextjs-app');
+  const targetPath = join(projectRoot, target.relativePath);
+  const initialSource = `export const siteContainerHomepageProps = {
+  maxWidth: 1180,
+} satisfies Props;
+
+export const pageHeroHomepageProps = {
+  paddingTop: 164,
+  paddingBottom: 96,
+} satisfies Props;
+`;
+
+  try {
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, initialSource, 'utf8');
+
+    await saveHomepagePreset(projectRoot, 'marketing-pagehero--current-nextjs-app', {
+      paddingTop: 176,
+    });
+
+    expect(await readFile(targetPath, 'utf8')).toBe(`export const siteContainerHomepageProps = {
+  maxWidth: 1180,
+} satisfies Props;
+
+export const pageHeroHomepageProps = {
+  paddingTop: 176,
+  paddingBottom: 96,
+} satisfies Props;
+`);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it('serializes concurrent saves that target different exports in one preset file', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-concurrent-marketing-presets-'));
+  const target = getHomepagePresetTarget('marketing-pagehero--current-nextjs-app');
+  const targetPath = join(projectRoot, target.relativePath);
+  const initialSource = `export const siteContainerHomepageProps = {
+  maxWidth: 1180,
+} satisfies Props;
+
+export const pageHeroHomepageProps = {
+  paddingTop: 164,
+} satisfies Props;
+`;
+
+  try {
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, initialSource, 'utf8');
+
+    await Promise.all([
+      saveHomepagePreset(projectRoot, 'marketing-sitecontainer--current-nextjs-app', {
+        maxWidth: 1240,
+      }),
+      saveHomepagePreset(projectRoot, 'marketing-pagehero--current-nextjs-app', {
+        paddingTop: 176,
+      }),
+    ]);
+
+    const savedSource = await readFile(targetPath, 'utf8');
+    expect(savedSource).toContain('maxWidth: 1240');
+    expect(savedSource).toContain('paddingTop: 176');
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }

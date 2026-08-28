@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { SiteContainer } from '@/components/marketing';
+import { siteContainerHomepageProps } from '@/components/marketing/presets';
 import { BrandMark } from './BrandMark';
 
 const navigation = [
@@ -8,7 +10,7 @@ const navigation = [
 export function SiteHeader() {
   return (
     <header className="site-header">
-      <div className="site-container site-header__inner">
+      <SiteContainer {...siteContainerHomepageProps} className="site-header__inner">
         <Link className="brand" href="/" aria-label="Kipory home">
           <BrandMark className="brand__mark" />
           <span>KIPORY</span>
@@ -25,7 +27,7 @@ export function SiteHeader() {
             Join waiting list
           </Link>
         </div>
-      </div>
+      </SiteContainer>
     </header>
   );
 }

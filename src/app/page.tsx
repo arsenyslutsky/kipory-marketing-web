@@ -1,4 +1,18 @@
 import Link from 'next/link';
+import {
+  MarketingSection,
+  NumberedRow,
+  SectionHeader,
+  SiteContainer,
+  SplitLayout,
+} from '@/components/marketing';
+import {
+  marketingSectionHomepageProps,
+  numberedRowHomepageProps,
+  sectionHeaderHomepageProps,
+  siteContainerHomepageProps,
+  splitLayoutHomepageProps,
+} from '@/components/marketing/presets';
 import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { GlowLink } from '@/components/ui/GlowLink';
@@ -45,10 +59,6 @@ const useCases = [
   'Bold delivery with lean team',
 ] as const;
 
-function CountBox({ value }: { value: string }) {
-  return <span className={styles.countBox}>{value}</span>;
-}
-
 function LearnMoreLink({ className, href, scrollShiftRem = 0 }: { className: string; href: string; scrollShiftRem?: number }) {
   return (
     <Link className={`${styles.learnMoreLink} ${className}`} href={href} data-scroll-shift-rem={scrollShiftRem}>
@@ -70,7 +80,7 @@ export default function HomePage() {
           <BusinessFlow3D {...businessFlow3DHomepageProps} />
         </div>
         <div className={styles.heroShade} />
-        <div className={`site-container ${styles.heroInner}`}>
+        <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>
           <div className={styles.heroCopy}>
             <h1 id="hero-title" className={styles.heroTitle}>
               Complex Business Processes.<br />
@@ -85,79 +95,107 @@ export default function HomePage() {
             </div>
             <LearnMoreLink className={styles.heroLearnMore} href="#pillars" scrollShiftRem={10} />
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
-      <section
+      <MarketingSection
+        {...marketingSectionHomepageProps}
         id="pillars"
-        className={`${styles.section} ${styles.lightSection} ${styles.gridSurfaceSection} ${styles.movementSection}`}
+        className={styles.movementSection}
         aria-labelledby="pillars-title"
+        tone="alternate-to-base"
+        gridFade="none"
+        paddingTop={60}
+        paddingBottom={60}
       >
-        <div className="site-container">
-          <div className={styles.capabilityLayout}>
-            <div className={styles.capabilityContent}>
-              <div className={styles.sectionHeader}>
-                <p className="eyebrow">From movement to meaning</p>
-                <h2 id="pillars-title" className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>Our Pillars</h2>
-              </div>
+        <SiteContainer {...siteContainerHomepageProps}>
+          <SplitLayout
+            {...splitLayoutHomepageProps}
+            content={(
+              <div className={styles.capabilityContent}>
+              <SectionHeader
+                {...sectionHeaderHomepageProps}
+                eyebrow="From movement to meaning"
+                title="Our Pillars"
+                titleId="pillars-title"
+              />
               <div className={styles.capabilityList}>
                 {capabilities.map((capability) => (
-                  <article key={capability.number} className={styles.capabilityCard}>
-                    <CountBox value={capability.number} />
-                    <div className={styles.capabilityCardCopy}>
-                      <h3>
-                        <span className={styles.capabilityTitlePrimary}>{capability.titlePrimary}</span>{' '}
-                        <span className={styles.capabilityTitleSecondary}>{capability.titleSecondary}</span>
-                      </h3>
-                      <p>{capability.body}</p>
-                    </div>
-                  </article>
+                  <NumberedRow
+                    {...numberedRowHomepageProps}
+                    key={capability.number}
+                    number={capability.number}
+                    title={capability.titlePrimary}
+                    accent={capability.titleSecondary}
+                    body={capability.body}
+                  />
                 ))}
               </div>
-            </div>
-            <div className={styles.capabilityVisual}>
-              <BusinessFlowVertical
-                {...businessFlowVerticalHomepageProps}
-                className={styles.pillarsIllustration}
-              />
-            </div>
-          </div>
-          <LearnMoreLink className={styles.sectionLearnMore} href="#delivery" />
-        </div>
-      </section>
-
-      <section
-        id="delivery"
-        className={`${styles.section} ${styles.useCaseSection} ${styles.gridSurfaceSection}`}
-        aria-labelledby="delivery-title"
-      >
-        <div className="site-container">
-          <div className={`${styles.capabilityLayout} ${styles.useCaseLayout}`}>
-            <div className={styles.capabilityContent}>
-              <div className={styles.sectionHeader}>
-                <p className="eyebrow">Designed to fit and accelerate</p>
-                <h2 id="delivery-title" className={`${styles.sectionTitle} ${styles.sectionTitleCompact}`}>
-                  Everything your team needs to run ahead without compromises.
-                </h2>
               </div>
+            )}
+            visual={(
+              <div className={styles.capabilityVisual}>
+                <BusinessFlowVertical
+                  {...businessFlowVerticalHomepageProps}
+                  className={styles.pillarsIllustration}
+                />
+              </div>
+            )}
+          />
+          <LearnMoreLink className={styles.sectionLearnMore} href="#delivery" />
+        </SiteContainer>
+      </MarketingSection>
+
+      <MarketingSection
+        {...marketingSectionHomepageProps}
+        id="delivery"
+        className={styles.useCaseSection}
+        aria-labelledby="delivery-title"
+        tone="alternate-to-base"
+        gridFade="none"
+        paddingTop={60}
+        paddingBottom={60}
+      >
+        <SiteContainer {...siteContainerHomepageProps}>
+          <SplitLayout
+            {...splitLayoutHomepageProps}
+            contentRatio={2.1}
+            visualRatio={2.9}
+            reversed
+            content={(
+              <div className={styles.capabilityContent}>
+              <SectionHeader
+                {...sectionHeaderHomepageProps}
+                eyebrow="Designed to fit and accelerate"
+                title="Everything your team needs to run ahead without compromises."
+                titleId="delivery-title"
+                titleWidth={700}
+              />
               <div className={styles.useCaseList}>
                 {useCases.map((item, index) => (
-                  <Link href="/waitlist" key={item}>
-                    <CountBox value={String(index + 1).padStart(2, '0')} />
-                    <span className={styles.useCaseCopy}>
-                      <strong>{item}</strong>
-                      <span className={styles.capabilityTitleSecondary}>where your business runs</span>
-                    </span>
-                  </Link>
+                  <NumberedRow
+                    {...numberedRowHomepageProps}
+                    key={item}
+                    number={String(index + 1).padStart(2, '0')}
+                    title={item}
+                    accent="where your business runs"
+                    href="/waitlist"
+                    rowPadding={12}
+                    minHeight={64}
+                    gap={0}
+                  />
                 ))}
               </div>
-            </div>
-            <div className={styles.deliveryIllustration}>
-              <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
-            </div>
-          </div>
-        </div>
-      </section>
+              </div>
+            )}
+            visual={(
+              <div className={styles.deliveryIllustration}>
+                <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
+              </div>
+            )}
+          />
+        </SiteContainer>
+      </MarketingSection>
 
       <BackToTop />
     </HeroScrollEffects>
