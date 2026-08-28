@@ -7,6 +7,7 @@ const renderer = vi.hoisted(() => ({
   setClearColor: vi.fn(),
   setPixelRatio: vi.fn(),
   setSize: vi.fn(),
+  shadowMap: { enabled: false, type: undefined as number | undefined },
 }));
 
 const cssRenderer = vi.hoisted(() => ({
@@ -72,6 +73,8 @@ import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 import { normalizedPointToWorld } from './resolveFlowLayer3D';
 
 afterEach(() => {
+  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.type = undefined;
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
@@ -100,6 +103,108 @@ it('disposes the renderer when renderer configuration fails', () => {
   })).toThrow('pixel-ratio setup failed');
 
   expect(renderer.dispose).toHaveBeenCalledOnce();
+});
+
+it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    paths: [],
+  });
+
+  const firstFrame = animationFrames.shift();
+  if (!firstFrame) throw new Error('Expected the first animation frame.');
+  firstFrame(1000);
+
+  const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
+  if (!scene) throw new Error('Expected the flow scene to render.');
+  const light = scene.children.find((object): object is THREE.DirectionalLight => (
+    object instanceof THREE.DirectionalLight
+  ));
+  const catcher = scene.children.find((object): object is THREE.Mesh => (
+    object instanceof THREE.Mesh && object.material instanceof THREE.ShadowMaterial
+  ));
+  if (!light || !catcher || !(catcher.material instanceof THREE.ShadowMaterial)) {
+    throw new Error('Expected a directional shadow light and receiving plane.');
+  }
+
+  expect(renderer.shadowMap.enabled).toBe(true);
+  expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
+  expect(light.castShadow).toBe(true);
+  expect(light.position.x).toBeLessThan(0);
+  expect(light.position.y).toBeGreaterThan(0);
+  expect(light.position.z).toBeLessThan(0);
+  expect(catcher.receiveShadow).toBe(true);
+  expect(catcher.position.y).toBeLessThan(0.29);
+  expect(catcher.material.transparent).toBe(true);
+  expect(catcher.material.opacity).toBeGreaterThan(0);
+
+  const disposeGeometry = vi.spyOn(catcher.geometry, 'dispose');
+  const disposeMaterial = vi.spyOn(catcher.material, 'dispose');
+  controller.destroy();
+
+  expect(disposeGeometry).toHaveBeenCalledOnce();
+  expect(disposeMaterial).toHaveBeenCalledOnce();
+});
+
+it('disposes shadow resources when flow-scene initialization fails', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return {
+      disconnect: vi.fn(),
+      observe: vi.fn(() => {
+        throw new Error('shadow-scene initialization failed');
+      }),
+    };
+  }));
+  const disposeGeometry = vi.spyOn(THREE.PlaneGeometry.prototype, 'dispose');
+  const disposeMaterial = vi.spyOn(THREE.ShadowMaterial.prototype, 'dispose');
+
+  expect(() => createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container: document.createElement('div'),
+    cssLayer: document.createElement('div'),
+    paths: [],
+  })).toThrow('shadow-scene initialization failed');
+
+  expect(disposeGeometry).toHaveBeenCalledOnce();
+  expect(disposeMaterial).toHaveBeenCalledOnce();
 });
 
 it('leaves the shared beam flare for scene-level cleanup', () => {

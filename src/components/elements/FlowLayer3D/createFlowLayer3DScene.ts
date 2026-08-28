@@ -45,6 +45,8 @@ function createRenderer(canvas: HTMLCanvasElement) {
     });
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     return renderer;
   } catch (error) {
@@ -96,6 +98,33 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   camera.position.set(0, 20, 0);
   camera.up.set(0, 0, -1);
   camera.lookAt(0, 0, 0);
+  const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
+  shadowLight.position.set(-6, 14, -5);
+  shadowLight.castShadow = true;
+  shadowLight.shadow.mapSize.set(1024, 1024);
+  shadowLight.shadow.camera.left = -14;
+  shadowLight.shadow.camera.right = 14;
+  shadowLight.shadow.camera.top = 14;
+  shadowLight.shadow.camera.bottom = -14;
+  shadowLight.shadow.bias = -0.0003;
+  shadowLight.shadow.normalBias = 0.025;
+  shadowLight.shadow.radius = 8;
+  shadowLight.shadow.blurSamples = 16;
+
+  const shadowCatcherGeometry = new THREE.PlaneGeometry(80, 80);
+  const shadowCatcherMaterial = new THREE.ShadowMaterial({
+    color: 0x000000,
+    opacity: 0.5,
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const shadowCatcher = new THREE.Mesh(shadowCatcherGeometry, shadowCatcherMaterial);
+  shadowCatcher.rotation.x = -Math.PI / 2;
+  shadowCatcher.position.y = 0.12;
+  shadowCatcher.receiveShadow = true;
+  shadowCatcher.renderOrder = -90;
+  scene.add(shadowLight, shadowLight.target, shadowCatcher);
   const timer = new THREE.Timer();
   const beamSlots: BeamSlot[] = [];
   let connectorObjects: FlowLayer3DObjects | undefined;
@@ -332,6 +361,9 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     flareTexture = undefined;
     beamSlots.length = 0;
     disposeNode3DGradientTextures(renderer);
+    scene.remove(shadowLight, shadowLight.target, shadowCatcher);
+    shadowCatcherGeometry.dispose();
+    shadowCatcherMaterial.dispose();
     cssRenderer.domElement.remove();
     renderer.dispose();
   }
