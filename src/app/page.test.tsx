@@ -98,3 +98,9 @@ it('uses the accelerated-fit delivery label', () => {
   expect(screen.getByText('Designed to fit and accelerate')).toBeInTheDocument();
   expect(screen.queryByText('Designed around real flow')).not.toBeInTheDocument();
 });
+
+it('renders every delivery detail as supporting body copy', () => {
+  const { container } = render(<HomePage />);
+
+  expect(container.querySelectorAll('#delivery article p')).toHaveLength(4);
+});

@@ -204,7 +204,7 @@
   font-weight: var(--type-accent-weight);
   line-height: var(--type-display-leading-card);
   letter-spacing: var(--type-accent-tracking);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .numberedBody {

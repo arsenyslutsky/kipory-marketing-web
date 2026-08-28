@@ -35,28 +35,44 @@ const capabilities = [
   {
     number: '01',
     titlePrimary: 'ONE HYBRID DATA PLATFORM',
-    titleSecondary: 'for your domain',
+    titleSecondary: 'For your domain',
     body: 'Push or connect your datasets, documents and media containing domain data. Data records and relations are schema-validated, with built-in structural features that keep your knowledge consistent as it grows.',
   },
   {
     number: '02',
     titlePrimary: 'DETERMINISTIC AND AI AGENTIC',
-    titleSecondary: 'flows work in concert',
+    titleSecondary: 'Flows work in concert',
     body: 'One hybrid flow engine for deterministic and AI agentic flows allows next-gen processing. This combines both reliability and deep intelligence enrichment. Fully governed, metered and auditable by design.',
   },
   {
     number: '03',
     titlePrimary: 'KNOWLEDGE DELIVERED',
-    titleSecondary: 'where your business runs',
+    titleSecondary: 'Where your business runs',
     body: 'Access and stream data with flexible APIs, MCPs or event hooks. Keep knowledge fresh with scheduled or event-triggered jobs. Production-ready and built with reliability and scale in mind. Your systems consume knowledge, not raw data.',
   },
 ] as const;
 
 const useCases = [
-  'Velocity with flexibility',
-  'Evolves continuously',
-  'Integrity by default',
-  'Bold delivery with lean team',
+  {
+    title: 'Velocity with flexibility',
+    subtitle: 'Placeholder text',
+    body: 'Business applications and modules go from idea to production-grade in days — built on platform capabilities, not custom code.',
+  },
+  {
+    title: 'Evolves continuously',
+    subtitle: 'Placeholder text',
+    body: 'The platform validates changes before they go live. Flows, data models and endpoints evolve continuously — safely, with no redeployment.',
+  },
+  {
+    title: 'Integrity by default',
+    subtitle: 'Placeholder text',
+    body: 'Quality controls, governance and auditability are built into every layer — data, flows and executions stay validated and accountable by design.',
+  },
+  {
+    title: 'Bold delivery with lean team',
+    subtitle: 'Placeholder text',
+    body: 'A small platform-trained team — not a development department — delivers and evolves complex business processes end to end.',
+  },
 ] as const;
 
 function LearnMoreLink({ className, href, scrollShiftRem = 0 }: { className: string; href: string; scrollShiftRem?: number }) {
@@ -175,10 +191,11 @@ export default function HomePage() {
                 {useCases.map((item, index) => (
                   <NumberedRow
                     {...numberedRowHomepageProps}
-                    key={item}
+                    key={item.title}
                     number={String(index + 1).padStart(2, '0')}
-                    title={item}
-                    accent="where your business runs"
+                    title={item.title}
+                    accent={item.subtitle}
+                    body={item.body}
                     href="/waitlist"
                     rowPadding={12}
                     minHeight={64}
