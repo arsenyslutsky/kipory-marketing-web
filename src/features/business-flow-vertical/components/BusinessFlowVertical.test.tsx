@@ -124,7 +124,7 @@ it('maps its public color to every node stroke without changing central or satel
   expect(capturedNodes?.slice(4).every((node) => node.iconColor === '#111111')).toBe(true);
 });
 
-it('renders homepage node processing progress as bars', () => {
+it('renders homepage node processing progress as outlines', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -136,7 +136,7 @@ it('renders homepage node processing progress as bars', () => {
     progressBarHeight: 15,
     progressMaxDelay: 1800,
     progressMinDelay: 500,
-    progressMode: 'bar',
+    progressMode: 'outline',
   });
 });
 
@@ -150,7 +150,7 @@ it('propagates custom node progress size, type, and delay range to the shared la
     <BusinessFlowVertical
       nodeProgressMaxDelay={2400}
       nodeProgressMinDelay={800}
-      nodeProgressMode="outline"
+      nodeProgressMode="bar"
       nodeProgressSize={24}
     />,
   );
@@ -159,7 +159,7 @@ it('propagates custom node progress size, type, and delay range to the shared la
     progressBarHeight: 24,
     progressMaxDelay: 2400,
     progressMinDelay: 800,
-    progressMode: 'outline',
+    progressMode: 'bar',
   });
 });
 

@@ -22,8 +22,12 @@
 }
 .section { padding: clamp(100px, 12vw, 170px) 0; }
 .lightSection { color: var(--type-color-alternate-primary); background: var(--surface-alternate); }
-.gridSurfaceSection { position: relative; isolation: isolate; overflow: hidden; background: linear-gradient(to bottom, var(--surface-alternate), var(--ink)); }
-.gridSurfaceSection::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .22; background-image: linear-gradient(to right, rgba(231,229,228,.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(231,229,228,.28) 1px, transparent 1px); background-size: 20px 20px; background-position: 0 0; -webkit-mask-image: repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); mask-image: repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); -webkit-mask-composite: source-in; mask-composite: intersect; }
+.gridSurfaceSection, .waitlistFormSection { position: relative; isolation: isolate; overflow: hidden; }
+.gridSurfaceSection { background: linear-gradient(to bottom, var(--surface-alternate), var(--ink)); }
+.waitlistFormSection { padding-block: 110px; }
+.gridSurfaceSection::before, .waitlistFormSection::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .22; background-image: linear-gradient(to right, rgba(231,229,228,.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(231,229,228,.28) 1px, transparent 1px); background-size: 20px 20px; background-position: 0 0; }
+.gridSurfaceSection::before { -webkit-mask-image: repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); mask-image: repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); -webkit-mask-composite: source-in; mask-composite: intersect; }
+.waitlistFormSection::before { -webkit-mask-image: linear-gradient(to right, #000 0, #000 38%, rgba(0,0,0,.12) 72%, transparent 100%), repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); mask-image: linear-gradient(to right, #000 0, #000 38%, rgba(0,0,0,.12) 72%, transparent 100%), repeating-linear-gradient(to right, #000 0, #000 3px, transparent 3px, transparent 8px), repeating-linear-gradient(to bottom, #000 0, #000 3px, transparent 3px, transparent 8px); -webkit-mask-composite: source-in, source-in; mask-composite: intersect; }
 .movementSection { z-index: 3; padding-block: 60px; margin-bottom: calc(-10rem * var(--hero-scroll-progress, 0)); border-block: .1rem solid var(--accent); scroll-margin-top: 72px; transform: translateY(calc(-10rem * var(--hero-scroll-progress, 0))); will-change: transform; }
 .sectionHeader { display: grid; grid-template-columns: 1.25fr .75fr; column-gap: 9vw; align-items: end; }
 .sectionHeader > :first-child { grid-column: 1 / -1; }
@@ -67,13 +71,11 @@
 .pageHeroGrid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 8vw; align-items: end; }
 .pageTitle { margin: 0; font-family: var(--type-display-family); font-size: var(--type-display-size-page); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-page); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
 .pageLead { margin: 0 0 8px; color: var(--type-color-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading-relaxed); text-wrap: pretty; }
-.waitlistHero { padding: clamp(168px, 13vw, 220px) 0 clamp(96px, 8vw, 128px); }
+.waitlistHero { padding: 164px 0 96px; }
 .waitlistHeroGrid { grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: clamp(64px, 8vw, 128px); }
-.pageHeroHeading { min-width: 0; }
-.waitlistHero .pageTitle { max-width: 9ch; font-size: clamp(4.5rem, 7vw, 6rem); line-height: .92; letter-spacing: -.02em; }
-.pageHeroCopy { max-width: 420px; padding-bottom: .45rem; display: grid; gap: 28px; }
-.pageSubtitle { max-width: 12ch; margin: 0; color: var(--type-color-accent); font-family: var(--type-accent-family); font-size: clamp(1.75rem, 2.5vw, 2.25rem); font-style: normal; font-weight: var(--type-accent-weight); line-height: 1.05; letter-spacing: var(--type-accent-tracking); opacity: 1; text-wrap: balance; }
-.waitlistHero .pageLead { max-width: 38ch; margin: 0; font-size: 1.125rem; line-height: 1.55; opacity: 1; }
+.pageHeroHeading { min-width: 0; display: grid; gap: 28px; align-content: end; }
+.waitlistHero .pageTitle { max-width: 9ch; font-size: 3.75rem; line-height: .92; letter-spacing: -.02em; }
+.pageSubtitle { max-width: none; margin: 0; color: var(--type-color-accent); font-family: var(--type-accent-family); font-size: 1.6875rem; font-style: normal; font-weight: var(--type-accent-weight); line-height: 1.05; letter-spacing: var(--type-accent-tracking); opacity: 1; white-space: nowrap; }
 .featureGrid { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--surface-alternate-line); }
 .feature { min-height: 310px; padding: 35px 45px 45px 0; border-right: 1px solid var(--surface-alternate-line); border-bottom: 1px solid var(--surface-alternate-line); }
 .feature:nth-child(even) { padding-left: 45px; border-right: 0; }
@@ -95,16 +97,18 @@
 .value h3 { margin: 105px 0 12px; font-family: var(--type-display-family); font-size: var(--type-display-size-card-sm); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
 .value p { margin: 0; color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-xs); line-height: var(--type-body-leading-relaxed); text-wrap: pretty; }
 .contactGrid { display: grid; grid-template-columns: .75fr 1.25fr; gap: 10vw; }
-.contactNotes { color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading-relaxed); }
+.contactNotes { color: var(--type-color-alternate-secondary); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); }
 .contactNotes strong { display: block; margin-bottom: 12px; color: var(--type-color-alternate-primary); font-family: var(--type-display-family); font-size: var(--type-body-size-lg); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-display-tracking); }
 .contactForm { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .field { display: flex; flex-direction: column; gap: 10px; }
 .fieldWide { grid-column: 1 / -1; }
 .field label { color: var(--type-color-muted); font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking); text-transform: uppercase; }
-.field input, .field textarea { width: 100%; padding: 16px 0; color: var(--surface-alternate-text); caret-color: var(--accent); background: transparent; border: 0; border-bottom: 1px solid var(--surface-alternate-line); border-radius: 0; outline: 0; }
+.field input, .field textarea, .field select { width: 100%; padding: 16px 0; color: var(--surface-alternate-text); caret-color: var(--accent); background-color: transparent; border: 0; border-bottom: 1px solid var(--surface-alternate-line); border-radius: 0; outline: 0; font-size: 1.25rem; }
 .field textarea { min-height: 130px; resize: vertical; }
-.field input:focus, .field textarea:focus { border-color: var(--accent); }
-.formNote { grid-column: 1 / -1; margin: 0; color: var(--type-color-muted); font-size: var(--type-body-size-2xs); line-height: var(--type-body-leading-relaxed); }
+.field select { cursor: pointer; }
+.field select:invalid { color: var(--type-color-muted); }
+.field option { color: var(--surface-alternate-text); background: var(--surface-alternate); }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
 .contactForm :global(.button) { width: max-content; }
 .buttonIcon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) {
@@ -118,7 +122,7 @@
   .heroShade { background: linear-gradient(90deg, rgba(7,9,7,.97), rgba(7,9,7,.68) 65%, rgba(7,9,7,.18)); }
   .sectionHeader, .useCaseHeader, .pageHeroGrid, .proseGrid, .contactGrid { grid-template-columns: 1fr; gap: 32px; }
   .waitlistHeroGrid { gap: 44px; }
-  .pageHeroCopy { max-width: 560px; padding-bottom: 0; gap: 22px; }
+  .pageHeroHeading { gap: 22px; }
   .pageSubtitle { max-width: none; }
   .capabilityLayout { grid-template-columns: 1fr; }
   .useCaseLayout .capabilityContent,
@@ -151,9 +155,9 @@
   .waitlistHero { padding: 136px 0 76px; }
   .waitlistHeroGrid { gap: 36px; }
   .waitlistHero .pageTitle { max-width: 10ch; font-size: clamp(3.25rem, 15vw, 4.5rem); line-height: .94; }
-  .pageHeroCopy { gap: 20px; }
-  .pageSubtitle { max-width: 13ch; font-size: 1.5rem; }
-  .waitlistHero .pageLead { max-width: 34ch; line-height: 1.55; }
+  .pageHeroHeading { gap: 20px; }
+  .pageSubtitle { font-size: 1.25rem; }
+  .waitlistFormSection { padding-block: 80px; }
   .contactForm { grid-template-columns: 1fr; }
-  .fieldWide, .formNote { grid-column: auto; }
+  .fieldWide { grid-column: auto; }
 }

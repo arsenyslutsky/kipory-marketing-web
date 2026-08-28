@@ -28,7 +28,7 @@ export const businessFlowHorizontalHomepageProps = {
   maxConcurrentBeams: 5,
   nodeProgressMaxDelay: 1800,
   nodeProgressMinDelay: 500,
-  nodeProgressMode: 'bar',
+  nodeProgressMode: 'outline',
   nodeProgressSize: 15,
   strokeWidth: 1.5,
   width: 'min(28.8rem, 100%)',

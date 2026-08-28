@@ -100,14 +100,14 @@ it('maps its public color to every node stroke without changing the role fill co
     .toBe(true);
 });
 
-it('renders homepage node processing progress as bars', () => {
+it('renders homepage node processing progress as outlines', () => {
   render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
 
   expect(capturedNodeStyle).toMatchObject({
     progressBarHeight: 15,
     progressMaxDelay: 1800,
     progressMinDelay: 500,
-    progressMode: 'bar',
+    progressMode: 'outline',
   });
 });
 
@@ -116,7 +116,7 @@ it('propagates custom node progress size, type, and delay range to the shared la
     <BusinessFlowHorizontal
       nodeProgressMaxDelay={2400}
       nodeProgressMinDelay={800}
-      nodeProgressMode="outline"
+      nodeProgressMode="bar"
       nodeProgressSize={24}
     />,
   );
@@ -125,7 +125,7 @@ it('propagates custom node progress size, type, and delay range to the shared la
     progressBarHeight: 24,
     progressMaxDelay: 2400,
     progressMinDelay: 800,
-    progressMode: 'outline',
+    progressMode: 'bar',
   });
 });
 

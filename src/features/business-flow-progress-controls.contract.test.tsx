@@ -24,7 +24,7 @@ describe.each([
     expect(homepageProps).toMatchObject({
       nodeProgressMaxDelay: 1800,
       nodeProgressMinDelay: 500,
-      nodeProgressMode: 'bar',
+      nodeProgressMode: 'outline',
       nodeProgressSize: 15,
     });
   });

@@ -89,6 +89,7 @@ canvas { touch-action: none; }
 .site-header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: var(--type-control-weight) var(--type-control-size-lg)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking-wide); }
 .brand__mark { width: 25px; height: 25px; color: var(--accent); }
+.site-header__actions { margin-left: auto; display: flex; align-items: center; gap: 28px; }
 .site-nav { display: flex; align-items: center; gap: 34px; color: var(--type-color-secondary); font-family: var(--type-display-family); font-size: var(--type-control-size-md); font-weight: var(--type-display-weight); letter-spacing: var(--type-display-tracking); text-transform: uppercase; }
 .site-nav a { transition: color .2s ease; }
 .site-nav a:hover { color: var(--paper); }

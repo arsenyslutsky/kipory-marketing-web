@@ -38,7 +38,7 @@ export const businessFlowVerticalHomepageProps = {
   iconSize: 40,
   nodeProgressMaxDelay: 1800,
   nodeProgressMinDelay: 500,
-  nodeProgressMode: 'bar',
+  nodeProgressMode: 'outline',
   nodeProgressSize: 15,
   strokeWidth: 1.5,
 } satisfies BusinessFlowVerticalProps;

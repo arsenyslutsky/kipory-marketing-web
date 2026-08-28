@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import styles from '../marketing.module.css';
 
 export const metadata: Metadata = {
@@ -13,27 +14,23 @@ export default function WaitlistPage() {
         <div className={`site-container ${styles.pageHeroGrid} ${styles.waitlistHeroGrid}`}>
           <div className={styles.pageHeroHeading}>
             <h1 className={styles.pageTitle}>Join the waiting list.</h1>
-          </div>
-          <div className={styles.pageHeroCopy}>
-            <p className={styles.pageSubtitle}>See the flow sooner.</p>
-            <p className={styles.pageLead}>Leave your details and we will keep you informed as Kipory prepares for wider access.</p>
+            <p className={styles.pageSubtitle}>SEE THE FLOW SOONER.</p>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.lightSection}`}>
+      <section className={`${styles.section} ${styles.lightSection} ${styles.waitlistFormSection}`}>
         <div className={`site-container ${styles.contactGrid}`}>
           <div className={styles.contactNotes}>
             <strong>What happens next</strong>
             <p>Tell us who you are and where you work. We will use your email to follow up about Kipory access.</p>
-            <p>This form opens your email application and does not store your information on this website.</p>
           </div>
-          <form
+          <SubmissionForm
             className={styles.contactForm}
-            aria-label="Join the Kipory waiting list"
-            action="mailto:hello@kipory.com?subject=Kipory%20waiting%20list"
-            method="post"
-            encType="text/plain"
+            ariaLabel="Join the Kipory waiting list"
+            successStatus="ACCESS REQUESTED"
+            successTitle="YOU'RE ON THE LIST."
+            successBody="Thanks for joining. We'll keep you informed as Kipory access expands."
           >
             <div className={styles.field}>
               <label htmlFor="name">Name</label>
@@ -47,14 +44,13 @@ export default function WaitlistPage() {
               <label htmlFor="company">Company (optional)</label>
               <input id="company" name="company" autoComplete="organization" />
             </div>
-            <p className={styles.formNote}>Submitting opens a message addressed to hello@kipory.com in your default email application.</p>
             <button className="button button--accent" type="submit">
-              Prepare waitlist email
+              Join waitlist
               <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                 <path d="M4 12 12 4M6 4h6v6" />
               </svg>
             </button>
-          </form>
+          </SubmissionForm>
         </div>
       </section>
     </main>
