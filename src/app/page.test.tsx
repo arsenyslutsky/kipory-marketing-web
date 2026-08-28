@@ -82,11 +82,12 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   expect(glowLinkRender).toHaveBeenCalledWith(expect.objectContaining(glowLinkHomepageProps));
 });
 
-it('routes homepage conversion links to the waiting list instead of retired pages', () => {
+it('routes homepage conversion actions to active destinations', () => {
   render(<HomePage />);
 
   const destinationPaths = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-  expect(screen.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', '#pillars');
+  expect(screen.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', '/contact');
+  expect(screen.getAllByRole('link', { name: /learn more/i })[0]).toHaveAttribute('href', '#pillars');
   expect(destinationPaths).toContain('/waitlist');
   expect(destinationPaths).not.toContain('/product');
   expect(destinationPaths).not.toContain('/about');
@@ -103,4 +104,23 @@ it('renders every delivery detail as supporting body copy', () => {
   const { container } = render(<HomePage />);
 
   expect(container.querySelectorAll('#delivery article p')).toHaveLength(4);
+});
+
+it('marks moving homepage text groups without marking stable section headers or illustrations', () => {
+  const { container } = render(<HomePage />);
+
+  const heroHeading = screen.getByRole('heading', { level: 1 });
+  expect(heroHeading).toHaveAttribute('data-scroll-parallax');
+  expect(heroHeading).toHaveAttribute('data-scroll-fade', 'false');
+  expect(screen.getByText(/Kipory is a data and analysis platform/)).toHaveAttribute('data-scroll-parallax');
+  screen.getAllByRole('heading', { level: 2 }).forEach((heading) => {
+    expect(heading.closest('header')).not.toHaveAttribute('data-scroll-parallax');
+  });
+  container.querySelectorAll('article').forEach((row) => {
+    expect(row).toHaveAttribute('data-scroll-parallax');
+  });
+  screen.getAllByRole('link', { name: /learn more/i }).forEach((link) => {
+    expect(link).toHaveAttribute('data-scroll-parallax');
+  });
+  expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
 });

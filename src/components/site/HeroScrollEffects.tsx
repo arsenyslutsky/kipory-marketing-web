@@ -6,6 +6,9 @@ type HeroScrollEffectsProps = ComponentPropsWithoutRef<'main'> & {
   scrollRange?: number;
 };
 
+const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
+const easeOutQuadratic = (value: number) => 1 - ((1 - value) ** 2);
+
 export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEffectsProps) {
   const mainRef = useRef<HTMLElement>(null);
 
@@ -14,11 +17,41 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
     if (!main) return;
 
     let frameId = 0;
+    const textGroups = Array.from(main.querySelectorAll<HTMLElement>('[data-scroll-parallax]'));
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    main.dataset.scrollMotionReady = motionPreference.matches ? 'reduced' : 'true';
 
     const render = () => {
       frameId = 0;
-      const progress = Math.min(Math.max(window.scrollY / Math.max(scrollRange, 1), 0), 1);
+      const progress = clamp(window.scrollY / Math.max(scrollRange, 1));
       main.style.setProperty('--hero-scroll-progress', String(progress));
+
+      if (motionPreference.matches) {
+        textGroups.forEach((group) => {
+          group.style.removeProperty('--scroll-text-visibility');
+          group.style.removeProperty('--scroll-text-shift');
+        });
+        return;
+      }
+
+      const viewportHeight = window.innerHeight;
+      const revealDistance = Math.min(520, Math.max(240, viewportHeight * .4));
+
+      textGroups.forEach((group) => {
+        const rect = group.getBoundingClientRect();
+        const entry = easeOutQuadratic(clamp((viewportHeight - rect.top) / revealDistance));
+        const exit = clamp(rect.bottom / revealDistance);
+        const visibility = Math.min(entry, exit);
+        const shift = entry < 1 ? 1 - entry : exit < 1 ? -(1 - exit) : 0;
+
+        if (group.dataset.scrollFade === 'false') {
+          group.style.removeProperty('--scroll-text-visibility');
+        } else {
+          group.style.setProperty('--scroll-text-visibility', String(visibility));
+        }
+        group.style.setProperty('--scroll-text-shift', String(shift));
+      });
     };
 
     const update = () => {
@@ -56,7 +89,7 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
       window.history.pushState(null, '', url.hash);
       window.scrollTo({
         top: destination,
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        behavior: motionPreference.matches ? 'auto' : 'smooth',
       });
     };
 
@@ -71,6 +104,11 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
       window.removeEventListener('resize', update);
       main.removeEventListener('click', scrollToSection);
       main.style.removeProperty('--hero-scroll-progress');
+      delete main.dataset.scrollMotionReady;
+      textGroups.forEach((group) => {
+        group.style.removeProperty('--scroll-text-visibility');
+        group.style.removeProperty('--scroll-text-shift');
+      });
     };
   }, [scrollRange]);
 

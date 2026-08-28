@@ -77,7 +77,12 @@ const useCases = [
 
 function LearnMoreLink({ className, href, scrollShiftRem = 0 }: { className: string; href: string; scrollShiftRem?: number }) {
   return (
-    <Link className={`${styles.learnMoreLink} ${className}`} href={href} data-scroll-shift-rem={scrollShiftRem}>
+    <Link
+      className={`${styles.learnMoreLink} ${className}`}
+      href={href}
+      data-scroll-parallax
+      data-scroll-shift-rem={scrollShiftRem}
+    >
       <span>Learn More</span>
       <span className={styles.learnMoreChevron} aria-hidden="true">
         <svg viewBox="0 0 16 18" focusable="false">
@@ -98,16 +103,16 @@ export default function HomePage() {
         <div className={styles.heroShade} />
         <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>
           <div className={styles.heroCopy}>
-            <h1 id="hero-title" className={styles.heroTitle}>
+            <h1 id="hero-title" className={styles.heroTitle} data-scroll-parallax data-scroll-fade="false">
               Complex Business Processes.<br />
               <em>In Days. Not Quarters.</em>
             </h1>
-            <p className={styles.heroLead}>
+            <p className={styles.heroLead} data-scroll-parallax>
               Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
             </p>
-            <div className={styles.heroActions}>
+            <div className={styles.heroActions} data-scroll-parallax>
               <GlowLink {...glowLinkHomepageProps} href="/waitlist">Join waiting list <span>↗</span></GlowLink>
-              <Link className="button button--outline" href="#pillars">Let’s talk</Link>
+              <Link className="button button--outline" href="/contact">Let’s talk</Link>
             </div>
             <LearnMoreLink className={styles.heroLearnMore} href="#pillars" scrollShiftRem={10} />
           </div>
@@ -144,6 +149,7 @@ export default function HomePage() {
                     title={capability.titlePrimary}
                     accent={capability.titleSecondary}
                     body={capability.body}
+                    data-scroll-parallax
                   />
                 ))}
               </div>
@@ -200,6 +206,7 @@ export default function HomePage() {
                     rowPadding={12}
                     minHeight={64}
                     gap={0}
+                    data-scroll-parallax
                   />
                 ))}
               </div>
