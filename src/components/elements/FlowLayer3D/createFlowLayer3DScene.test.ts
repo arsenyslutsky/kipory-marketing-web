@@ -109,6 +109,57 @@ it('disposes the renderer when renderer configuration fails', () => {
   expect(renderer.dispose).toHaveBeenCalledOnce();
 });
 
+it('reports readiness once after the first WebGL and CSS3D frame completes', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  const onReady = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    onReady,
+    paths: [],
+  });
+
+  expect(onReady).not.toHaveBeenCalled();
+  animationFrames.shift()?.(1000);
+  expect(renderer.render).toHaveBeenCalledOnce();
+  expect(cssRenderer.render).toHaveBeenCalledOnce();
+  expect(onReady).toHaveBeenCalledOnce();
+
+  animationFrames.shift()?.(1016);
+  expect(onReady).toHaveBeenCalledOnce();
+  controller.destroy();
+});
+
 it('aggregates concurrent node processing, publishes 100%, then clears the indicator', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {

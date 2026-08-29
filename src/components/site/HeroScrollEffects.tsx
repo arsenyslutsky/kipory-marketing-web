@@ -16,6 +16,83 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
     const main = mainRef.current;
     if (!main) return;
 
+    const syncWorkflowReadiness = () => {
+      const workflows = Array.from(main.querySelectorAll<HTMLElement>('[data-flow-state]'));
+      const ready = workflows.length === 0 || workflows.every((workflow) => (
+        workflow.dataset.flowState !== 'loading'
+      ));
+      main.dataset.workflowsReady = String(ready);
+    };
+    const observer = new MutationObserver(syncWorkflowReadiness);
+
+    observer.observe(main, {
+      attributeFilter: ['data-flow-state'],
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+    syncWorkflowReadiness();
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const finalHeroStage = main.querySelector<HTMLElement>('[data-hero-reveal="actions"]');
+    if (!finalHeroStage) {
+      main.dataset.contentRevealReady = 'true';
+      return;
+    }
+
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let revealTimer = 0;
+    const unlockContent = (event: AnimationEvent) => {
+      if (event.target !== finalHeroStage) return;
+      window.clearTimeout(revealTimer);
+      revealTimer = window.setTimeout(() => {
+        main.dataset.contentRevealReady = 'true';
+      }, motionPreference.matches ? 0 : 500);
+    };
+
+    finalHeroStage.addEventListener('animationend', unlockContent);
+
+    return () => {
+      window.clearTimeout(revealTimer);
+      finalHeroStage.removeEventListener('animationend', unlockContent);
+    };
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const sections = Array.from(main.querySelectorAll<HTMLElement>('[data-section-reveal]'));
+    if (typeof IntersectionObserver === 'undefined') {
+      sections.forEach((section) => {
+        section.dataset.sectionRevealVisible = 'true';
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        (entry.target as HTMLElement).dataset.sectionRevealVisible = 'true';
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: .15 });
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
     let frameId = 0;
     const textGroups = Array.from(main.querySelectorAll<HTMLElement>('[data-scroll-parallax]'));
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -44,13 +121,14 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
         const exit = clamp(rect.bottom / revealDistance);
         const visibility = Math.min(entry, exit);
         const shift = entry < 1 ? 1 - entry : exit < 1 ? -(1 - exit) : 0;
+        const scrollAwareShift = shift * progress;
 
         if (group.dataset.scrollFade === 'false') {
           group.style.removeProperty('--scroll-text-visibility');
         } else {
           group.style.setProperty('--scroll-text-visibility', String(visibility));
         }
-        group.style.setProperty('--scroll-text-shift', String(shift));
+        group.style.setProperty('--scroll-text-shift', String(scrollAwareShift));
       });
     };
 

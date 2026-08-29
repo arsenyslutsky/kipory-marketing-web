@@ -95,7 +95,13 @@ function LearnMoreLink({ className, href, scrollShiftRem = 0 }: { className: str
 
 export default function HomePage() {
   return (
-    <HeroScrollEffects id="main-content" className={styles.main} scrollRange={700}>
+    <HeroScrollEffects
+      id="main-content"
+      className={styles.main}
+      data-content-reveal-ready="false"
+      data-workflows-ready="false"
+      scrollRange={700}
+    >
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroVisual} aria-hidden="true">
           <BusinessFlow3D {...businessFlow3DHomepageProps} />
@@ -104,15 +110,24 @@ export default function HomePage() {
         <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>
           <div className={styles.heroCopy}>
             <h1 id="hero-title" className={styles.heroTitle} data-scroll-parallax data-scroll-fade="false">
-              Complex Business Processes.<br />
-              <em>In Days. Not Quarters.</em>
+              <span
+                className={`${styles.heroTitlePrimary} ${styles.heroReveal}`}
+                data-hero-reveal="title"
+              >
+                Complex Business Processes.
+              </span>
+              <em className={styles.heroReveal} data-hero-reveal="accent">In Days. Not Quarters.</em>
             </h1>
             <p className={styles.heroLead} data-scroll-parallax>
-              Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
+              <span className={`${styles.heroLeadContent} ${styles.heroReveal}`} data-hero-reveal="lead">
+                Kipory is a data and analysis platform that turns your datasets, documents and media into governed production workflows. Deterministic processing and agentic AI work together, then deliver usable knowledge wherever your business runs.
+              </span>
             </p>
             <div className={styles.heroActions} data-scroll-parallax>
-              <GlowLink {...glowLinkHomepageProps} href="/waitlist">Join waiting list <span>↗</span></GlowLink>
-              <Link className="button button--outline" href="/contact">Let’s talk</Link>
+              <div className={`${styles.heroActionsReveal} ${styles.heroReveal}`} data-hero-reveal="actions">
+                <GlowLink {...glowLinkHomepageProps} href="/waitlist">Join waiting list <span>↗</span></GlowLink>
+                <Link className="button button--outline" href="/contact">Let’s talk</Link>
+              </div>
             </div>
             <LearnMoreLink className={styles.heroLearnMore} href="#pillars" scrollShiftRem={10} />
           </div>
@@ -124,6 +139,7 @@ export default function HomePage() {
         id="pillars"
         className={styles.movementSection}
         aria-labelledby="pillars-title"
+        data-section-reveal
         tone="alternate-to-base"
         gridFade="none"
         paddingTop={60}
@@ -136,19 +152,23 @@ export default function HomePage() {
               <div className={styles.capabilityContent}>
               <SectionHeader
                 {...sectionHeaderHomepageProps}
+                className={styles.sectionRevealHeader}
+                data-section-reveal-item="header"
                 eyebrow="From movement to meaning"
                 title="Our Pillars"
                 titleId="pillars-title"
               />
               <div className={styles.capabilityList}>
-                {capabilities.map((capability) => (
+                {capabilities.map((capability, index) => (
                   <NumberedRow
                     {...numberedRowHomepageProps}
                     key={capability.number}
+                    className={styles.sectionRevealRow}
                     number={capability.number}
                     title={capability.titlePrimary}
                     accent={capability.titleSecondary}
                     body={capability.body}
+                    data-section-reveal-item={String(index + 1)}
                     data-scroll-parallax
                   />
                 ))}
@@ -164,7 +184,9 @@ export default function HomePage() {
               </div>
             )}
           />
-          <LearnMoreLink className={styles.sectionLearnMore} href="#delivery" />
+          <div className={styles.sectionRevealLink} data-section-reveal-item="4">
+            <LearnMoreLink className={styles.sectionLearnMore} href="#delivery" />
+          </div>
         </SiteContainer>
       </MarketingSection>
 
@@ -173,6 +195,7 @@ export default function HomePage() {
         id="delivery"
         className={styles.useCaseSection}
         aria-labelledby="delivery-title"
+        data-section-reveal
         tone="alternate-to-base"
         gridFade="none"
         paddingTop={60}
@@ -188,6 +211,8 @@ export default function HomePage() {
               <div className={styles.capabilityContent}>
               <SectionHeader
                 {...sectionHeaderHomepageProps}
+                className={styles.sectionRevealHeader}
+                data-section-reveal-item="header"
                 eyebrow="Designed to fit and accelerate"
                 title="Everything your team needs to run ahead without compromises."
                 titleId="delivery-title"
@@ -198,6 +223,7 @@ export default function HomePage() {
                   <NumberedRow
                     {...numberedRowHomepageProps}
                     key={item.title}
+                    className={styles.sectionRevealRow}
                     number={String(index + 4).padStart(2, '0')}
                     title={item.title}
                     accent={item.subtitle}
@@ -206,6 +232,7 @@ export default function HomePage() {
                     rowPadding={12}
                     minHeight={64}
                     gap={0}
+                    data-section-reveal-item={String(index + 1)}
                     data-scroll-parallax
                   />
                 ))}

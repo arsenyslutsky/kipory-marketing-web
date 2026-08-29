@@ -78,6 +78,29 @@ it('creates one scene and destroys it on unmount', () => {
   expect(destroy).toHaveBeenCalledTimes(1);
 });
 
+it('keeps the flow loading until the scene reports its first completed frame', () => {
+  let reportReady: (() => void) | undefined;
+  vi.mocked(createFlowLayer3DScene).mockImplementation((options) => {
+    reportReady = options.onReady;
+    return { destroy: vi.fn() };
+  });
+
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    paths={emptyPaths}
+  />);
+  const root = view.container.firstElementChild;
+
+  expect(root).toHaveAttribute('data-flow-state', 'loading');
+  expect(view.getByTestId('flow-loader')).toBeInTheDocument();
+
+  act(() => reportReady?.());
+
+  expect(root).toHaveAttribute('data-flow-state', 'ready');
+});
+
 it('mounts one shared CSS3D layer and passes serializable nodes to the scene', () => {
   vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn() });
   const view = render(<FlowLayer3D
@@ -161,6 +184,8 @@ it('activates the fallback when the scene reports a post-mount rebuild failure',
   });
 
   expect(await view.findByTestId('flow-layer-node-fallback')).toBeInTheDocument();
+  expect(view.container.firstElementChild).toHaveAttribute('data-flow-state', 'error');
+  expect(view.getByTestId('flow-loader')).toHaveAttribute('data-active', 'false');
   expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({
     message: 'resize node rebuild failed',
   }));

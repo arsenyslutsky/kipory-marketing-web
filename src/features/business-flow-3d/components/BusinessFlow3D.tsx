@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
 import { cssVariablesForTheme, defaultColors, defaultFlow } from '../config';
 import { createSignalFlowScene, type SignalFlowSceneController } from '../scene/createSignalFlowScene';
 import type { BusinessFlow3DProps, SignalFlowMode } from '../types';
@@ -84,6 +85,7 @@ export function BusinessFlow3D({
   const cssLayerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<SignalFlowSceneController | null>(null);
   const [error, setError] = useState('');
+  const [ready, setReady] = useState(false);
   const theme = colors[mode];
   const resolvedGridOpacity = gridOpacity ?? theme.scene.gridOpacity;
   const copy = content;
@@ -97,7 +99,12 @@ export function BusinessFlow3D({
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current || !cssLayerRef.current) return;
     let active = true;
-    queueMicrotask(() => { if (active) setError(''); });
+    queueMicrotask(() => {
+      if (active) {
+        setError('');
+        setReady(false);
+      }
+    });
     try {
       controllerRef.current = createSignalFlowScene({
         variant,
@@ -152,6 +159,9 @@ export function BusinessFlow3D({
         minEmitDelay,
         maxEmitDelay,
         reducedMotion: reducedMotion ?? window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        onReady: () => {
+          if (active) setReady(true);
+        },
         elements: {
           container: containerRef.current,
           canvas: canvasRef.current,
@@ -242,6 +252,7 @@ export function BusinessFlow3D({
   };
 
   const modeClass = mode === 'dark' ? styles.dark : styles.light;
+  const flowState = error ? 'error' : ready ? 'ready' : 'loading';
 
   return (
     <section
@@ -251,10 +262,12 @@ export function BusinessFlow3D({
       data-variant={variant}
       data-mode={mode}
       data-interactive={interactive}
+      data-flow-state={flowState}
       aria-label={`Business flow 3D ${variant.replace('-', ' ')}, ${mode} mode`}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
       <div ref={cssLayerRef} className={styles.svgLayer} aria-hidden="true" />
+      <FlowLoadingOverlay active={flowState === 'loading'} />
 
       {showInterface && (
         <>

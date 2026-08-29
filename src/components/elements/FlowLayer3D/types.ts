@@ -152,6 +152,7 @@ export type FlowLayer3DSceneOptions = Omit<FlowLayer3DProps, 'className'> & {
   container: HTMLElement;
   cssLayer: HTMLElement;
   onError?: (error: unknown) => void;
+  onReady?: () => void;
 };
 
 export type FlowLayer3DSceneController = { destroy: () => void };

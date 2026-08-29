@@ -83,6 +83,7 @@ interface SceneOptions {
   minEmitDelay: number;
   maxEmitDelay: number;
   reducedMotion: boolean;
+  onReady?: () => void;
   elements: SceneElements;
 }
 
@@ -201,6 +202,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     minEmitDelay,
     maxEmitDelay,
     reducedMotion,
+    onReady,
     elements,
   } = options;
   const { container, canvas, cssLayer } = elements;
@@ -920,6 +922,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const iconWorldPosition = new THREE.Vector3();
   let frameId = 0;
   let destroyed = false;
+  let ready = false;
 
   function animate(frameNow: number) {
     if (destroyed) return;
@@ -1117,6 +1120,10 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
+    if (!ready) {
+      ready = true;
+      onReady?.();
+    }
   }
 
   function resize() {

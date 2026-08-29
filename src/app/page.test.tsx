@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import type { PropsWithChildren } from 'react';
+import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
@@ -28,8 +28,8 @@ const {
 }));
 
 vi.mock('@/components/site/HeroScrollEffects', () => ({
-  HeroScrollEffects: ({ children, className, id }: PropsWithChildren<{ className?: string; id?: string }>) => (
-    <main className={className} id={id}>{children}</main>
+  HeroScrollEffects: ({ children, ...props }: PropsWithChildren<ComponentPropsWithoutRef<'main'>>) => (
+    <main {...props}>{children}</main>
   ),
 }));
 vi.mock('@/components/site/BackToTop', () => ({ BackToTop: () => null }));
@@ -121,7 +121,8 @@ it('marks moving homepage text groups without marking stable section headers or 
   const heroHeading = screen.getByRole('heading', { level: 1 });
   expect(heroHeading).toHaveAttribute('data-scroll-parallax');
   expect(heroHeading).toHaveAttribute('data-scroll-fade', 'false');
-  expect(screen.getByText(/Kipory is a data and analysis platform/)).toHaveAttribute('data-scroll-parallax');
+  expect(screen.getByText(/Kipory is a data and analysis platform/).closest('[data-scroll-parallax]'))
+    .toHaveAttribute('data-scroll-parallax');
   screen.getAllByRole('heading', { level: 2 }).forEach((heading) => {
     expect(heading.closest('header')).not.toHaveAttribute('data-scroll-parallax');
   });
@@ -132,4 +133,34 @@ it('marks moving homepage text groups without marking stable section headers or 
     expect(link).toHaveAttribute('data-scroll-parallax');
   });
   expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
+});
+
+it('gates the hero entrance and exposes the four requested reveal stages', () => {
+  const { container } = render(<HomePage />);
+  const main = container.querySelector('main');
+  const stages = Array.from(container.querySelectorAll<HTMLElement>('[data-hero-reveal]'));
+
+  expect(main).toHaveAttribute('data-workflows-ready', 'false');
+  expect(main).toHaveAttribute('data-content-reveal-ready', 'false');
+  expect(stages.map((stage) => stage.dataset.heroReveal)).toEqual([
+    'title',
+    'accent',
+    'lead',
+    'actions',
+  ]);
+});
+
+it('marks both workflow sections and every numbered item for ordered reveal', () => {
+  const { container } = render(<HomePage />);
+  const sections = Array.from(container.querySelectorAll<HTMLElement>('[data-section-reveal]'));
+
+  expect(sections.map((section) => section.id)).toEqual(['pillars', 'delivery']);
+  expect(sections.map((section) => (
+    Array.from(section.querySelectorAll<HTMLElement>('[data-section-reveal-item]')).map((item) => (
+      item.dataset.sectionRevealItem
+    ))
+  ))).toEqual([
+    ['header', '1', '2', '3', '4'],
+    ['header', '1', '2', '3', '4'],
+  ]);
 });

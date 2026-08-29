@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { businessFlowPalette } from '@/features/business-flow-palette';
+import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 import styles from './FlowLayer3D.module.css';
 import type { FlowLayer3DNode, FlowLayer3DProps, FlowLayer3DSceneController } from './types';
@@ -25,13 +26,17 @@ export function FlowLayer3D({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState('');
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current || !cssLayerRef.current) return undefined;
     let active = true;
     let controller: FlowLayer3DSceneController | undefined;
     queueMicrotask(() => {
-      if (active) setError('');
+      if (active) {
+        setError('');
+        setReady(false);
+      }
     });
     const reportError = (error: unknown) => {
       if (process.env.NODE_ENV !== 'production') console.error(error);
@@ -52,6 +57,9 @@ export function FlowLayer3D({
         nodeStyle,
         onArrival,
         onError: reportError,
+        onReady: () => {
+          if (active) setReady(true);
+        },
         paths,
         reducedMotion,
         worldHeight,
@@ -66,10 +74,17 @@ export function FlowLayer3D({
   }, [beam, beamSource, connector, flowNodes, nodeStyle, onArrival, paths, reducedMotion, worldHeight]);
 
   const rootClassName = className ? `${styles.root} ${className}` : styles.root;
+  const flowState = error ? 'error' : ready ? 'ready' : 'loading';
   return (
-    <div ref={containerRef} aria-hidden="true" className={rootClassName}>
+    <div
+      ref={containerRef}
+      aria-hidden="true"
+      className={rootClassName}
+      data-flow-state={flowState}
+    >
       <canvas ref={canvasRef} className={styles.canvas} />
       <div ref={cssLayerRef} className={styles.cssLayer} data-flow-layer-css3d />
+      <FlowLoadingOverlay active={flowState === 'loading'} />
       {error && (
         <div className={styles.fallbackLayer} data-testid="flow-layer-node-fallback">
           {flowNodes.map((node) => (

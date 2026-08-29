@@ -77,6 +77,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     nodeStyle,
     onArrival,
     onError,
+    onReady,
     paths,
     reducedMotion = false,
     worldHeight = 20,
@@ -126,6 +127,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   let nodeObjects: FlowLayer3DNodes | undefined;
   let frameId = 0;
   let firstFrameElapsed: number | undefined;
+  let ready = false;
   let destroyed = false;
   let aspectRatio = 1;
   let flareTexture: THREE.Texture | undefined;
@@ -424,6 +426,10 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     ));
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
+    if (!ready) {
+      ready = true;
+      onReady?.();
+    }
   }
 
   function destroy() {

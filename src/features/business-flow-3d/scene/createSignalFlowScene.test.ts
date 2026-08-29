@@ -13,12 +13,28 @@ const renderer = vi.hoisted(() => ({
   toneMappingExposure: 1,
 }));
 
+const cssRenderer = vi.hoisted(() => ({
+  domElement: document.createElement('div'),
+  render: vi.fn(),
+  setSize: vi.fn(),
+}));
+
 vi.mock('three', async (importOriginal) => {
   const actual = await importOriginal<typeof import('three')>();
   return {
     ...actual,
     WebGLRenderer: vi.fn(function MockWebGLRenderer() {
       return renderer;
+    }),
+  };
+});
+
+vi.mock('three/addons/renderers/CSS3DRenderer.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('three/addons/renderers/CSS3DRenderer.js')>();
+  return {
+    ...actual,
+    CSS3DRenderer: vi.fn(function MockCSS3DRenderer() {
+      return cssRenderer;
     }),
   };
 });
@@ -133,4 +149,37 @@ it('finalizes managed gradient textures through BusinessFlow renderer teardown',
     () => replacement,
   )).toBe(replacement);
   expect(renderer.dispose).toHaveBeenCalledOnce();
+});
+
+it('reports readiness once after the first WebGL and CSS3D frame completes', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  const onReady = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    onReady,
+  });
+
+  expect(onReady).not.toHaveBeenCalled();
+  animationFrames.shift()?.(1000);
+  expect(renderer.render).toHaveBeenCalledOnce();
+  expect(cssRenderer.render).toHaveBeenCalledOnce();
+  expect(onReady).toHaveBeenCalledOnce();
+
+  animationFrames.shift()?.(1016);
+  expect(onReady).toHaveBeenCalledOnce();
+  controller.destroy();
 });
