@@ -84,13 +84,19 @@ export function SubmissionForm({
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <svg className={styles.mark} viewBox="0 0 72 72" aria-hidden="true" focusable="false">
-          <path d="M17 37 29 49 55 23" />
-          <path d="M8 8h16M8 8v16M64 48v16H48" />
+        <svg
+          className={styles.mark}
+          data-reveal="mark"
+          viewBox="0 0 72 72"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path className={styles.markCheck} d="M17 37 29 49 55 23" />
+          <path className={styles.markFrame} d="M8 8h16M8 8v16M64 48v16H48" />
         </svg>
-        <p className={styles.status}>{successStatus}</p>
-        <h2 id={titleId} className={styles.title}>{successTitle}</h2>
-        <p className={styles.body}>{successBody}</p>
+        <p className={styles.status} data-reveal="status">{successStatus}</p>
+        <h2 id={titleId} className={styles.title} data-reveal="title">{successTitle}</h2>
+        <p className={styles.body} data-reveal="body">{successBody}</p>
       </section>
     );
   }

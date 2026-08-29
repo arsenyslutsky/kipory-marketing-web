@@ -32,7 +32,7 @@
 .capabilityVisual .pillarsIllustration { position: absolute; top: 5rem; right: 10rem; width: 75%; height: calc(100% - 10rem); max-width: 450px; margin-inline: 0; }
 .deliveryIllustration { min-width: 0; min-height: 38rem; overflow: hidden; }
 .useCaseSection { color: var(--surface-alternate-text); scroll-margin-top: 72px; }
-.useCaseList { margin-top: 48px; }
+.useCaseList { --numbered-row-padding-top: 15px; --numbered-row-padding-bottom: 20px; margin-top: 48px; }
 .contactNotes { color: var(--surface-alternate-muted); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); }
 .contactNotes strong { display: block; margin-bottom: 12px; color: var(--surface-alternate-text); font-family: var(--type-display-family); font-size: var(--type-body-size-lg); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-display-tracking); }
 .contactForm { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }

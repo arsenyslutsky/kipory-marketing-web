@@ -41,6 +41,7 @@
   color: var(--accent);
   font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
   letter-spacing: var(--type-control-tracking);
+  animation: message-status-reveal 420ms 90ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .status::before {
@@ -62,6 +63,7 @@
   letter-spacing: -.02em;
   text-wrap: balance;
   overflow-wrap: break-word;
+  animation: message-title-reveal 560ms 150ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .body {
@@ -72,6 +74,7 @@
   line-height: var(--type-body-leading);
   text-wrap: pretty;
   overflow-wrap: break-word;
+  animation: message-body-reveal 440ms 300ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .mark {
@@ -86,6 +89,19 @@
   stroke-linecap: square;
   stroke-linejoin: miter;
   opacity: .28;
+  animation: message-mark-reveal 560ms 80ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.markCheck {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: message-mark-draw 520ms 180ms cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+.markFrame {
+  stroke-dasharray: 64;
+  stroke-dashoffset: 64;
+  animation: message-mark-draw 480ms 100ms cubic-bezier(.16, 1, .3, 1) forwards;
 }
 
 @keyframes panel-reveal {
@@ -101,6 +117,58 @@
   }
 }
 
+@keyframes message-status-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes message-title-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    filter: blur(3px);
+    transform: translateY(.5em);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+@keyframes message-body-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes message-mark-reveal {
+  from {
+    opacity: 0;
+    transform: scale(.92);
+  }
+  to {
+    opacity: .28;
+    transform: none;
+  }
+}
+
+@keyframes message-mark-draw {
+  to { stroke-dashoffset: 0; }
+}
+
 @media (max-width: 620px) {
   .panel, .panelTall {
     min-height: 360px;
@@ -112,4 +180,23 @@
 
 @media (prefers-reduced-motion: reduce) {
   .panel { animation: none; }
+
+  .status,
+  .title,
+  .body,
+  .mark {
+    animation-name: message-reduced-reveal;
+    animation-duration: 140ms;
+    animation-delay: 0ms;
+  }
+
+  .markCheck,
+  .markFrame {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes message-reduced-reveal {
+  from { opacity: 0; }
 }

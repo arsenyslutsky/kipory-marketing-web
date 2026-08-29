@@ -41,6 +41,7 @@ export const BackgroundBeams = memo(function BackgroundBeams({ className }: Back
   const isInView = useInView(rootRef, { margin: '160px 0px', initial: true });
   const shouldReduceMotion = useReducedMotion();
   const gradientPrefix = useId().replaceAll(':', '');
+  const gradientId = `${gradientPrefix}-beam-gradient`;
   const shouldAnimate = isInView && !shouldReduceMotion;
 
   return (
@@ -51,6 +52,7 @@ export const BackgroundBeams = memo(function BackgroundBeams({ className }: Back
       aria-hidden="true"
       style={{ pointerEvents: 'none' }}
     >
+      <span className={styles.ambientGlow} data-beam-ambient-glow />
       <svg
         className={styles.svg}
         fill="none"
@@ -66,50 +68,37 @@ export const BackgroundBeams = memo(function BackgroundBeams({ className }: Back
           />
         ))}
 
-        {pathData.map((path, index) => {
-          const gradientId = `${gradientPrefix}-beam-gradient-${index}`;
-
-          return (
-            <motion.path
-              className={styles.beamPath}
-              key={`beam-${index}`}
-              d={path}
-              stroke={`url(#${gradientId})`}
-              strokeWidth="1"
-              strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={shouldAnimate
-                ? { pathLength: [0, 1], opacity: [0, .68, .68, 0] }
-                : { pathLength: 1, opacity: shouldReduceMotion ? .14 : 0 }}
-              transition={shouldAnimate
-                ? {
-                    duration: animations[index].duration,
-                    delay: animations[index].delay,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: 'easeInOut',
-                  }
-                : { duration: .2 }}
-            />
-          );
-        })}
+        {pathData.map((path, index) => (
+          <motion.path
+            className={styles.beamPath}
+            key={`beam-${index}`}
+            d={path}
+            stroke={`url(#${gradientId})`}
+            strokeWidth="1"
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={shouldAnimate
+              ? { pathLength: [0, 1], opacity: [0, .68, .68, 0] }
+              : { pathLength: 1, opacity: shouldReduceMotion ? .14 : 0 }}
+            transition={shouldAnimate
+              ? {
+                  duration: animations[index].duration,
+                  delay: animations[index].delay,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: 'easeInOut',
+                }
+              : { duration: .2 }}
+          />
+        ))}
 
         <defs>
-          {pathData.map((_, index) => (
-            <linearGradient
-              key={`gradient-${index}`}
-              id={`${gradientPrefix}-beam-gradient-${index}`}
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="var(--accent-dark)" stopOpacity="0" />
-              <stop offset="22%" stopColor="var(--accent-dark)" stopOpacity=".92" />
-              <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
-              <stop offset="76%" stopColor="var(--paper-soft)" stopOpacity=".82" />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-            </linearGradient>
-          ))}
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="var(--accent-dark)" stopOpacity="0" />
+            <stop offset="22%" stopColor="var(--accent-dark)" stopOpacity=".92" />
+            <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
+            <stop offset="76%" stopColor="var(--paper-soft)" stopOpacity=".82" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+          </linearGradient>
         </defs>
       </svg>
     </div>

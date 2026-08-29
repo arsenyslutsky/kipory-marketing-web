@@ -17,3 +17,17 @@ it('renders a decorative beam field that accepts a positioning class', async () 
   expect(field).toHaveStyle({ pointerEvents: 'none' });
   expect(field?.querySelector('svg')).toBeInTheDocument();
 });
+
+it('shares one gradient and one ambient glow across every moving beam', async () => {
+  const modulePath = './BackgroundBeams';
+  const { BackgroundBeams } = await import(/* @vite-ignore */ modulePath);
+  const { container } = render(<BackgroundBeams />);
+  const movingPaths = [...container.querySelectorAll('path[class*="beamPath"]')];
+  const gradientIds = [...container.querySelectorAll('linearGradient')]
+    .map((gradient) => gradient.id);
+
+  expect(movingPaths).toHaveLength(20);
+  expect(gradientIds).toHaveLength(1);
+  expect(movingPaths.every((path) => path.getAttribute('stroke') === `url(#${gradientIds[0]})`)).toBe(true);
+  expect(container.querySelectorAll('[data-beam-ambient-glow]')).toHaveLength(1);
+});

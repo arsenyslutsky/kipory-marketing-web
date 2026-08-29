@@ -27,8 +27,19 @@
   opacity: .08;
 }
 
+.ambientGlow {
+  position: absolute;
+  inset: 4% -8% 0 28%;
+  background: radial-gradient(
+    ellipse at 62% 42%,
+    color-mix(in srgb, var(--accent) 18%, transparent) 0,
+    color-mix(in srgb, var(--accent) 8%, transparent) 38%,
+    transparent 72%
+  );
+}
+
 .beamPath {
-  filter: drop-shadow(0 5px 9px color-mix(in srgb, var(--accent) 52%, transparent));
+  filter: none;
 }
 
 @media (max-width: 620px) {
@@ -43,8 +54,4 @@
     width: 138%;
     height: 100%;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .beamPath { filter: none; }
 }

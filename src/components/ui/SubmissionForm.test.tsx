@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { SubmissionForm } from './SubmissionForm';
 
@@ -51,5 +51,21 @@ describe('SubmissionForm validation testing shortcut', () => {
 
     expect(screen.queryByRole('form', { name: 'Test form' })).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('DONE');
+  });
+});
+
+describe('SubmissionForm success feedback', () => {
+  it('assigns ordered entrance stages to the success mark and message', () => {
+    renderRequiredForm();
+    fireEvent.keyDown(window, { key: 'Shift', code: 'ShiftLeft' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    const panel = screen.getByRole('status');
+    expect(panel.querySelector('[data-reveal="mark"]')).toBeInTheDocument();
+    expect(within(panel).getByText('SENT')).toHaveAttribute('data-reveal', 'status');
+    expect(within(panel).getByRole('heading', { name: 'DONE' }))
+      .toHaveAttribute('data-reveal', 'title');
+    expect(within(panel).getByText('Finished')).toHaveAttribute('data-reveal', 'body');
   });
 });

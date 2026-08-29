@@ -182,7 +182,9 @@
 
 .numberedRow {
   min-height: var(--numbered-row-min-height, 132px);
-  padding-block: var(--numbered-row-padding, 28px);
+  padding-block:
+    var(--numbered-row-padding-top, var(--numbered-row-padding, 28px))
+    var(--numbered-row-padding-bottom, var(--numbered-row-padding, 28px));
   display: grid;
   grid-template-columns: var(--numbered-row-number-column, 52px) minmax(0, 1fr);
   gap: var(--numbered-row-gap, 22px);
