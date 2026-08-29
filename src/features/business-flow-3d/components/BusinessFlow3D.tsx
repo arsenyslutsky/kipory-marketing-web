@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
+import { useWorkflowRuntime } from '@/components/elements/workflow-runtime';
+import { useScrollMotion } from '@/components/motion/ScrollMotionContext';
 import { cssVariablesForTheme, defaultColors, defaultFlow } from '../config';
-import { createSignalFlowScene, type SignalFlowSceneController } from '../scene/createSignalFlowScene';
+import type { SignalFlowSceneController } from '../scene/createSignalFlowScene';
 import type { BusinessFlow3DProps, SignalFlowMode } from '../types';
 import styles from './BusinessFlow3D.module.css';
 
@@ -21,6 +23,7 @@ function joinClasses(...classes: Array<string | false | undefined>) {
 }
 
 export function BusinessFlow3D({
+  activityStrategy,
   variant = 'variant-2',
   mode = 'light',
   flow = defaultFlow,
@@ -29,6 +32,7 @@ export function BusinessFlow3D({
   className,
   showInterface = true,
   interactive = false,
+  loadStrategy,
   gridOpacity,
   fogEnabled = true,
   gridDensity = 30,
@@ -78,14 +82,24 @@ export function BusinessFlow3D({
   minEmitDelay = 0,
   maxEmitDelay = 0,
   reducedMotion,
+  preloadMargin,
+  resolutionScale,
   onModeChange,
 }: BusinessFlow3DProps) {
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<SignalFlowSceneController | null>(null);
+  const runtimeActiveRef = useRef(false);
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
+  const runtime = useWorkflowRuntime(containerRef, {
+    activityStrategy,
+    loadStrategy,
+    preloadMargin,
+    resolutionScale,
+  });
+  const scrollMotion = useScrollMotion();
   const theme = colors[mode];
   const resolvedGridOpacity = gridOpacity ?? theme.scene.gridOpacity;
   const copy = content;
@@ -97,16 +111,35 @@ export function BusinessFlow3D({
     .reduce((count, [, targets]) => count + targets.filter((target) => !hiddenNodes.has(target)).length, 0);
 
   useEffect(() => {
+    runtimeActiveRef.current = runtime.active;
+    controllerRef.current?.setActive(runtime.active);
+  }, [runtime.active]);
+
+  useEffect(() => {
+    if (!runtime.shouldInitialize) return;
     if (!containerRef.current || !canvasRef.current || !cssLayerRef.current) return;
-    let active = true;
+    let mounted = true;
+    let controller: SignalFlowSceneController | undefined;
     queueMicrotask(() => {
-      if (active) {
+      if (mounted) {
         setError('');
         setReady(false);
       }
     });
-    try {
-      controllerRef.current = createSignalFlowScene({
+    const elements = {
+      container: containerRef.current,
+      canvas: canvasRef.current,
+      cssLayer: cssLayerRef.current,
+    };
+    const reportError = (sceneError: unknown) => {
+      const message = sceneError instanceof Error ? sceneError.message : 'WebGL is unavailable.';
+      queueMicrotask(() => { if (mounted) setError(message); });
+    };
+    void import('../scene/createSignalFlowScene').then(({ createSignalFlowScene }) => {
+      if (!mounted) return;
+      try {
+        controller = createSignalFlowScene({
+        active: false,
         variant,
         mode,
         flow,
@@ -159,29 +192,28 @@ export function BusinessFlow3D({
         minEmitDelay,
         maxEmitDelay,
         reducedMotion: reducedMotion ?? window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        resolutionScale,
         onReady: () => {
-          if (active) setReady(true);
+          if (mounted) setReady(true);
         },
-        elements: {
-          container: containerRef.current,
-          canvas: canvasRef.current,
-          cssLayer: cssLayerRef.current,
-        },
+        elements,
       });
-    } catch (sceneError) {
-      const message = sceneError instanceof Error ? sceneError.message : 'WebGL is unavailable.';
-      queueMicrotask(() => { if (active) setError(message); });
-    }
+        controllerRef.current = controller;
+        controller.setActive(runtimeActiveRef.current);
+      } catch (sceneError) {
+        reportError(sceneError);
+      }
+    }, reportError);
     return () => {
-      active = false;
-      controllerRef.current?.destroy();
-      controllerRef.current = null;
+      mounted = false;
+      if (controllerRef.current === controller) controllerRef.current = null;
+      controller?.destroy();
     };
-  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolvedGridOpacity, showContinuationConnectors, speed, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolutionScale, resolvedGridOpacity, runtime.shouldInitialize, showContinuationConnectors, speed, theme, variant]);
 
   useEffect(() => {
     const element = containerRef.current;
-    if (!element || (scrollTilt === 0 && scrollZoom === undefined)) return;
+    if (!element || !runtime.active || (scrollTilt === 0 && scrollZoom === undefined)) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frameId = 0;
@@ -198,6 +230,7 @@ export function BusinessFlow3D({
         targetProgress = 0;
         element.style.transform = 'none';
         controllerRef.current?.setCameraZoom(cameraZoom);
+        element.style.removeProperty('will-change');
         return;
       }
 
@@ -220,39 +253,52 @@ export function BusinessFlow3D({
         frameId = window.requestAnimationFrame(renderScrollTransform);
       } else {
         lastFrameTime = 0;
+        element.style.removeProperty('will-change');
       }
     };
 
-    const updateScrollTarget = () => {
-      targetProgress = readProgress();
+    const updateScrollTarget = (progress = readProgress()) => {
+      targetProgress = progress;
+      element.style.willChange = 'transform';
       if (!frameId) frameId = window.requestAnimationFrame(renderScrollTransform);
     };
 
     element.style.transformOrigin = '62% 42%';
-    element.style.willChange = 'transform';
     updateScrollTarget();
-    window.addEventListener('scroll', updateScrollTarget, { passive: true });
-    window.addEventListener('resize', updateScrollTarget);
-    reducedMotionQuery.addEventListener('change', updateScrollTarget);
+    const unsubscribe = scrollMotion?.subscribe(({ progress }) => updateScrollTarget(progress));
+    const updateFromWindow = () => updateScrollTarget();
+    const updateMotionPreference = () => updateScrollTarget();
+    if (!scrollMotion) {
+      window.addEventListener('scroll', updateFromWindow, { passive: true });
+      window.addEventListener('resize', updateFromWindow);
+    }
+    reducedMotionQuery.addEventListener('change', updateMotionPreference);
 
     return () => {
       if (frameId) window.cancelAnimationFrame(frameId);
-      window.removeEventListener('scroll', updateScrollTarget);
-      window.removeEventListener('resize', updateScrollTarget);
-      reducedMotionQuery.removeEventListener('change', updateScrollTarget);
+      unsubscribe?.();
+      window.removeEventListener('scroll', updateFromWindow);
+      window.removeEventListener('resize', updateFromWindow);
+      reducedMotionQuery.removeEventListener('change', updateMotionPreference);
       controllerRef.current?.setCameraZoom(cameraZoom);
       element.style.removeProperty('transform');
       element.style.removeProperty('transform-origin');
       element.style.removeProperty('will-change');
     };
-  }, [cameraZoom, reducedMotion, scrollRange, scrollTilt, scrollZoom]);
+  }, [cameraZoom, reducedMotion, runtime.active, scrollMotion, scrollRange, scrollTilt, scrollZoom]);
 
   const selectMode = (nextMode: SignalFlowMode) => {
     if (nextMode !== mode) onModeChange?.(nextMode);
   };
 
   const modeClass = mode === 'dark' ? styles.dark : styles.light;
-  const flowState = error ? 'error' : ready ? 'ready' : 'loading';
+  const flowState = error
+    ? 'error'
+    : !runtime.shouldInitialize
+      ? 'deferred'
+      : ready
+        ? 'ready'
+        : 'loading';
 
   return (
     <section

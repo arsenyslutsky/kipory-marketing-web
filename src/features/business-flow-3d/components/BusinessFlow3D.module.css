@@ -6,6 +6,7 @@
   min-height: 680px;
   height: 100dvh;
   overflow: hidden;
+  contain: layout paint style;
   color: var(--ui-page-text);
   background:
     radial-gradient(circle at 70% 45%, var(--ui-experience-glow), transparent 33%),

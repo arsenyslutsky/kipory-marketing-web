@@ -1,4 +1,5 @@
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
+import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
 
 export type SignalFlowVariant = 'variant-2';
 export type SignalFlowMode = 'light' | 'dark';
@@ -76,7 +77,7 @@ export interface SignalFlowTheme {
 
 export type SignalFlowColors = Record<SignalFlowMode, SignalFlowTheme>;
 
-export interface BusinessFlow3DProps {
+export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   variant?: SignalFlowVariant;
   mode?: SignalFlowMode;
   flow?: FlowConfig;

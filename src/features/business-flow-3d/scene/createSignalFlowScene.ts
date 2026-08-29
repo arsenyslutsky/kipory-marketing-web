@@ -20,6 +20,11 @@ import {
   disposeNode3DGradientTextures,
   isNode3DManagedGradientTexture,
 } from '@/components/elements/Node3D/node3DGradientTextureCache';
+import {
+  createActiveFrameLoop,
+  resolveWorkflowRenderScale,
+  type ActiveFrame,
+} from '@/components/elements/workflow-runtime';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import type { ConnectorStrokeType, FlowConfig, NodeGeometryShape, NodeProgressMode, NodeShape, SignalFlowMode, SignalFlowTheme, SignalFlowVariant } from '../types';
@@ -31,6 +36,7 @@ interface SceneElements {
 }
 
 interface SceneOptions {
+  active?: boolean;
   variant: SignalFlowVariant;
   mode: SignalFlowMode;
   flow: FlowConfig;
@@ -83,6 +89,7 @@ interface SceneOptions {
   minEmitDelay: number;
   maxEmitDelay: number;
   reducedMotion: boolean;
+  resolutionScale?: 'display' | number;
   onReady?: () => void;
   elements: SceneElements;
 }
@@ -90,6 +97,7 @@ interface SceneOptions {
 export interface SignalFlowSceneController {
   reroute: () => void;
   setCameraZoom: (zoom: number) => void;
+  setActive: (active: boolean) => void;
   destroy: () => void;
 }
 
@@ -150,6 +158,7 @@ function inverseSmootherstep(value: number) {
 
 export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneController {
   const {
+    active = true,
     variant,
     mode,
     flow,
@@ -202,6 +211,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     minEmitDelay,
     maxEmitDelay,
     reducedMotion,
+    resolutionScale = 'display',
     onReady,
     elements,
   } = options;
@@ -364,6 +374,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
   renderer.shadowMap.enabled = true;
+  renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.type = isVariant2 ? THREE.VSMShadowMap : THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -884,8 +895,9 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   }));
   const nodeProgressBatches = new Map<string, Map<number, number>>();
 
-  function resetBeams() {
-    const now = performance.now() * resolvedSpeed;
+  let currentElapsedMs = 0;
+
+  function resetBeams(now = currentElapsedMs * resolvedSpeed) {
     let scheduledAt = now;
     beams.forEach((run, index) => {
       run.active = false;
@@ -918,17 +930,15 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   };
   if (interactive) canvas.addEventListener('pointermove', pointerMove);
 
-  const clock = new THREE.Clock();
   const iconWorldPosition = new THREE.Vector3();
-  let frameId = 0;
   let destroyed = false;
   let ready = false;
 
-  function animate(frameNow: number) {
+  function animate({ elapsedMs }: ActiveFrame) {
     if (destroyed) return;
-    frameId = requestAnimationFrame(animate);
-    const now = frameNow * resolvedSpeed;
-    const time = clock.getElapsedTime() * resolvedSpeed;
+    currentElapsedMs = elapsedMs;
+    const now = elapsedMs * resolvedSpeed;
+    const time = (elapsedMs / 1000) * resolvedSpeed;
     const nearNodeIds = new Set<string>();
     const activeNodeRuns = new Map<string, Set<number>>();
     let lightPosition: THREE.Vector3 | undefined;
@@ -1120,11 +1130,14 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
+    renderer.shadowMap.needsUpdate = false;
     if (!ready) {
       ready = true;
       onReady?.();
     }
   }
+
+  const frameLoop = createActiveFrameLoop(animate);
 
   function resize() {
     const width = Math.max(container.clientWidth, 1);
@@ -1153,8 +1166,14 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
     camera.zoom = currentCameraZoom;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
+    const renderScale = resolveWorkflowRenderScale(container, resolutionScale);
+    renderer.setSize(
+      Math.max(1, Math.round(width * renderScale)),
+      Math.max(1, Math.round(height * renderScale)),
+      false,
+    );
     cssRenderer.setSize(width, height);
+    renderer.shadowMap.needsUpdate = true;
   }
 
   function setCameraZoom(nextZoom: number) {
@@ -1164,14 +1183,15 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(container);
   resize();
-  frameId = requestAnimationFrame(animate);
+  frameLoop.setActive(active);
 
   return {
-    reroute: resetBeams,
+    reroute: () => resetBeams(),
+    setActive: frameLoop.setActive,
     setCameraZoom,
     destroy() {
       destroyed = true;
-      cancelAnimationFrame(frameId);
+      frameLoop.destroy();
       resizeObserver.disconnect();
       if (interactive) canvas.removeEventListener('pointermove', pointerMove);
       controls.dispose();

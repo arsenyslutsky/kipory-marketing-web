@@ -8,7 +8,7 @@ const renderer = vi.hoisted(() => ({
   setClearColor: vi.fn(),
   setPixelRatio: vi.fn(),
   setSize: vi.fn(),
-  shadowMap: { enabled: false, type: undefined },
+  shadowMap: { autoUpdate: true, enabled: false, needsUpdate: false, type: undefined },
   toneMapping: undefined,
   toneMappingExposure: 1,
 }));
@@ -45,9 +45,49 @@ import { createSignalFlowScene } from './createSignalFlowScene';
 import { getNode3DGradientTexture } from '@/components/elements/Node3D/node3DGradientTextureCache';
 
 afterEach(() => {
+  renderer.shadowMap.autoUpdate = true;
+  renderer.shadowMap.needsUpdate = false;
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('waits for activation and uses a scaled WebGL target with layout-sized CSS3D', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  const cancelAnimationFrame = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrame);
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    active: false,
+    resolutionScale: 0.7,
+  });
+
+  expect(requestAnimationFrame).not.toHaveBeenCalled();
+  expect(renderer.setSize).toHaveBeenCalledWith(672, 448, false);
+  expect(cssRenderer.setSize).toHaveBeenCalledWith(960, 640);
+  expect(renderer.shadowMap.autoUpdate).toBe(false);
+  expect(renderer.shadowMap.needsUpdate).toBe(true);
+
+  controller.setActive(true);
+  animationFrames.shift()?.(1000);
+  expect(renderer.render).toHaveBeenCalledOnce();
+  expect(renderer.shadowMap.needsUpdate).toBe(false);
+  controller.setActive(false);
+  expect(cancelAnimationFrame).toHaveBeenCalled();
+  controller.destroy();
 });
 
 function createSceneOptions() {
