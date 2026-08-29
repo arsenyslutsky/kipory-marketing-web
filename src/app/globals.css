@@ -137,13 +137,17 @@ canvas { touch-action: none; }
 .site-footer__bottom { margin-top: 70px; padding-top: 22px; display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); color: var(--text-muted); font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-body-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking); text-transform: uppercase; }
 
 @media (max-width: 760px) {
-  .site-header { height: 64px; }
+  .site-header { height: 64px; background: color-mix(in srgb, var(--ink) 94%, transparent); backdrop-filter: none; }
   .site-header__cta { min-height: 44px; }
   .site-nav { display: none; }
   .site-footer { padding-top: 56px; }
   .site-footer__top { flex-direction: column; }
   .site-footer__links { gap: 64px; }
   .site-footer__bottom { margin-top: 50px; flex-direction: column; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header { background: var(--ink); backdrop-filter: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

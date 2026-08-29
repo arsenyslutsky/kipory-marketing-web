@@ -2,7 +2,10 @@ import type { BusinessFlow3DProps } from './types';
 import { businessFlowPalette } from '../business-flow-palette';
 
 export const businessFlow3DHomepageProps = {
+  activityStrategy: 'visible',
   mode: 'dark',
+  loadStrategy: 'eager',
+  resolutionScale: 'display',
   showInterface: false,
   interactive: false,
   fogEnabled: true,

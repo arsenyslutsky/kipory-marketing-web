@@ -180,30 +180,25 @@ describe('HeroScrollEffects', () => {
     expect(text?.style.getPropertyValue('--scroll-text-shift')).toBe('');
   });
 
-  it('waits for every workflow to settle before marking the hero reveal ready', async () => {
+  it('waits only for the hero workflow before marking the hero reveal ready', async () => {
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
 
     const { container } = render(
       <HeroScrollEffects data-workflows-ready="false">
-        <div data-flow-state="loading" />
-        <div data-flow-state="loading" />
-        <div data-flow-state="loading" />
+        <div data-hero-workflow><div data-flow-state="loading" /></div>
+        <div data-flow-state="loading" data-lower-workflow />
       </HeroScrollEffects>,
     );
     const main = container.querySelector('main');
-    const workflows = Array.from(container.querySelectorAll<HTMLElement>('[data-flow-state]'));
+    const heroWorkflow = container.querySelector<HTMLElement>('[data-hero-workflow] [data-flow-state]')!;
 
     expect(main).toHaveAttribute('data-workflows-ready', 'false');
 
     act(() => {
-      workflows[0].setAttribute('data-flow-state', 'ready');
-      workflows[1].setAttribute('data-flow-state', 'ready');
+      heroWorkflow.setAttribute('data-flow-state', 'ready');
     });
-    await waitFor(() => expect(main).toHaveAttribute('data-workflows-ready', 'false'));
-
-    act(() => workflows[2].setAttribute('data-flow-state', 'error'));
     await waitFor(() => expect(main).toHaveAttribute('data-workflows-ready', 'true'));
   });
 

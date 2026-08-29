@@ -2,6 +2,7 @@ import type { BusinessFlowVerticalProps } from './components/BusinessFlowVertica
 import { businessFlowPalette } from '../business-flow-palette';
 
 export const businessFlowVerticalHomepageProps = {
+  activityStrategy: 'visible',
   auxiliaryIconFillColor: businessFlowPalette.auxiliaryIconFill,
   beamColor: businessFlowPalette.beam,
   beamEmissionRandomness: 100,
@@ -37,9 +38,12 @@ export const businessFlowVerticalHomepageProps = {
   width: '20rem',
   height: '45rem',
   iconSize: 40,
+  loadStrategy: 'near-viewport',
   nodeProgressMaxDelay: 1800,
   nodeProgressMinDelay: 500,
   nodeProgressMode: 'outline',
   nodeProgressSize: 15,
+  preloadMargin: '600px 0px',
+  resolutionScale: 'display',
   strokeWidth: 1.5,
 } satisfies BusinessFlowVerticalProps;

@@ -2,6 +2,7 @@ import type { BusinessFlowHorizontalProps } from './components/BusinessFlowHoriz
 import { businessFlowPalette } from '../business-flow-palette';
 
 export const businessFlowHorizontalHomepageProps = {
+  activityStrategy: 'visible',
   auxiliaryIconFillColor: businessFlowPalette.auxiliaryIconFill,
   beamColor: businessFlowPalette.beam,
   beamEmissionRandomness: 100,
@@ -26,6 +27,7 @@ export const businessFlowHorizontalHomepageProps = {
   gridOpacity: 0,
   height: '50rem',
   iconSize: 40,
+  loadStrategy: 'near-viewport',
   maxConcurrentBeams: 5,
   numberOfNodesLeft: 6,
   numberOfNodesRight: 3,
@@ -33,6 +35,8 @@ export const businessFlowHorizontalHomepageProps = {
   nodeProgressMinDelay: 500,
   nodeProgressMode: 'outline',
   nodeProgressSize: 15,
+  preloadMargin: '600px 0px',
+  resolutionScale: 'display',
   strokeWidth: 1.5,
   width: 'min(28.8rem, 100%)',
 } satisfies BusinessFlowHorizontalProps;

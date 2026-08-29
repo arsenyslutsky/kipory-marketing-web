@@ -29,20 +29,16 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
     const main = mainRef.current;
     if (!main) return;
 
+    const heroWorkflow = main.querySelector<HTMLElement>('[data-hero-workflow] [data-flow-state]');
     const syncWorkflowReadiness = () => {
-      const workflows = Array.from(main.querySelectorAll<HTMLElement>('[data-flow-state]'));
-      const ready = workflows.length === 0 || workflows.every((workflow) => (
-        workflow.dataset.flowState !== 'loading'
-      ));
+      const ready = !heroWorkflow || heroWorkflow.dataset.flowState !== 'loading';
       main.dataset.workflowsReady = String(ready);
     };
     const observer = new MutationObserver(syncWorkflowReadiness);
 
-    observer.observe(main, {
+    if (heroWorkflow) observer.observe(heroWorkflow, {
       attributeFilter: ['data-flow-state'],
       attributes: true,
-      childList: true,
-      subtree: true,
     });
     syncWorkflowReadiness();
 

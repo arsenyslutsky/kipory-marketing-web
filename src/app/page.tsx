@@ -103,7 +103,7 @@ export default function HomePage() {
       scrollRange={700}
     >
       <section className={styles.hero} aria-labelledby="hero-title">
-        <div className={styles.heroVisual} aria-hidden="true">
+        <div className={styles.heroVisual} data-hero-workflow aria-hidden="true">
           <BusinessFlow3D {...businessFlow3DHomepageProps} />
         </div>
         <div className={styles.heroShade} />
