@@ -1,0 +1,186 @@
+# ─── PUBLISH kipory.com ────────────────────────────────────────────────────
+#
+# Every push to `main` builds the static export and publishes it as the assets
+# of ONE moving GitHub Release, `site-latest`. The server that serves
+# kipory.com PULLS that release on a timer; nothing here reaches the box, and
+# this workflow holds no credential that could.
+#
+# ⭐⭐ WHY PUBLISH-AND-PULL RATHER THAN A DEPLOY STEP. The box that serves
+# kipory.com is a single owned machine behind a Caddy ingress; its container
+# registry has no authentication and is bound to loopback, and it takes no
+# inbound SSH from CI. A push-deploy would mean handing this repository a
+# credential to that machine. Publishing an artifact instead means the only
+# thing this workflow can do to production is offer it a new directory of
+# files — which the box verifies by checksum before it serves a byte of it.
+#
+# ⚠️ THE UPLOAD ORDER AT THE BOTTOM IS LOAD-BEARING. `site.sha256` is the
+# POINTER the box polls; `site.tar.gz` is what it points at. Uploading the
+# tarball first means a box that sees a new checksum is guaranteed to find the
+# matching tarball already in place. Reverse them and there is a window where
+# the box fetches a new checksum, downloads the PREVIOUS tarball, fails
+# verification, and retries — recoverable, but a self-inflicted alarm.
+name: Publish kipory.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# ⚠️ `cancel-in-progress: false`, deliberately. The release assets are a shared
+# mutable pointer and two runs would race for them. Queueing means the LAST
+# push to finish is the one the box ends up serving, which is the intent; a
+# cancelled run that had already uploaded `site.tar.gz` but not `site.sha256`
+# would leave the pointer naming an older build than the tarball beside it.
+concurrency:
+  group: publish-kipory-com
+  cancel-in-progress: false
+
+# The only permission this workflow needs, and it is scoped to this repository:
+# writing the `site-latest` release. No packages, no id-token, no deployments.
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build and publish static site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          # `.nvmrc` is the single declaration of the runtime, so a bump there
+          # moves CI with it rather than needing this file edited too.
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ⭐ THE GATES RUN BEFORE THE BUILD, AND THEY ARE NOT OPTIONAL. This
+      # workflow's output goes straight to the public site with no review step
+      # between, so a red main must fail HERE rather than reach a visitor.
+      # `next build` type-checks too, but it does so after compiling; running
+      # tsc first fails in seconds instead of after a full build.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Build static export
+        run: npm run build
+
+      # ⛔⛔ A BUILD THAT EXITS 0 IS NOT A SITE. `output: "export"` writes
+      # whatever it managed to render; a route that silently produced nothing
+      # still leaves `out/` present and the exit code green. These assertions
+      # are the difference between "the build succeeded" and "there is a site
+      # here to serve", and they are the last check before this content becomes
+      # kipory.com.
+      #
+      # ⚠️ ADD A ROUTE TO `src/app/` AND ADD IT HERE. An unlisted route is not
+      # an error — it is simply unchecked, and the first person to notice it
+      # never shipped is a visitor.
+      - name: Verify the export
+        run: |
+          set -euo pipefail
+          test -d out || { echo "::error::no out/ directory — the export produced nothing"; exit 1; }
+
+          # Every page this site publishes. `trailingSlash: true` means each one
+          # is a DIRECTORY with an index, which is also the only shape a plain
+          # file server resolves without rewrite rules.
+          for page in index.html 404.html about/index.html contact/index.html product/index.html; do
+            test -s "out/$page" || { echo "::error::out/$page is missing or empty"; exit 1; }
+          done
+
+          # The hashed asset directory. Its absence means the pages exist but
+          # every script and stylesheet they reference is a 404 — a site that
+          # renders unstyled and inert, which no per-file check above would see.
+          test -d out/_next/static || { echo "::error::out/_next/static is missing — pages would load no CSS or JS"; exit 1; }
+
+          # A floor, not a count. The point is to catch a collapse to a handful
+          # of files, not to pin a number that every content change would break.
+          files="$(find out -type f | wc -l)"
+          echo "exported $files files"
+          [ "$files" -ge 30 ] || { echo "::error::only $files files in out/ — expected at least 30"; exit 1; }
+
+      # ⭐ DETERMINISTIC, SO AN UNCHANGED SITE PRODUCES AN UNCHANGED CHECKSUM.
+      # The box compares checksums to decide whether to redeploy. tar records
+      # mtimes and ownership by default, so without these flags every rebuild —
+      # a README-only commit, a re-run of this workflow — would produce a new
+      # checksum and roll the site for no change at all. With them, a build of
+      # identical content is byte-identical and the box correctly does nothing.
+      - name: Package
+        run: |
+          set -euo pipefail
+          tar --sort=name \
+              --owner=0 --group=0 --numeric-owner \
+              --mtime='UTC 2020-01-01' \
+              --format=gnu \
+              -czf site.tar.gz -C out .
+          sha256sum site.tar.gz | awk '{print $1}' > site.sha256
+          echo "sha256:   $(cat site.sha256)"
+          echo "size:     $(du -h site.tar.gz | cut -f1)"
+          echo "revision: ${GITHUB_SHA}"
+
+      # A human-readable record of WHICH COMMIT is currently on kipory.com.
+      # The box writes this file beside the extracted release, so `cat` on the
+      # server answers "what is live?" without reaching for GitHub.
+      - name: Write revision marker
+        run: |
+          set -euo pipefail
+          {
+            echo "revision=${GITHUB_SHA}"
+            echo "ref=${GITHUB_REF}"
+            echo "run=${GITHUB_RUN_ID}"
+            echo "sha256=$(cat site.sha256)"
+          } > site.revision
+
+      # ⭐⭐ ONE MOVING RELEASE, NOT ONE PER COMMIT. A release per push would
+      # accumulate a tag per push forever to serve a rollback story the box
+      # already has locally and better: it keeps the last several EXTRACTED
+      # releases on disk, so a rollback is re-pointing a symlink — instant, and
+      # available while GitHub is down, which is exactly when a rollback is
+      # most likely to be needed.
+      #
+      # `--clobber` replaces assets in place. The alternative — delete and
+      # recreate the release — would leave a window in which the box polls and
+      # finds no release at all.
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if ! gh release view site-latest >/dev/null 2>&1; then
+            gh release create site-latest \
+              --title "kipory.com — current build" \
+              --notes "Rolling pointer to the site currently published from \`main\`. Assets are replaced on every push; this release is machine-read by the server that serves kipory.com and is not a version tag." \
+              --latest=false
+          fi
+
+          # ⚠️ ORDER: content first, pointer last. See the header note.
+          gh release upload site-latest site.tar.gz  --clobber
+          gh release upload site-latest site.revision --clobber
+          gh release upload site-latest site.sha256  --clobber
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published to \`site-latest\`"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| revision | \`${GITHUB_SHA}\` |"
+            echo "| sha256 | \`$(cat site.sha256)\` |"
+            echo "| size | $(du -h site.tar.gz | cut -f1) |"
+            echo
+            echo "The server polls this release every minute and swaps kipory.com to it once the checksum verifies."
+          } >> "$GITHUB_STEP_SUMMARY"
