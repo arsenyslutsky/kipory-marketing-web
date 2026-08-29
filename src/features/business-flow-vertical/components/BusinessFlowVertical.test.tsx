@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useEffect } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
 import { businessFlowVerticalHomepageProps } from '../presets';
@@ -14,6 +15,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     beamSource,
     nodes,
     nodeStyle,
+    onActivityChange,
     onArrival,
     reducedMotion,
   }: {
@@ -27,6 +29,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     paths: Array<{ curve?: number }>;
     nodes?: readonly FlowLayer3DNode[];
     nodeStyle?: FlowLayer3DNodeStyle;
+    onActivityChange?: (active: boolean) => void;
     beamSource: {
       slots: number;
       next: (slot: number, generation: number) => { trailLength?: number } | null;
@@ -39,6 +42,10 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     }) => void;
     reducedMotion?: boolean;
   }) => {
+    useEffect(() => {
+      onActivityChange?.(true);
+      return () => onActivityChange?.(false);
+    }, [onActivityChange]);
     capturedNodes = nodes;
     capturedNodeStyle = nodeStyle;
     return (
@@ -249,7 +256,7 @@ it('renders arrival bursts at normalized points and removes completed bursts', (
   const burst = screen.getByTestId('arrival-burst');
   expect(burst).toHaveStyle({ left: '20%', top: '50%' });
 
-  fireEvent.animationEnd(burst.firstElementChild!);
+  fireEvent.animationEnd(burst);
   expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
 });
 

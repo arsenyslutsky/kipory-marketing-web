@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useEffect } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
 import { businessFlowHorizontalHomepageProps } from '../presets';
@@ -14,6 +15,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     beamSource,
     nodes,
     nodeStyle,
+    onActivityChange,
     onArrival,
     reducedMotion,
   }: {
@@ -31,6 +33,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     };
     nodes?: readonly FlowLayer3DNode[];
     nodeStyle?: FlowLayer3DNodeStyle;
+    onActivityChange?: (active: boolean) => void;
     onArrival?: (event: {
       arrival: { id: string; point: readonly [number, number]; progress: number };
       generation: number;
@@ -39,6 +42,10 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     }) => void;
     reducedMotion?: boolean;
   }) => {
+    useEffect(() => {
+      onActivityChange?.(true);
+      return () => onActivityChange?.(false);
+    }, [onActivityChange]);
     capturedNodes = nodes;
     capturedNodeStyle = nodeStyle;
     return (
@@ -182,11 +189,11 @@ it('renders real arrival bursts with homepage visuals and removes completed burs
   fireEvent.click(screen.getByTestId('flow-layer'));
   const burst = screen.getByTestId('arrival-burst');
   expect(burst).toHaveStyle({ left: '20%', top: '50%' });
-  expect(burst.style.getPropertyValue('--burst-radius')).toBe('25px');
-  expect(burst.style.getPropertyValue('--burst-fade-time')).toBe('1700ms');
-  expect(burst.style.getPropertyValue('--burst-strength')).toBe('0.5');
+  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-radius')).toBe('25px');
+  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-fade-time')).toBe('1700ms');
+  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-strength')).toBe('0.5');
 
-  fireEvent.animationEnd(burst.firstElementChild!);
+  fireEvent.animationEnd(burst);
   expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
 });
 

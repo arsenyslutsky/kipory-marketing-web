@@ -2,15 +2,18 @@
 
 import {
   FlowLayer3D,
-  type FlowLayer3DArrival,
   type FlowLayer3DArrivalEvent,
-  type FlowLayer3DBeamSource,
   type FlowLayer3DNodeStyle,
 } from '@/components/elements/FlowLayer3D';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
+import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
+import {
+  WorkflowArrivalBursts,
+  type WorkflowArrivalBurstsHandle,
+} from '@/components/elements/WorkflowArrivalBursts';
 import { businessFlowPalette } from '@/features/business-flow-palette';
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createBusinessFlowHorizontalLayoutNodes,
   createBusinessFlowHorizontalNodes,
@@ -21,7 +24,7 @@ import {
 } from '../routes';
 import styles from './BusinessFlowHorizontal.module.css';
 
-export type BusinessFlowHorizontalProps = {
+export type BusinessFlowHorizontalProps = WorkflowRuntimeOptions & {
   auxiliaryIconFillColor?: string;
   beamColor?: string;
   beamEmissionRandomness?: number;
@@ -67,31 +70,6 @@ type IllustrationStyle = CSSProperties & {
   '--camera-width': string;
 };
 
-type BurstStyle = CSSProperties & {
-  '--burst-color': string;
-  '--burst-core-fade-time': string;
-  '--burst-fade-time': string;
-  '--burst-highlight': string;
-  '--burst-radius': string;
-  '--burst-strength': string;
-};
-
-type BurstRecord = {
-  key: string;
-  point: FlowLayer3DArrival['point'];
-};
-
-type BurstContext = {
-  beamEnabled: boolean;
-  beamSource: FlowLayer3DBeamSource;
-  reducedMotion: boolean;
-};
-
-type BurstState = {
-  context: BurstContext;
-  records: BurstRecord[];
-};
-
 function cssSize(value: CSSProperties['width']): string {
   if (typeof value === 'number') return `${value}px`;
   return value ?? 'auto';
@@ -122,6 +100,7 @@ function useReducedMotionPreference() {
 }
 
 export function BusinessFlowHorizontal({
+  activityStrategy,
   auxiliaryIconFillColor = businessFlowPalette.auxiliaryIconFill,
   beamColor = businessFlowPalette.beam,
   beamEmissionRandomness = 100,
@@ -147,6 +126,7 @@ export function BusinessFlowHorizontal({
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
+  loadStrategy,
   maxConcurrentBeams = 24,
   numberOfNodesLeft = 6,
   numberOfNodesRight = 3,
@@ -154,10 +134,14 @@ export function BusinessFlowHorizontal({
   nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
   nodeProgressSize = 15,
+  preloadMargin,
+  resolutionScale,
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
   const reducedMotion = useReducedMotionPreference();
+  const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
+  const [flowActive, setFlowActive] = useState(false);
   const resolvedSpeed = Math.max(0.1, beamSpeed);
   const layoutNodes = useMemo(
     () => createBusinessFlowHorizontalLayoutNodes(numberOfNodesLeft, numberOfNodesRight),
@@ -237,34 +221,16 @@ export function BusinessFlowHorizontal({
     sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
     sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
   }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
-  const burstContext = useMemo<BurstContext>(() => ({
-    beamEnabled,
-    beamSource,
-    reducedMotion,
-  }), [beamEnabled, beamSource, reducedMotion]);
-  const [burstState, setBurstState] = useState<BurstState>(() => ({
-    context: burstContext,
-    records: [],
-  }));
-  const burstRecords = burstState.context === burstContext ? burstState.records : [];
-  const updateBurstRecords = useCallback((
-    update: (current: BurstRecord[]) => BurstRecord[],
-  ) => {
-    setBurstState((current) => ({
-      context: burstContext,
-      records: update(current.context === burstContext ? current.records : []),
-    }));
-  }, [burstContext]);
-  const onArrival = useCallback(({ arrival, generation, runId }: FlowLayer3DArrivalEvent) => {
-    if (!beamEnabled || reducedMotion) return;
-    const key = `${runId}:${generation}:${arrival.id}`;
-    updateBurstRecords((current) => current.some((record) => record.key === key)
-      ? current
-      : [...current, { key, point: arrival.point }]);
-  }, [beamEnabled, reducedMotion, updateBurstRecords]);
-  const finishBurst = useCallback((key: string) => {
-    updateBurstRecords((current) => current.filter((record) => record.key !== key));
-  }, [updateBurstRecords]);
+  const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
+    burstRef.current?.add(event);
+  }, []);
+  const onActivityChange = useCallback((active: boolean) => {
+    setFlowActive(active);
+    if (!active) burstRef.current?.clear();
+  }, []);
+  useEffect(() => {
+    if (!beamEnabled || reducedMotion) burstRef.current?.clear();
+  }, [beamEnabled, reducedMotion]);
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,
@@ -278,16 +244,6 @@ export function BusinessFlowHorizontal({
     '--camera-height': cssSize(height),
     '--camera-width': cssSize(width),
   };
-  const resolvedBurstFadeTime = Math.max(1, burstFadeTime);
-  const burstStyle: BurstStyle = {
-    '--burst-color': beamColor,
-    '--burst-core-fade-time': `${resolvedBurstFadeTime * (640 / 920)}ms`,
-    '--burst-fade-time': `${resolvedBurstFadeTime}ms`,
-    '--burst-highlight': beamHighlightColor,
-    '--burst-radius': `${Math.max(0, burstRadius)}px`,
-    '--burst-strength': String(Math.max(0, burstStrength)),
-  };
-
   return (
     <figure
       className={rootClassName}
@@ -296,37 +252,33 @@ export function BusinessFlowHorizontal({
       aria-label={`Horizontal business flow with ${nodeCountLabel(resolvedRightNodeCount)} on the right, one collector, three relays, and ${nodeCountLabel(resolvedLeftNodeCount)} on the left`}
     >
       <FlowLayer3D
+        activityStrategy={activityStrategy}
         beam={beam}
         beamSource={beamSource}
         className={styles.flowLayer}
         connector={connector}
+        loadStrategy={loadStrategy}
         nodes={nodes}
         nodeStyle={nodeStyle}
+        onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}
+        preloadMargin={preloadMargin}
         reducedMotion={reducedMotion}
+        resolutionScale={resolutionScale}
       />
 
-      <div className={styles.burstLayer} aria-hidden="true">
-        {burstRecords.map((record) => (
-          <span
-            className={styles.nodeBurst}
-            data-testid="arrival-burst"
-            key={record.key}
-            style={{
-              ...burstStyle,
-              left: `${record.point[0] * 100}%`,
-              top: `${record.point[1] * 100}%`,
-            }}
-          >
-            <span
-              className={styles.nodeBurstGlow}
-              onAnimationEnd={() => finishBurst(record.key)}
-            />
-            <span className={styles.nodeBurstCore} />
-          </span>
-        ))}
-      </div>
+      <WorkflowArrivalBursts
+        ref={burstRef}
+        active={flowActive && beamEnabled}
+        color={beamColor}
+        fadeTime={burstFadeTime}
+        highlight={beamHighlightColor}
+        radius={burstRadius}
+        reducedMotion={reducedMotion}
+        resetKey={beamSource}
+        strength={burstStrength}
+      />
     </figure>
   );
 }
