@@ -4,8 +4,9 @@ import type {
   FlowLayer3DPath,
   FlowLayer3DPoint,
 } from '@/components/elements/FlowLayer3D';
+import { businessFlowVerticalCentralNodes, type PillarPoint } from './nodes';
 
-export type PillarPoint = readonly [x: number, y: number];
+export type { PillarPoint } from './nodes';
 
 export type VerticalBeamSourceOptions = {
   connectorRadius: number;
@@ -18,7 +19,7 @@ export type VerticalBeamSourceOptions = {
   trailLengthInIllustrationUnits?: number;
 };
 
-type CentralNode = keyof typeof coloredPoints;
+type CentralNode = typeof businessFlowVerticalCentralNodes[number]['id'];
 
 type BeamTrace = {
   generation: number;
@@ -26,20 +27,17 @@ type BeamTrace = {
   targetIndex: number;
 };
 
-const coloredPoints = {
-  server: [20, 50] as PillarPoint,
-  graph: [40, 50] as PillarPoint,
-  vector: [60, 50] as PillarPoint,
-  intelligence: [80, 50] as PillarPoint,
-};
+const coloredPoints = Object.fromEntries(
+  businessFlowVerticalCentralNodes.map((node) => [node.id, node.point]),
+) as Record<CentralNode, PillarPoint>;
 
 const coloredRoutes: readonly (readonly PillarPoint[])[] = [
-  [[20, 50], [26, 50], [34, 50], [40, 50]],
-  [[40, 50], [46, 50], [54, 50], [60, 50]],
-  [[60, 50], [66, 50], [74, 50], [80, 50]],
+  [coloredPoints.server, [26, 50], [34, 50], coloredPoints.graph],
+  [coloredPoints.graph, [46, 50], [54, 50], coloredPoints.vector],
+  [coloredPoints.vector, [66, 50], [74, 50], coloredPoints.intelligence],
 ];
 
-const centralOrder: readonly CentralNode[] = ['server', 'graph', 'vector', 'intelligence'];
+const centralOrder: readonly CentralNode[] = businessFlowVerticalCentralNodes.map((node) => node.id);
 const continuationFadeBoundary = 12;
 const minimumEmissionPause = 0.12;
 const emissionPauseVariation = 1.08;
@@ -203,10 +201,17 @@ function beamArrivalPoints(
   const targetPoint = satellitePoints[trace.targetIndex];
   const targetParent = satelliteParent(targetPoint);
 
+  const centralArrivals = centralTraversal(sourceParent, targetParent).map((point) => ({
+    id: centralOrder.find((id) => distance(coloredPoints[id], point) < 0.001)!,
+    point,
+  }));
+
   return [
-    ...(showContinuationConnectors ? [sourcePoint] : []),
-    ...centralTraversal(sourceParent, targetParent),
-    targetPoint,
+    ...(showContinuationConnectors
+      ? [{ id: `satellite-${trace.sourceIndex}`, point: sourcePoint }]
+      : []),
+    ...centralArrivals,
+    { id: `satellite-${trace.targetIndex}`, point: targetPoint },
   ];
 }
 
@@ -286,15 +291,6 @@ function routeProgressAtPoint(route: readonly PillarPoint[], arrivalPoint: Pilla
   return approximateScreenLength(route.slice(0, arrivalIndex + 1)) / totalLength;
 }
 
-function seededEmissionUnit(slot: number) {
-  let seed = Math.imul(slot + 1, 0x9e3779b1) >>> 0;
-  seed ^= seed >>> 16;
-  seed = Math.imul(seed, 0x85ebca6b) >>> 0;
-  seed ^= seed >>> 13;
-
-  return (seed >>> 0) / 0x1_0000_0000;
-}
-
 function emissionDelay(
   trace: BeamTrace,
   slot: number,
@@ -306,8 +302,7 @@ function emissionDelay(
 
   if (randomness === 0) return deterministicDelay;
 
-  const randomUnit = trace.generation === 0 ? seededEmissionUnit(slot) : random();
-  const randomizedDelay = minimumEmissionPause + randomUnit * emissionPauseVariation;
+  const randomizedDelay = minimumEmissionPause + random() * emissionPauseVariation;
 
   return deterministicDelay + (randomizedDelay - deterministicDelay) * randomness;
 }
@@ -331,10 +326,10 @@ function createBeamRun(
     trace,
     satellitePoints,
     showContinuationConnectors,
-  ).map((point, index) => ({
-    id: `${point[0]}-${point[1]}-${index}`,
-    point: normalize(point),
-    progress: routeProgressAtPoint(route, point),
+  ).map((arrival) => ({
+    id: arrival.id,
+    point: normalize(arrival.point),
+    progress: routeProgressAtPoint(route, arrival.point),
   }));
 
   return {

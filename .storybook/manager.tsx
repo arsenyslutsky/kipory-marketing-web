@@ -1,59 +1,71 @@
-import { CopyIcon } from '@storybook/icons';
 import React from 'react';
-import { Button, useCopyButton } from 'storybook/internal/components';
-import { addons, types, useArgs, useArgTypes, useStorybookState } from 'storybook/manager-api';
+import { STORY_ARGS_UPDATED } from 'storybook/internal/core-events';
+import {
+  addons,
+  types,
+  useArgs,
+  useArgTypes,
+  useParameter,
+  useStorybookApi,
+  useStorybookState,
+} from 'storybook/manager-api';
 
-const ADDON_ID = 'kipory/copy-business-flow-3d-parameters';
+import {
+  HomepagePresetToolbar,
+  type HomepagePresetArgsSubscriber,
+} from './HomepagePresetToolbar.tsx';
+import {
+  isHomepagePresetStoryId,
+  type HomepagePresetParameter,
+} from './homepagePresetContract.ts';
+
+const ADDON_ID = 'kipory/homepage-parameters';
 const TOOL_ID = `${ADDON_ID}/tool`;
-const BUSINESS_FLOW_3D_STORY_PREFIX = 'animated-illustrations-businessflow3d--';
 
-function CopyParametersButton() {
+function HomepagePresetTool() {
   const [args] = useArgs();
   const argTypes = useArgTypes();
-  const parameterValues = Object.fromEntries(
-    Object.keys(argTypes)
-      .filter((name) => argTypes[name]?.table?.disable !== true && name in args)
-      .map((name) => [name, args[name]]),
+  const homepagePreset = useParameter<HomepagePresetParameter | undefined>(
+    'homepagePreset',
+    undefined,
   );
-  const content = JSON.stringify(
-    parameterValues,
-    (_key, value) => typeof value === 'function' ? undefined : value,
-    2,
-  );
-  const copy = useCopyButton({
-    content,
-    children: 'Copy JSON',
-    childrenOnCopy: 'Copied',
-    ariaLabel: 'Copy all BusinessFlow3D parameter values as JSON',
-    ariaLabelOnCopy: 'BusinessFlow3D parameter JSON copied to clipboard',
-  });
+  const api = useStorybookApi();
+  const { storyId, viewMode } = useStorybookState();
+  const subscribeToArgs = React.useCallback<HomepagePresetArgsSubscriber>((listener) => {
+    api.on(STORY_ARGS_UPDATED, listener);
+    return () => api.off(STORY_ARGS_UPDATED, listener);
+  }, [api]);
+  const getCurrentArgs = React.useCallback(() => {
+    const story = api.getCurrentStoryData();
+    return story?.type === 'story' ? story.args : args;
+  }, [api, args]);
+
+  if (
+    viewMode !== 'story' ||
+    !isHomepagePresetStoryId(storyId) ||
+    !Array.isArray(homepagePreset?.keys) ||
+    !homepagePreset.keys.every((key) => typeof key === 'string')
+  ) {
+    return null;
+  }
 
   return (
-    <Button
-      {...copy.buttonProps}
-      padding="small"
-      variant="ghost"
-      tooltip="Copy all parameter values as JSON"
-    >
-      <CopyIcon />
-      {copy.children}
-    </Button>
+    <HomepagePresetToolbar
+      key={storyId}
+      storyId={storyId}
+      args={args}
+      argTypes={argTypes}
+      presetKeys={homepagePreset.keys}
+      getCurrentArgs={getCurrentArgs}
+      subscribeToArgs={subscribeToArgs}
+    />
   );
-}
-
-function CopyParametersTool() {
-  const { storyId, viewMode } = useStorybookState();
-  const isBusinessFlow3DStory = (
-    viewMode === 'story' && storyId?.startsWith(BUSINESS_FLOW_3D_STORY_PREFIX) === true
-  );
-
-  return isBusinessFlow3DStory ? <CopyParametersButton /> : null;
 }
 
 addons.register(ADDON_ID, () => {
   addons.add(TOOL_ID, {
     type: types.TOOL,
-    title: 'Copy BusinessFlow3D parameters',
-    render: CopyParametersTool,
+    title: 'Save homepage parameters',
+    render: HomepagePresetTool,
   });
 });

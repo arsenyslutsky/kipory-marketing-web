@@ -1,5 +1,5 @@
 export { BusinessFlow3D } from './components/BusinessFlow3D';
-export { businessFlow3DProps } from './presets';
+export { businessFlow3DHomepageProps } from './presets';
 export { BusinessFlow3DVariantTwo } from './components/BusinessFlow3DVariants';
 export { defaultColors, defaultFlow } from './config';
 export type {

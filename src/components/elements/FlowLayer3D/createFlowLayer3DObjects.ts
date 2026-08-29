@@ -4,6 +4,7 @@ import {
   createConnector3DObject,
   createFadingConnector3DObject,
 } from '../Connector3D/createConnector3DObject';
+import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import type { FlowLayer3DConnectorStyle, FlowLayer3DPath } from './types';
 
@@ -19,29 +20,6 @@ export type FlowLayer3DObjects = {
   destroy: () => void;
   group: THREE.Group;
 };
-
-function disposeMaterial(material: THREE.Material) {
-  Object.values(material).forEach((value) => {
-    if (value instanceof THREE.Texture) value.dispose();
-  });
-  if (material instanceof THREE.ShaderMaterial) {
-    Object.values(material.uniforms).forEach(({ value }) => {
-      if (value instanceof THREE.Texture) value.dispose();
-    });
-  }
-  material.dispose();
-}
-
-function disposeObjectResources(root: THREE.Object3D) {
-  root.traverse((object) => {
-    if (!(object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points || object instanceof THREE.Sprite)) {
-      return;
-    }
-    object.geometry?.dispose();
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-    materials.forEach((material) => material && disposeMaterial(material));
-  });
-}
 
 export function createFlowLayer3DObjects({
   aspectRatio,
@@ -70,7 +48,7 @@ export function createFlowLayer3DObjects({
       group.add(connectorObject);
     });
   } catch (error) {
-    disposeObjectResources(group);
+    disposeFlowLayer3DObjectResources(group);
     group.clear();
     throw error;
   }
@@ -78,7 +56,7 @@ export function createFlowLayer3DObjects({
   return {
     connectors,
     destroy() {
-      disposeObjectResources(group);
+      disposeFlowLayer3DObjectResources(group);
       group.clear();
     },
     group,

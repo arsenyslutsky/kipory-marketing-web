@@ -29,12 +29,12 @@ const displaySpecimens = [
 ] as const;
 
 const colors = [
-  ['Primary', '--type-color-primary', styles.primary],
-  ['Secondary', '--type-color-secondary', styles.secondary],
-  ['Muted', '--type-color-muted', styles.muted],
-  ['Accent', '--type-color-accent', styles.accent],
-  ['Control', '--type-color-control', styles.control],
-  ['Alternate surface', '--type-color-alternate-secondary', styles.alternate],
+  ['Primary', '--paper', styles.primary],
+  ['Secondary', '--text-secondary', styles.secondary],
+  ['Muted', '--text-muted', styles.muted],
+  ['Accent', '--accent', styles.accent],
+  ['Control', '--text-control', styles.control],
+  ['Alternate surface', '--surface-alternate-muted', styles.alternate],
 ] as const;
 
 function TypographySheet() {
@@ -46,7 +46,7 @@ function TypographySheet() {
         <p className="type-body type-body-lg">
           Outfit carries display content, Crimson Pro ExtraLight carries body copy, and Chakra Petch covers accent statements, controls, and operational metadata.
         </p>
-        <code className={styles.rootToken}>--root-size: 16px; /* change once to scale the type system */</code>
+        <code className={styles.rootToken}>--type-root-size: 16px; /* change once to scale the type system */</code>
       </header>
 
       <section className={styles.section}>

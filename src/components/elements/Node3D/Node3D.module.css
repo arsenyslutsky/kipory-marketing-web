@@ -37,7 +37,7 @@
   inset: 1rem;
   display: grid;
   place-items: center;
-  color: #f3f5ef;
-  font: 0.75rem/1.5 var(--type-control-family, monospace);
+  color: var(--paper);
+  font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-body-leading-relaxed) var(--type-control-family);
   text-align: center;
 }

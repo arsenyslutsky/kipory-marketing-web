@@ -3,6 +3,23 @@ import type { CSSProperties } from 'react';
 export type Node3DMode = 'light' | 'dark';
 export type Node3DShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type Node3DProgressMode = 'bar' | 'outline';
+export type Node3DIconFillMode = 'solid' | 'gradient';
+
+export type Node3DResolvedGradient = {
+  angle: number;
+  end: string;
+  mid: string;
+  start: string;
+};
+
+export type Node3DIconStyle = {
+  color: string;
+  fillMode: Node3DIconFillMode;
+  gradient?: Node3DResolvedGradient;
+  strokeColor?: string;
+  strokeOpacity: number;
+  strokeWidth?: number;
+};
 
 export type Node3DProps = {
   assetBasePath?: string;
@@ -19,7 +36,11 @@ export type Node3DProps = {
   glowIntensity?: number;
   height?: CSSProperties['height'];
   icon?: string;
+  iconColor?: string;
   iconOpacity?: number;
+  iconStrokeColor?: string;
+  iconStrokeOpacity?: number;
+  iconStrokeWidth?: number;
   interactive?: boolean;
   mode?: Node3DMode;
   nodeCornerRadius?: number;
@@ -52,7 +73,9 @@ export type Node3DSceneElements = {
   cssLayer: HTMLElement;
 };
 
-export type Node3DSceneOptions = Required<Omit<Node3DProps, 'className' | 'height' | 'width'>> & {
+export type Node3DSceneOptions = Required<Omit<Node3DProps,
+  'className' | 'height' | 'width' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
+>> & Pick<Node3DProps, 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
   elements: Node3DSceneElements;
 };
 

@@ -79,6 +79,14 @@ it('includes both continuation edges in a complete beam route', () => {
     [0.8, 0.5],
     [0.8, 0.82],
   ]);
+  expect(run.arrivals?.map((arrival) => arrival.id)).toEqual([
+    'satellite-0',
+    'server',
+    'graph',
+    'vector',
+    'intelligence',
+    'satellite-3',
+  ]);
 });
 
 it('carries literal start and end continuation fade progress only on continued runs', () => {
@@ -120,6 +128,14 @@ it('uses injected randomness for later route selection and emission delay', () =
   expect(later.delayMs).toBeLessThanOrEqual(1200);
   expect(later.path.points[0]).toEqual([0.8, 0.18]);
   expect(later.path.points.at(-1)).toEqual([0.8, 0.82]);
+});
+
+it('uses injected randomness for the first emission cycle', () => {
+  const earlySource = createSource({ emissionRandomness: 100, random: () => 0 });
+  const lateSource = createSource({ emissionRandomness: 100, random: () => 1 });
+
+  expect(earlySource.next(0, 0)?.delayMs).toBeCloseTo(120);
+  expect(lateSource.next(0, 0)?.delayMs).toBeCloseTo(1200);
 });
 
 it('clamps speed to one tenth and scales durations above that floor', () => {

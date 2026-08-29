@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 import { createNode3DScene } from './createNode3DScene';
 import styles from './Node3D.module.css';
 import type { Node3DProps, Node3DSceneOptions } from './types';
@@ -24,13 +25,17 @@ export function Node3D({
   depth = 2.2,
   floating = true,
   frontGradientAngle = 117,
-  frontGradientEndColor = '#052f24',
-  frontGradientMidColor = '#03492b',
-  frontGradientStartColor = '#066b43',
+  frontGradientEndColor = businessFlowPalette.frontGradient.end,
+  frontGradientMidColor = businessFlowPalette.frontGradient.mid,
+  frontGradientStartColor = businessFlowPalette.frontGradient.start,
   glowIntensity = 0.55,
   height = '38rem',
   icon = 'hexagon_default.svg',
+  iconColor,
   iconOpacity = 0.5,
+  iconStrokeColor,
+  iconStrokeOpacity,
+  iconStrokeWidth,
   interactive = true,
   mode = 'dark',
   nodeCornerRadius = 10,
@@ -47,13 +52,13 @@ export function Node3D({
   shape = 'hexagon',
   showProgress = true,
   sideXGradientAngle = 360,
-  sideXGradientEndColor = '#5c899b',
-  sideXGradientMidColor = '#10402e',
-  sideXGradientStartColor = '#31775a',
+  sideXGradientEndColor = businessFlowPalette.sideXGradient.end,
+  sideXGradientMidColor = businessFlowPalette.sideXGradient.mid,
+  sideXGradientStartColor = businessFlowPalette.sideXGradient.start,
   sideZGradientAngle = 177,
-  sideZGradientEndColor = '#0e4b81',
-  sideZGradientMidColor = '#366480',
-  sideZGradientStartColor = '#427298',
+  sideZGradientEndColor = businessFlowPalette.sideZGradient.end,
+  sideZGradientMidColor = businessFlowPalette.sideZGradient.mid,
+  sideZGradientStartColor = businessFlowPalette.sideZGradient.start,
   width = 'min(100%, 48rem)',
 }: Node3DProps) {
   const containerRef = useRef<HTMLElement>(null);
@@ -88,7 +93,11 @@ export function Node3D({
         frontGradientStartColor,
         glowIntensity,
         icon,
+        iconColor,
         iconOpacity,
+        iconStrokeColor,
+        iconStrokeOpacity,
+        iconStrokeWidth,
         interactive,
         mode,
         nodeCornerRadius,
@@ -138,7 +147,11 @@ export function Node3D({
     frontGradientStartColor,
     glowIntensity,
     icon,
+    iconColor,
     iconOpacity,
+    iconStrokeColor,
+    iconStrokeOpacity,
+    iconStrokeWidth,
     interactive,
     mode,
     nodeCornerRadius,

@@ -1,28 +1,144 @@
 'use client';
 
 import { useEffect, useRef, type ComponentPropsWithoutRef } from 'react';
+import {
+  ScrollMotionProvider,
+  useScrollMotion,
+} from '@/components/motion/ScrollMotionContext';
 
 type HeroScrollEffectsProps = ComponentPropsWithoutRef<'main'> & {
   scrollRange?: number;
 };
 
+const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
+const easeOutQuadratic = (value: number) => 1 - ((1 - value) ** 2);
+
 export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEffectsProps) {
+  return (
+    <ScrollMotionProvider scrollRange={scrollRange}>
+      <HeroScrollEffectsContent scrollRange={scrollRange} {...props} />
+    </ScrollMotionProvider>
+  );
+}
+
+function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEffectsProps) {
   const mainRef = useRef<HTMLElement>(null);
+  const scrollMotion = useScrollMotion();
 
   useEffect(() => {
     const main = mainRef.current;
     if (!main) return;
 
-    let frameId = 0;
+    const heroWorkflow = main.querySelector<HTMLElement>('[data-hero-workflow] [data-flow-state]');
+    const syncWorkflowReadiness = () => {
+      const ready = !heroWorkflow || heroWorkflow.dataset.flowState !== 'loading';
+      main.dataset.workflowsReady = String(ready);
+    };
+    const observer = new MutationObserver(syncWorkflowReadiness);
 
-    const render = () => {
-      frameId = 0;
-      const progress = Math.min(Math.max(window.scrollY / Math.max(scrollRange, 1), 0), 1);
-      main.style.setProperty('--hero-scroll-progress', String(progress));
+    if (heroWorkflow) observer.observe(heroWorkflow, {
+      attributeFilter: ['data-flow-state'],
+      attributes: true,
+    });
+    syncWorkflowReadiness();
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const finalHeroStage = main.querySelector<HTMLElement>('[data-hero-reveal="actions"]');
+    if (!finalHeroStage) {
+      main.dataset.contentRevealReady = 'true';
+      return;
+    }
+
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let revealTimer = 0;
+    const unlockContent = (event: AnimationEvent) => {
+      if (event.target !== finalHeroStage) return;
+      window.clearTimeout(revealTimer);
+      revealTimer = window.setTimeout(() => {
+        main.dataset.contentRevealReady = 'true';
+      }, motionPreference.matches ? 0 : 500);
     };
 
-    const update = () => {
-      if (!frameId) frameId = window.requestAnimationFrame(render);
+    finalHeroStage.addEventListener('animationend', unlockContent);
+
+    return () => {
+      window.clearTimeout(revealTimer);
+      finalHeroStage.removeEventListener('animationend', unlockContent);
+    };
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const sections = Array.from(main.querySelectorAll<HTMLElement>('[data-section-reveal]'));
+    if (typeof IntersectionObserver === 'undefined') {
+      sections.forEach((section) => {
+        section.dataset.sectionRevealVisible = 'true';
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        (entry.target as HTMLElement).dataset.sectionRevealVisible = 'true';
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: .15 });
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const textGroups = Array.from(main.querySelectorAll<HTMLElement>('[data-scroll-parallax]'));
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    main.dataset.scrollMotionReady = motionPreference.matches ? 'reduced' : 'true';
+
+    const render = ({ progress }: { progress: number }) => {
+      if (motionPreference.matches) {
+        main.style.setProperty('--hero-scroll-progress', String(progress));
+        textGroups.forEach((group) => {
+          group.style.removeProperty('--scroll-text-visibility');
+          group.style.removeProperty('--scroll-text-shift');
+        });
+        return;
+      }
+
+      const viewportHeight = window.innerHeight;
+      const revealDistance = Math.min(520, Math.max(240, viewportHeight * .4));
+      const measurements = textGroups.map((group) => {
+        const rect = group.getBoundingClientRect();
+        const entry = easeOutQuadratic(clamp((viewportHeight - rect.top) / revealDistance));
+        const exit = clamp(rect.bottom / revealDistance);
+        const visibility = Math.min(entry, exit);
+        const shift = entry < 1 ? 1 - entry : exit < 1 ? -(1 - exit) : 0;
+        const scrollAwareShift = shift * progress;
+
+        return { group, scrollAwareShift, visibility };
+      });
+
+      main.style.setProperty('--hero-scroll-progress', String(progress));
+      measurements.forEach(({ group, scrollAwareShift, visibility }) => {
+        if (group.dataset.scrollFade === 'false') {
+          group.style.removeProperty('--scroll-text-visibility');
+        } else {
+          group.style.setProperty('--scroll-text-visibility', String(visibility));
+        }
+        group.style.setProperty('--scroll-text-shift', String(scrollAwareShift));
+      });
     };
 
     const scrollToSection = (event: MouseEvent) => {
@@ -56,23 +172,24 @@ export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEff
       window.history.pushState(null, '', url.hash);
       window.scrollTo({
         top: destination,
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        behavior: motionPreference.matches ? 'auto' : 'smooth',
       });
     };
 
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    const unsubscribe = scrollMotion?.subscribe(render);
     main.addEventListener('click', scrollToSection);
 
     return () => {
-      if (frameId) window.cancelAnimationFrame(frameId);
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      unsubscribe?.();
       main.removeEventListener('click', scrollToSection);
       main.style.removeProperty('--hero-scroll-progress');
+      delete main.dataset.scrollMotionReady;
+      textGroups.forEach((group) => {
+        group.style.removeProperty('--scroll-text-visibility');
+        group.style.removeProperty('--scroll-text-shift');
+      });
     };
-  }, [scrollRange]);
+  }, [scrollMotion, scrollRange]);
 
   return <main ref={mainRef} {...props} />;
 }

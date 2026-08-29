@@ -7,4 +7,4 @@ export type {
 } from './components/PillarSurroundingIcon';
 export { BusinessFlowVertical } from './components/BusinessFlowVertical';
 export type { BusinessFlowVerticalProps } from './components/BusinessFlowVertical';
-export { businessFlowVerticalProps } from './presets';
+export { businessFlowVerticalHomepageProps } from './presets';

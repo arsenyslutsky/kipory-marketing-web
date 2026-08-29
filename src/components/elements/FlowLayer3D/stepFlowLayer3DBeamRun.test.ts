@@ -48,6 +48,29 @@ it('does not emit a progress-zero arrival before its delay completes', () => {
   });
 });
 
+it('does not process a progress-zero node before the delayed beam starts', () => {
+  const delayedRun = {
+    ...run,
+    arrivals: [{
+      id: 'start',
+      point: [0, 0] as const,
+      processingDelayMs: 400,
+      progress: 0,
+    }],
+  };
+
+  expect(stepFlowLayer3DBeamRun(delayedRun, 249, new Set())).toMatchObject({
+    activeProcessing: undefined,
+    completedProcessingIds: [],
+    started: false,
+  });
+  expect(stepFlowLayer3DBeamRun(delayedRun, 250, new Set())).toMatchObject({
+    activeProcessing: { id: 'start', progress: 0 },
+    completedProcessingIds: [],
+    started: true,
+  });
+});
+
 it('deduplicates repeated arrival IDs from one scheduler step', () => {
   const duplicateArrivalRun = {
     ...run,
@@ -61,6 +84,48 @@ it('deduplicates repeated arrival IDs from one scheduler step', () => {
   expect(stepFlowLayer3DBeamRun(duplicateArrivalRun, 500, new Set()).arrivals).toEqual([
     duplicateArrivalRun.arrivals[0],
   ]);
+});
+
+it('pauses at a processing node while its progress fills, then resumes travel', () => {
+  const processingRun = {
+    ...run,
+    delayMs: 0,
+    arrivals: [
+      {
+        id: 'middle',
+        point: [0.5, 0.5] as const,
+        processingDelayMs: 400,
+        progress: 0.5,
+      },
+    ],
+  };
+
+  expect(stepFlowLayer3DBeamRun(processingRun, 500, new Set())).toMatchObject({
+    activeProcessing: { id: 'middle', progress: 0 },
+    arrivals: [processingRun.arrivals[0]],
+    completed: false,
+    progress: 0.5,
+  });
+  expect(stepFlowLayer3DBeamRun(processingRun, 700, new Set(['middle']))).toMatchObject({
+    activeProcessing: { id: 'middle', progress: 0.5 },
+    arrivals: [],
+    progress: 0.5,
+  });
+  expect(stepFlowLayer3DBeamRun(processingRun, 900, new Set(['middle']))).toMatchObject({
+    activeProcessing: undefined,
+    completedProcessingIds: ['middle'],
+    progress: 0.5,
+  });
+  expect(stepFlowLayer3DBeamRun(processingRun, 1150, new Set(['middle']))).toMatchObject({
+    activeProcessing: undefined,
+    completedProcessingIds: ['middle'],
+    progress: 0.75,
+  });
+  expect(stepFlowLayer3DBeamRun(processingRun, 1400, new Set(['middle']))).toMatchObject({
+    completed: true,
+    endElapsedMs: 1400,
+    progress: 1,
+  });
 });
 
 it('fades continuation runs at both edges without dimming ordinary runs', () => {

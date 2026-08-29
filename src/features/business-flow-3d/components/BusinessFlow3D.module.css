@@ -6,6 +6,7 @@
   min-height: 680px;
   height: 100dvh;
   overflow: hidden;
+  contain: layout paint style;
   color: var(--ui-page-text);
   background:
     radial-gradient(circle at 70% 45%, var(--ui-experience-glow), transparent 33%),
@@ -29,6 +30,9 @@
 }
 
 .canvas { z-index: 0; display: block; outline: none; }
+.canvas, .svgLayer { opacity: 0; transition: opacity 320ms cubic-bezier(.16, 1, .3, 1); }
+.root[data-flow-state='ready'] .canvas,
+.root[data-flow-state='ready'] .svgLayer { opacity: 1; }
 .passive .canvas { pointer-events: none; }
 .svgLayer { z-index: 1; pointer-events: none; overflow: hidden; }
 
@@ -271,5 +275,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .canvas, .svgLayer { transition-duration: 120ms; }
   .live i, .mouse::after { animation: none; }
 }

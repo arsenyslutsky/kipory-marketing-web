@@ -1,48 +1,43 @@
 'use client';
 
 import {
-  PillarIcon,
-  PillarSurroundingIcon,
-  type PillarIconName,
-  type PillarSurroundingIconName,
-} from '@/features/business-flow-vertical';
-import { FlowLayer3D } from '@/components/elements/FlowLayer3D';
-import type { CSSProperties } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+  FlowLayer3D,
+  type FlowLayer3DArrivalEvent,
+  type FlowLayer3DNodeStyle,
+} from '@/components/elements/FlowLayer3D';
+import type { Node3DProgressMode } from '@/components/elements/Node3D';
+import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
 import {
-  businessFlowHorizontalPaths,
+  WorkflowArrivalBursts,
+  type WorkflowArrivalBurstsHandle,
+} from '@/components/elements/WorkflowArrivalBursts';
+import { businessFlowPalette } from '@/features/business-flow-palette';
+import type { CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createBusinessFlowHorizontalLayoutNodes,
+  createBusinessFlowHorizontalNodes,
+} from '../nodes';
+import {
   createBusinessFlowHorizontalBeamSource,
+  createBusinessFlowHorizontalPaths,
 } from '../routes';
 import styles from './BusinessFlowHorizontal.module.css';
 
-type FlowNode = {
-  delay: number;
-  icon: PillarIconName | PillarSurroundingIconName;
-  id: string;
-  kind: 'collector' | 'relay' | 'terminal';
-  x: number;
-  y: number;
-};
-
-const nodes: FlowNode[] = [
-  { id: 'terminal-1', kind: 'terminal', icon: 'download', x: 37, y: 59, delay: 2.68 },
-  { id: 'terminal-2', kind: 'terminal', icon: 'profile', x: 37, y: 155, delay: 2.76 },
-  { id: 'terminal-3', kind: 'terminal', icon: 'profile-alt', x: 37, y: 251, delay: 2.72 },
-  { id: 'terminal-4', kind: 'terminal', icon: 'download', x: 37, y: 357, delay: 2.8 },
-  { id: 'terminal-5', kind: 'terminal', icon: 'profile', x: 37, y: 453, delay: 2.76 },
-  { id: 'terminal-6', kind: 'terminal', icon: 'profile-alt', x: 37, y: 549, delay: 2.84 },
-  { id: 'relay-1', kind: 'relay', icon: 'server', x: 143, y: 107, delay: 1.68 },
-  { id: 'relay-2', kind: 'relay', icon: 'graph', x: 143, y: 304, delay: 1.74 },
-  { id: 'relay-3', kind: 'relay', icon: 'vector', x: 143, y: 501, delay: 1.8 },
-  { id: 'collector', kind: 'collector', icon: 'intelligence', x: 248, y: 304, delay: 0.68 },
-];
-
-export type BusinessFlowHorizontalProps = {
+export type BusinessFlowHorizontalProps = WorkflowRuntimeOptions & {
   auxiliaryIconFillColor?: string;
   beamColor?: string;
+  beamEmissionRandomness?: number;
   beamEnabled?: boolean;
+  beamHeadGlowBlur?: number;
+  beamHeadGlowOpacity?: number;
+  beamHeadGlowRadius?: number;
   beamHighlightColor?: string;
   beamSpeed?: number;
+  beamTrailLength?: number;
+  burstFadeTime?: number;
+  burstRadius?: number;
+  burstStrength?: number;
   centralIconFillColor?: string;
   centralIconStrokeOpacity?: number;
   className?: string;
@@ -55,27 +50,24 @@ export type BusinessFlowHorizontalProps = {
   gridOpacity?: number;
   height?: CSSProperties['height'];
   iconSize?: number;
+  maxConcurrentBeams?: number;
+  numberOfNodesLeft?: number;
+  numberOfNodesRight?: number;
+  nodeProgressMaxDelay?: number;
+  nodeProgressMinDelay?: number;
+  nodeProgressMode?: Node3DProgressMode;
+  nodeProgressSize?: number;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
 
 type IllustrationStyle = CSSProperties & {
-  '--camera-beam': string;
-  '--camera-beam-highlight': string;
   '--camera-color': string;
-  '--camera-flow-cycle': string;
   '--camera-grid-color': string;
   '--camera-grid-density': string;
   '--camera-grid-opacity': string;
   '--camera-height': string;
-  '--camera-icon-size': string;
   '--camera-width': string;
-};
-
-type PositionedStyle = CSSProperties & {
-  '--camera-delay': string;
-  '--camera-x'?: string;
-  '--camera-y'?: string;
 };
 
 function cssSize(value: CSSProperties['width']): string {
@@ -83,12 +75,8 @@ function cssSize(value: CSSProperties['width']): string {
   return value ?? 'auto';
 }
 
-function nodePosition(node: FlowNode, resolvedSpeed: number): PositionedStyle {
-  return {
-    '--camera-delay': `${node.delay / resolvedSpeed}s`,
-    '--camera-x': `${(node.x / 320) * 100}%`,
-    '--camera-y': `${(node.y / 608) * 100}%`,
-  };
+function nodeCountLabel(count: number) {
+  return `${count} ${count === 1 ? 'node' : 'nodes'}`;
 }
 
 function useReducedMotionPreference() {
@@ -112,29 +100,59 @@ function useReducedMotionPreference() {
 }
 
 export function BusinessFlowHorizontal({
-  auxiliaryIconFillColor = '#212121',
-  beamColor = '#449c40',
+  activityStrategy,
+  auxiliaryIconFillColor = businessFlowPalette.auxiliaryIconFill,
+  beamColor = businessFlowPalette.beam,
+  beamEmissionRandomness = 100,
   beamEnabled = true,
-  beamHighlightColor = '#c9ebc7',
+  beamHeadGlowBlur = 0,
+  beamHeadGlowOpacity = 1,
+  beamHeadGlowRadius = 0,
+  beamHighlightColor = businessFlowPalette.beamHighlight,
   beamSpeed = 1.4,
-  centralIconFillColor = '#1d281d',
+  beamTrailLength = 0,
+  burstFadeTime = 920,
+  burstRadius = 32,
+  burstStrength = 1,
+  centralIconFillColor = businessFlowPalette.centralIconFill,
   centralIconStrokeOpacity = 0.52,
   className,
-  color = '#f3f5ef',
-  connectorColor = '#ffffff',
+  color = businessFlowPalette.iconStroke,
+  connectorColor = businessFlowPalette.connector,
   connectorOpacity = 0.22,
   connectorWidth = 1.25,
-  gridColor = '#39473f',
+  gridColor = businessFlowPalette.grid,
   gridDensity = 30,
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
+  loadStrategy,
+  maxConcurrentBeams = 24,
+  numberOfNodesLeft = 6,
+  numberOfNodesRight = 3,
+  nodeProgressMaxDelay = 1800,
+  nodeProgressMinDelay = 500,
+  nodeProgressMode = 'outline',
+  nodeProgressSize = 15,
+  preloadMargin,
+  resolutionScale,
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
   const reducedMotion = useReducedMotionPreference();
+  const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
+  const [flowActive, setFlowActive] = useState(false);
   const resolvedSpeed = Math.max(0.1, beamSpeed);
-  const cycleDuration = 5.2 / resolvedSpeed;
+  const layoutNodes = useMemo(
+    () => createBusinessFlowHorizontalLayoutNodes(numberOfNodesLeft, numberOfNodesRight),
+    [numberOfNodesLeft, numberOfNodesRight],
+  );
+  const paths = useMemo(
+    () => createBusinessFlowHorizontalPaths(layoutNodes),
+    [layoutNodes],
+  );
+  const resolvedLeftNodeCount = layoutNodes.filter((node) => node.id.startsWith('left-')).length;
+  const resolvedRightNodeCount = layoutNodes.filter((node) => node.id.startsWith('right-')).length;
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
@@ -144,89 +162,123 @@ export function BusinessFlowHorizontal({
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
-    beamWidth: 1,
+    beamWidth: Math.max(1.25, connectorWidth * 1.4),
     enabled: beamEnabled,
     glowIntensity: 1,
-    trailLength: 0.38,
-  }), [beamColor, beamEnabled, beamHighlightColor]);
+    headGlowBlur: beamHeadGlowBlur,
+    headGlowOpacity: beamHeadGlowOpacity,
+    headGlowRadius: beamHeadGlowRadius,
+    trailLength: 0,
+  }), [
+    beamColor,
+    beamEnabled,
+    beamHeadGlowBlur,
+    beamHeadGlowOpacity,
+    beamHeadGlowRadius,
+    beamHighlightColor,
+    connectorWidth,
+  ]);
   const beamSource = useMemo(
-    () => createBusinessFlowHorizontalBeamSource(resolvedSpeed),
-    [resolvedSpeed],
+    () => createBusinessFlowHorizontalBeamSource({
+      emissionRandomness: beamEmissionRandomness,
+      layoutNodes,
+      maxConcurrentBeams,
+      paths,
+      speed: resolvedSpeed,
+      trailLengthInIllustrationUnits: beamTrailLength,
+    }),
+    [beamEmissionRandomness, beamTrailLength, layoutNodes, maxConcurrentBeams, paths, resolvedSpeed],
   );
+  const nodes = useMemo(() => createBusinessFlowHorizontalNodes({
+    auxiliaryIconColor: auxiliaryIconFillColor,
+    centralIconColor: centralIconFillColor,
+    centralIconStrokeOpacity,
+    iconSize,
+    iconStrokeColor: color,
+    layoutNodes,
+    strokeWidth,
+  }), [
+    auxiliaryIconFillColor,
+    centralIconFillColor,
+    centralIconStrokeOpacity,
+    color,
+    iconSize,
+    layoutNodes,
+    strokeWidth,
+  ]);
+  const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    assetBasePath: '/assets/nodes',
+    frontGradient: { angle: 117, ...businessFlowPalette.frontGradient },
+    mode: 'dark',
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    progressBarHeight: nodeProgressSize,
+    progressMaxDelay: nodeProgressMaxDelay,
+    progressMinDelay: nodeProgressMinDelay,
+    progressMode: nodeProgressMode,
+    progressPadding: 1,
+    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
+    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
+  }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
+  const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
+    burstRef.current?.add(event);
+  }, []);
+  const onActivityChange = useCallback((active: boolean) => {
+    setFlowActive(active);
+    if (!active) burstRef.current?.clear();
+  }, []);
+  useEffect(() => {
+    if (!beamEnabled || reducedMotion) burstRef.current?.clear();
+  }, [beamEnabled, reducedMotion]);
   const rootClassName = [
     styles.root,
     !beamEnabled && styles.motionDisabled,
     className,
   ].filter(Boolean).join(' ');
   const style: IllustrationStyle = {
-    '--camera-beam': beamColor,
-    '--camera-beam-highlight': beamHighlightColor,
     '--camera-color': color,
-    '--camera-flow-cycle': `${cycleDuration}s`,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),
     '--camera-height': cssSize(height),
-    '--camera-icon-size': `${iconSize}px`,
     '--camera-width': cssSize(width),
   };
-
   return (
     <figure
       className={rootClassName}
       style={style}
       role="img"
-      aria-label="Horizontal business flow entering from the right, passing through one collector and three relays, then reaching six terminal nodes"
+      aria-label={`Horizontal business flow with ${nodeCountLabel(resolvedRightNodeCount)} on the right, one collector, three relays, and ${nodeCountLabel(resolvedLeftNodeCount)} on the left`}
     >
       <FlowLayer3D
+        activityStrategy={activityStrategy}
         beam={beam}
         beamSource={beamSource}
         className={styles.flowLayer}
         connector={connector}
-        paths={businessFlowHorizontalPaths}
+        loadStrategy={loadStrategy}
+        nodes={nodes}
+        nodeStyle={nodeStyle}
+        onActivityChange={onActivityChange}
+        onArrival={onArrival}
+        paths={paths}
+        preloadMargin={preloadMargin}
         reducedMotion={reducedMotion}
+        resolutionScale={resolutionScale}
       />
 
-      <div className={styles.burstLayer} aria-hidden="true">
-        {nodes.map((node) => (
-          <span
-            className={styles.nodeBurst}
-            key={node.id}
-            style={nodePosition(node, resolvedSpeed)}
-          >
-            <span className={styles.nodeBurstGlow} />
-            <span className={styles.nodeBurstCore} />
-          </span>
-        ))}
-      </div>
-
-      <div className={styles.iconLayer} aria-hidden="true">
-        {nodes.map((node) => (
-          <span
-            className={`${styles.iconNode} ${styles[`${node.kind}Node`]}`}
-            key={node.id}
-            style={nodePosition(node, resolvedSpeed)}
-          >
-            {node.kind === 'terminal' ? (
-              <PillarSurroundingIcon
-                className={styles.surroundingIcon}
-                fill={auxiliaryIconFillColor}
-                name={node.icon as PillarSurroundingIconName}
-                strokeWidth={strokeWidth / 4}
-              />
-            ) : (
-              <PillarIcon
-                className={styles.pillarIcon}
-                fillColor={centralIconFillColor}
-                fillMode="black"
-                name={node.icon as PillarIconName}
-                strokeOpacity={centralIconStrokeOpacity}
-                strokeWidth={strokeWidth}
-              />
-            )}
-          </span>
-        ))}
-      </div>
+      <WorkflowArrivalBursts
+        ref={burstRef}
+        active={flowActive && beamEnabled}
+        color={beamColor}
+        fadeTime={burstFadeTime}
+        highlight={beamHighlightColor}
+        radius={burstRadius}
+        reducedMotion={reducedMotion}
+        resetKey={beamSource}
+        strength={burstStrength}
+      />
     </figure>
   );
 }

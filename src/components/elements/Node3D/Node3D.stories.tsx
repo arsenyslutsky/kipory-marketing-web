@@ -86,8 +86,17 @@ const meta = {
       table: { category: 'Icon' },
     },
     assetBasePath: { control: 'text', table: { category: 'Icon' } },
+    iconColor: { control: 'color', table: { category: 'Icon' } },
     iconOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Icon' },
+    },
+    iconStrokeOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Icon' },
+    },
+    iconStrokeWidth: {
+      control: { type: 'range', min: 0, max: 12, step: 0.25 },
       table: { category: 'Icon' },
     },
 

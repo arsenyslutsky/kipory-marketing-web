@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { BusinessFlowVertical } from '../components/BusinessFlowVertical';
-import { businessFlowVerticalProps } from '../presets';
+import { businessFlowVerticalHomepageProps } from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlowVertical',
@@ -70,6 +70,27 @@ const meta = {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       description: 'Stroke opacity of the four central pillar icons.',
       table: { category: 'Central Nodes' },
+    },
+    nodeProgressMode: {
+      control: 'inline-radio',
+      options: ['bar', 'outline'],
+      description: 'Shape of the processing indicator shown while a beam pauses at a node.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressSize: {
+      control: { type: 'range', min: 0, max: 100, step: 1 },
+      description: 'Thickness of the bar or outline processing indicator.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressMinDelay: {
+      control: { type: 'number', min: 0, step: 100 },
+      description: 'Minimum time in milliseconds that a beam pauses at a processing node.',
+      table: { category: 'Progress' },
+    },
+    nodeProgressMaxDelay: {
+      control: { type: 'number', min: 0, step: 100 },
+      description: 'Maximum time in milliseconds that a beam pauses at a processing node.',
+      table: { category: 'Progress' },
     },
     gradientStartColor: {
       control: 'color',
@@ -187,7 +208,7 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowVerticalProps,
+  args: businessFlowVerticalHomepageProps,
 } satisfies Meta<typeof BusinessFlowVertical>;
 
 export default meta;
@@ -195,4 +216,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Foundation: Story = {
   name: 'Foundation',
+};
+
+export const CurrentNextjsApp: Story = {
+  name: 'Current Next.js App',
+  args: businessFlowVerticalHomepageProps,
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlowVerticalHomepageProps) },
+  },
 };

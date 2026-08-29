@@ -1,4 +1,20 @@
 import type { Metadata } from 'next';
+import {
+  FormField,
+  MarketingSection,
+  PageHero,
+  SiteContainer,
+  SplitLayout,
+} from '@/components/marketing';
+import {
+  formFieldHomepageProps,
+  marketingSectionHomepageProps,
+  pageHeroHomepageProps,
+  siteContainerHomepageProps,
+  splitLayoutHomepageProps,
+} from '@/components/marketing/presets';
+import { SubmissionForm } from '../../components/ui/SubmissionForm';
+import { BackgroundBeams } from '../../components/ui/BackgroundBeams';
 import styles from '../marketing.module.css';
 
 export const metadata: Metadata = {
@@ -9,46 +25,84 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main id="main-content" className={styles.main}>
-      <section className={styles.pageHero}>
-        <div className={`site-container ${styles.pageHeroGrid}`}>
-          <div>
-            <p className="eyebrow">Contact</p>
-            <h1 className={styles.pageTitle}>Show us how<br /><em>your system moves.</em></h1>
-          </div>
-          <p className={styles.pageLead}>Tell us where work crosses boundaries, where context gets lost, or where the current picture stops being useful.</p>
-        </div>
-      </section>
+      <PageHero
+        {...pageHeroHomepageProps}
+        title="Show us how your system moves."
+        subtitle="SHOW US WHERE WORK STOPS."
+        background={<BackgroundBeams />}
+      />
 
-      <section className={`${styles.section} ${styles.lightSection}`}>
-        <div className={`site-container ${styles.contactGrid}`}>
-          <div className={styles.contactNotes}>
-            <p className="eyebrow">Start a conversation</p>
-            <strong>What happens next</strong>
-            <p>Share a little about the flow you want to understand. We will use it to shape a focused first conversation.</p>
-            <p>This form opens your email application and does not store your information on this website.</p>
-          </div>
-          <form className={styles.contactForm} action="mailto:hello@kipory.com" method="post" encType="text/plain">
-            <div className={styles.field}>
-              <label htmlFor="name">Name</label>
-              <input id="name" name="name" autoComplete="name" required />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="email">Work email</label>
-              <input id="email" name="email" type="email" autoComplete="email" required />
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="company">Company</label>
-              <input id="company" name="company" autoComplete="organization" />
-            </div>
-            <div className={`${styles.field} ${styles.fieldWide}`}>
-              <label htmlFor="message">What flow do you want to understand?</label>
-              <textarea id="message" name="message" required />
-            </div>
-            <p className={styles.formNote}>Submitting opens a message addressed to hello@kipory.com in your default email application.</p>
-            <button className="button button--accent" type="submit">Prepare message <span>↗</span></button>
-          </form>
-        </div>
-      </section>
+      <MarketingSection {...marketingSectionHomepageProps}>
+        <SiteContainer {...siteContainerHomepageProps}>
+          <SplitLayout
+            {...splitLayoutHomepageProps}
+            contentRatio={0.75}
+            visualRatio={1.25}
+            gap={118}
+            content={(
+              <div className={styles.contactNotes}>
+                <p className="eyebrow">Start a conversation</p>
+                <strong>What happens next</strong>
+                <p>Share a little about the flow you want to understand. We will use it to shape a focused first conversation.</p>
+              </div>
+            )}
+            visual={(
+              <SubmissionForm
+                className={styles.contactForm}
+                ariaLabel="Contact Kipory"
+                panelSize="tall"
+                successStatus="MESSAGE SENT"
+                successTitle="WE'LL TAKE IT FROM HERE."
+                successBody="Thanks for the context. Our team will review your note and follow up by email."
+              >
+                <FormField {...formFieldHomepageProps} label="First name" htmlFor="first-name">
+              <input id="first-name" name="firstName" autoComplete="given-name" required />
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Last name" htmlFor="last-name">
+              <input id="last-name" name="lastName" autoComplete="family-name" required />
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Company" htmlFor="company">
+              <input id="company" name="company" autoComplete="organization" required />
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Role" htmlFor="role">
+              <select id="role" name="role" defaultValue="" required>
+                <option value="" disabled>Select your role</option>
+                <option value="development-engineering">Development / Engineering</option>
+                <option value="management-leadership">Management / Leadership</option>
+                <option value="product">Product</option>
+                <option value="data-analytics">Data / Analytics</option>
+                <option value="operations">Operations</option>
+                <option value="other">Other</option>
+              </select>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Company email" htmlFor="company-email" wide>
+              <input id="company-email" name="email" type="email" autoComplete="email" required />
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Reason for inquiry" htmlFor="inquiry-reason" wide>
+              <select id="inquiry-reason" name="inquiryReason" defaultValue="" required>
+                <option value="" disabled>Select a reason</option>
+                <option value="product-demo">Product demo</option>
+                <option value="technical-questions">Technical questions</option>
+                <option value="pricing-access">Pricing and access</option>
+                <option value="partnership">Partnership</option>
+                <option value="press-media">Press and media</option>
+                <option value="other">Other</option>
+              </select>
+                </FormField>
+                <FormField {...formFieldHomepageProps} label="Comments" htmlFor="comments" wide>
+              <textarea id="comments" name="comments" />
+                </FormField>
+                <button className="button button--accent" type="submit">
+                  Send message
+                  <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M4 12 12 4M6 4h6v6" />
+                  </svg>
+                </button>
+              </SubmissionForm>
+            )}
+          />
+        </SiteContainer>
+      </MarketingSection>
     </main>
   );
 }
