@@ -78,6 +78,7 @@ it('composes split layouts, headings, numbered rows, and fields without page CSS
       <PageHero
         title="Join the waiting list."
         subtitle="See the flow sooner."
+        background={<div data-testid="page-hero-background">Flow background</div>}
         paddingTop={140}
         paddingBottom={88}
         headingGap={20}
@@ -108,6 +109,10 @@ it('composes split layouts, headings, numbered rows, and fields without page CSS
 
   expect(screen.getByRole('heading', { level: 1, name: 'Join the waiting list.' })).toBeInTheDocument();
   expect(screen.getByText('See the flow sooner.')).toBeInTheDocument();
+  const heroBackground = screen.getByTestId('page-hero-background');
+  const heroTitle = screen.getByRole('heading', { level: 1, name: 'Join the waiting list.' });
+  expect(heroBackground.closest('section')).toBe(heroTitle.closest('section'));
+  expect(heroBackground.compareDocumentPosition(heroTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(screen.getByRole('heading', { level: 2, name: 'A connected operating system.' })).toBeInTheDocument();
   expect(screen.getByRole('group', { name: 'Split preview' })).toHaveAttribute('data-reversed', 'true');
   expect(screen.getByRole('heading', { level: 3, name: 'Velocity with flexibility where your business runs' })).toBeInTheDocument();

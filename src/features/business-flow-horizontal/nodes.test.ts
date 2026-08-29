@@ -1,5 +1,8 @@
 import { expect, it } from 'vitest';
-import { createBusinessFlowHorizontalNodes } from './nodes';
+import {
+  createBusinessFlowHorizontalLayoutNodes,
+  createBusinessFlowHorizontalNodes,
+} from './nodes';
 
 it('maps collector, relays, and terminals to the approved Node3D hierarchy', () => {
   const nodes = createBusinessFlowHorizontalNodes({
@@ -11,7 +14,7 @@ it('maps collector, relays, and terminals to the approved Node3D hierarchy', () 
     strokeWidth: 1.5,
   });
 
-  expect(nodes).toHaveLength(10);
+  expect(nodes).toHaveLength(13);
   expect(nodes.find((node) => node.id === 'collector')).toMatchObject({
     height: 12,
     icon: 'intelligence.svg',
@@ -20,7 +23,7 @@ it('maps collector, relays, and terminals to the approved Node3D hierarchy', () 
     width: 58,
   });
   const relays = nodes.filter((node) => node.id.startsWith('relay'));
-  const terminals = nodes.filter((node) => node.id.startsWith('terminal'));
+  const terminals = nodes.filter((node) => /^(left|right)-/.test(node.id));
   expect(relays.every((node) => (
     node.shape === 'square' && node.width === 48 && node.cardDepth === node.width
   ))).toBe(true);
@@ -77,12 +80,12 @@ it('retains central stroke opacity while central and terminal icons use the soli
     strokeWidth: 1.5,
   });
   const centralNodes = nodes.filter((node) => node.id === 'collector' || node.id.startsWith('relay'));
-  const terminalNodes = nodes.filter((node) => node.id.startsWith('terminal'));
+  const terminalNodes = nodes.filter((node) => /^(left|right)-/.test(node.id));
 
   expect(centralNodes).toHaveLength(4);
   expect(centralNodes.every((node) => node.iconStrokeOpacity === 0.52)).toBe(true);
   expect(centralNodes.every((node) => !('iconFillMode' in node))).toBe(true);
-  expect(terminalNodes).toHaveLength(6);
+  expect(terminalNodes).toHaveLength(9);
   expect(terminalNodes.every((node) => !('iconStrokeOpacity' in node))).toBe(true);
   expect(terminalNodes.every((node) => !('iconFillMode' in node))).toBe(true);
 });
@@ -95,8 +98,18 @@ it('restores the subdued terminal icon opacity used by the horizontal hierarchy'
     iconSize: 40,
     iconStrokeColor: '#f3f5ef',
     strokeWidth: 1.5,
-  }).filter((node) => node.id.startsWith('terminal'));
+  }).filter((node) => /^(left|right)-/.test(node.id));
 
-  expect(terminals).toHaveLength(6);
+  expect(terminals).toHaveLength(9);
   expect(terminals.every((node) => node.iconOpacity === 0.72)).toBe(true);
+});
+
+it('normalizes fractional, negative, and oversized side counts before laying out nodes', () => {
+  const nodes = createBusinessFlowHorizontalLayoutNodes(2.9, 99);
+  const emptyLeftNodes = createBusinessFlowHorizontalLayoutNodes(-4, 1);
+
+  expect(nodes.filter((node) => node.id.startsWith('left-'))).toHaveLength(2);
+  expect(nodes.filter((node) => node.id.startsWith('right-'))).toHaveLength(12);
+  expect(emptyLeftNodes.filter((node) => node.id.startsWith('left-'))).toHaveLength(0);
+  expect(emptyLeftNodes.find((node) => node.id === 'right-1')).toMatchObject({ x: 304, y: 304 });
 });

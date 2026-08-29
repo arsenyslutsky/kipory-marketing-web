@@ -1,7 +1,9 @@
 import { expect, it } from 'vitest';
+import { createBusinessFlowHorizontalLayoutNodes } from './nodes';
 import {
   businessFlowHorizontalPaths,
   createBusinessFlowHorizontalBeamSource,
+  createBusinessFlowHorizontalPaths,
 } from './routes';
 
 function createSource(overrides: Partial<Parameters<typeof createBusinessFlowHorizontalBeamSource>[0]> = {}) {
@@ -15,44 +17,20 @@ function createSource(overrides: Partial<Parameters<typeof createBusinessFlowHor
   });
 }
 
-it('preserves twelve connectors and the off-canvas entry', () => {
+it('preserves twelve connectors while bringing the right entries onto visible nodes', () => {
   expect(businessFlowHorizontalPaths).toHaveLength(12);
   expect(businessFlowHorizontalPaths[0]).toMatchObject({
-    id: 'aux-top',
+    id: 'right-1-collector',
     points: [
-      [324 / 320, 244 / 608], [302 / 320, 244 / 608],
-      [302 / 320, 282 / 608], [282 / 320, 282 / 608], [248 / 320, 304 / 608],
+      [304 / 320, 59 / 608], [282 / 320, 59 / 608],
+      [282 / 320, 304 / 608], [248 / 320, 304 / 608],
     ],
   });
-  expect(businessFlowHorizontalPaths.at(-1)?.id).toBe('relay-bottom-terminal-2');
+  expect(businessFlowHorizontalPaths.at(-1)?.id).toBe('relay-3-left-6');
 });
 
-it('fades only the off-canvas auxiliary connectors toward the collector', () => {
-  expect(
-    businessFlowHorizontalPaths
-      .filter((path) => path.fading)
-      .map((path) => ({
-        end: path.points.at(-1),
-        id: path.id,
-        start: path.points[0],
-      })),
-  ).toEqual([
-    {
-      end: [248 / 320, 304 / 608],
-      id: 'aux-top',
-      start: [324 / 320, 244 / 608],
-    },
-    {
-      end: [248 / 320, 304 / 608],
-      id: 'aux-middle',
-      start: [324 / 320, 304 / 608],
-    },
-    {
-      end: [248 / 320, 304 / 608],
-      id: 'aux-bottom',
-      start: [324 / 320, 364 / 608],
-    },
-  ]);
+it('does not fade connectors attached to visible right nodes', () => {
+  expect(businessFlowHorizontalPaths.filter((path) => path.fading)).toEqual([]);
 });
 
 it('extends every attached connector beneath the center of its item', () => {
@@ -62,18 +40,30 @@ it('extends every attached connector beneath the center of its item', () => {
   ]));
 
   expect(endpoints).toEqual({
-    'aux-top': [[324 / 320, 244 / 608], [248 / 320, 304 / 608]],
-    'aux-middle': [[324 / 320, 304 / 608], [248 / 320, 304 / 608]],
-    'aux-bottom': [[324 / 320, 364 / 608], [248 / 320, 304 / 608]],
-    'collector-relay-top': [[248 / 320, 304 / 608], [143 / 320, 107 / 608]],
-    'collector-relay-middle': [[248 / 320, 304 / 608], [143 / 320, 304 / 608]],
-    'collector-relay-bottom': [[248 / 320, 304 / 608], [143 / 320, 501 / 608]],
-    'relay-top-terminal-1': [[143 / 320, 107 / 608], [37 / 320, 59 / 608]],
-    'relay-top-terminal-2': [[143 / 320, 107 / 608], [37 / 320, 155 / 608]],
-    'relay-middle-terminal-1': [[143 / 320, 304 / 608], [37 / 320, 251 / 608]],
-    'relay-middle-terminal-2': [[143 / 320, 304 / 608], [37 / 320, 357 / 608]],
-    'relay-bottom-terminal-1': [[143 / 320, 501 / 608], [37 / 320, 453 / 608]],
-    'relay-bottom-terminal-2': [[143 / 320, 501 / 608], [37 / 320, 549 / 608]],
+    'right-1-collector': [[304 / 320, 59 / 608], [248 / 320, 304 / 608]],
+    'right-2-collector': [[304 / 320, 304 / 608], [248 / 320, 304 / 608]],
+    'right-3-collector': [[304 / 320, 549 / 608], [248 / 320, 304 / 608]],
+    'collector-relay-1': [[248 / 320, 304 / 608], [143 / 320, 107 / 608]],
+    'collector-relay-2': [[248 / 320, 304 / 608], [143 / 320, 304 / 608]],
+    'collector-relay-3': [[248 / 320, 304 / 608], [143 / 320, 501 / 608]],
+    'relay-1-left-1': [[143 / 320, 107 / 608], [37 / 320, 59 / 608]],
+    'relay-1-left-2': [[143 / 320, 107 / 608], [37 / 320, 157 / 608]],
+    'relay-2-left-3': [[143 / 320, 304 / 608], [37 / 320, 255 / 608]],
+    'relay-2-left-4': [[143 / 320, 304 / 608], [37 / 320, 353 / 608]],
+    'relay-3-left-5': [[143 / 320, 501 / 608], [37 / 320, 451 / 608]],
+    'relay-3-left-6': [[143 / 320, 501 / 608], [37 / 320, 549 / 608]],
+  });
+});
+
+it('keeps every custom connector endpoint attached to a generated node', () => {
+  const layoutNodes = createBusinessFlowHorizontalLayoutNodes(2, 4);
+  const paths = createBusinessFlowHorizontalPaths(layoutNodes);
+  const nodePoints = new Set(layoutNodes.map((node) => `${node.x / 320}:${node.y / 608}`));
+
+  expect(paths).toHaveLength(9);
+  paths.forEach((path) => {
+    expect(nodePoints.has(path.points[0].join(':')), path.id).toBe(true);
+    expect(nodePoints.has(path.points.at(-1)!.join(':')), path.id).toBe(true);
   });
 });
 
@@ -86,19 +76,19 @@ it('limits concurrent slots and rotates them through every route', () => {
   expect(source.slots).toBe(5);
   expect(new Set(routeIds)).toEqual(new Set(businessFlowHorizontalPaths.map((path) => path.id)));
   expect(routeIds.slice(0, 6)).toEqual([
-    'aux-top',
-    'aux-middle',
-    'aux-bottom',
-    'collector-relay-top',
-    'collector-relay-middle',
-    'collector-relay-bottom',
+    'right-1-collector',
+    'right-2-collector',
+    'right-3-collector',
+    'collector-relay-1',
+    'collector-relay-2',
+    'collector-relay-3',
   ]);
 });
 
 it('uses deterministic staggering when randomness is disabled', () => {
   const source = createSource();
 
-  expect(source.next(0, 0)).toMatchObject({ id: 'aux-top:0', delayMs: 0 });
+  expect(source.next(0, 0)).toMatchObject({ id: 'right-1-collector:0', delayMs: 0 });
   expect(source.next(1, 0)?.delayMs).toBe(280);
   expect(source.next(0, 1)?.delayMs).toBe(0);
 });
@@ -108,7 +98,7 @@ it('uses injected randomness for later emission delays', () => {
   source.next(0, 0);
 
   const later = source.next(0, 1)!;
-  expect(later.id).toBe('collector-relay-bottom:1');
+  expect(later.id).toBe('collector-relay-3:1');
   expect(later.delayMs).toBe(660);
   expect(later.delayMs).toBeGreaterThanOrEqual(120);
   expect(later.delayMs).toBeLessThanOrEqual(1200);
@@ -140,8 +130,8 @@ it('converts illustration-pixel trail length into route progress', () => {
   const source = createSource({ trailLengthInIllustrationUnits: 32 });
   const straightRouteRun = source.next(1, 0)!;
 
-  expect(straightRouteRun.path.id).toBe('aux-middle');
-  expect(straightRouteRun.trailLength).toBeCloseTo(32 / 76);
+  expect(straightRouteRun.path.id).toBe('right-2-collector');
+  expect(straightRouteRun.trailLength).toBeCloseTo(32 / 56);
 });
 
 it('floors and caps concurrent beam slots', () => {

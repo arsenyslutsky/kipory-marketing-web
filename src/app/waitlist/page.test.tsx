@@ -13,6 +13,12 @@ it('replaces a submitted waiting-list form with an accessible success panel', as
 
   const title = screen.getByRole('heading', { level: 1, name: 'Join the waiting list.' });
   const subtitle = screen.getByText('SEE THE FLOW SOONER.');
+  const hero = title.closest('section');
+  const beams = hero?.querySelector('[data-background-beams]');
+  expect(beams).toBeTruthy();
+  if (!beams) throw new Error('Waitlist hero beams were not rendered');
+  expect(beams).toHaveAttribute('aria-hidden', 'true');
+  expect(beams.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(subtitle.closest('h1')).toBeNull();
   expect(subtitle.parentElement).toBe(title.parentElement);
   expect(title.compareDocumentPosition(subtitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

@@ -21,3 +21,22 @@ it.each([
   expect(delay).toBe(expected);
   expect(Number.isFinite(delay)).toBe(true);
 });
+
+it('samples an independent processing duration for every node arrival', () => {
+  const processingRun = {
+    ...run,
+    arrivals: [
+      { id: 'server', point: [0.2, 0.5] as const, progress: 0.2 },
+      { id: 'graph', point: [0.4, 0.5] as const, progress: 0.4 },
+      { id: 'vector', point: [0.6, 0.5] as const, progress: 0.6 },
+    ],
+  };
+  const samples = [0, 0.5, 1];
+  const delayed = addNodeProcessingDelays(processingRun, 500, 1800, () => samples.shift()!);
+
+  expect(delayed.arrivals?.map((arrival) => arrival.processingDelayMs)).toEqual([
+    500,
+    1150,
+    1800,
+  ]);
+});

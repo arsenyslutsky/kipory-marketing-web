@@ -85,12 +85,37 @@
 .splitContent, .splitVisual { min-width: 0; }
 
 .pageHero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding-block: var(--page-hero-padding-top, 164px)
     var(--page-hero-padding-bottom, 96px);
   background:
     radial-gradient(circle at 75% 35%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 28%),
     var(--ink);
   border-bottom: 1px solid var(--line);
+}
+
+.pageHero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, var(--ink) 0, color-mix(in srgb, var(--ink) 94%, transparent) 24%, color-mix(in srgb, var(--ink) 35%, transparent) 58%, transparent 82%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ink) 38%, transparent), transparent 30%, color-mix(in srgb, var(--ink) 58%, transparent));
+}
+
+.pageHeroBackground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.pageHeroContent {
+  position: relative;
+  z-index: 2;
 }
 
 .pageHeroHeading {
@@ -270,6 +295,11 @@
       min(var(--marketing-section-padding-bottom, 80px), 80px);
   }
   .pageHero { padding-block: 136px 76px; }
+  .pageHero::after {
+    background:
+      linear-gradient(to right, color-mix(in srgb, var(--ink) 96%, transparent) 0 45%, color-mix(in srgb, var(--ink) 42%, transparent) 78%, transparent),
+      linear-gradient(to bottom, color-mix(in srgb, var(--ink) 28%, transparent), transparent 35%, color-mix(in srgb, var(--ink) 68%, transparent));
+  }
   .pageHeroHeading { gap: 20px; }
   .pageHeroTitle { max-width: 10ch; line-height: var(--type-display-leading-page-compact-mobile); }
   .pageHeroSubtitle { white-space: normal; }

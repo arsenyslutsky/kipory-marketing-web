@@ -14,6 +14,7 @@ import {
   splitLayoutHomepageProps,
 } from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
+import { BackgroundBeams } from '../../components/ui/BackgroundBeams';
 import styles from '../marketing.module.css';
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default function ContactPage() {
         {...pageHeroHomepageProps}
         title="Show us how your system moves."
         subtitle="SHOW US WHERE WORK STOPS."
+        background={<BackgroundBeams />}
       />
 
       <MarketingSection {...marketingSectionHomepageProps}>

@@ -6,6 +6,14 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
 
   render(<ContactPage />);
 
+  const title = screen.getByRole('heading', { level: 1, name: 'Show us how your system moves.' });
+  const hero = title.closest('section');
+  const beams = hero?.querySelector('[data-background-beams]');
+  expect(beams).toBeTruthy();
+  if (!beams) throw new Error('Contact hero beams were not rendered');
+  expect(beams).toHaveAttribute('aria-hidden', 'true');
+  expect(beams.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
   const form = screen.getByRole('form', { name: 'Contact Kipory' });
   expect(form).not.toHaveAttribute('action');
 

@@ -198,7 +198,7 @@ export default function HomePage() {
                   <NumberedRow
                     {...numberedRowHomepageProps}
                     key={item.title}
-                    number={String(index + 1).padStart(2, '0')}
+                    number={String(index + 4).padStart(2, '0')}
                     title={item.title}
                     accent={item.subtitle}
                     body={item.body}

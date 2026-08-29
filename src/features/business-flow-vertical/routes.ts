@@ -291,15 +291,6 @@ function routeProgressAtPoint(route: readonly PillarPoint[], arrivalPoint: Pilla
   return approximateScreenLength(route.slice(0, arrivalIndex + 1)) / totalLength;
 }
 
-function seededEmissionUnit(slot: number) {
-  let seed = Math.imul(slot + 1, 0x9e3779b1) >>> 0;
-  seed ^= seed >>> 16;
-  seed = Math.imul(seed, 0x85ebca6b) >>> 0;
-  seed ^= seed >>> 13;
-
-  return (seed >>> 0) / 0x1_0000_0000;
-}
-
 function emissionDelay(
   trace: BeamTrace,
   slot: number,
@@ -311,8 +302,7 @@ function emissionDelay(
 
   if (randomness === 0) return deterministicDelay;
 
-  const randomUnit = trace.generation === 0 ? seededEmissionUnit(slot) : random();
-  const randomizedDelay = minimumEmissionPause + randomUnit * emissionPauseVariation;
+  const randomizedDelay = minimumEmissionPause + random() * emissionPauseVariation;
 
   return deterministicDelay + (randomizedDelay - deterministicDelay) * randomness;
 }

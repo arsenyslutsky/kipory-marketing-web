@@ -11,10 +11,13 @@ import type { Node3DProgressMode } from '@/components/elements/Node3D';
 import { businessFlowPalette } from '@/features/business-flow-palette';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createBusinessFlowHorizontalNodes } from '../nodes';
 import {
-  businessFlowHorizontalPaths,
+  createBusinessFlowHorizontalLayoutNodes,
+  createBusinessFlowHorizontalNodes,
+} from '../nodes';
+import {
   createBusinessFlowHorizontalBeamSource,
+  createBusinessFlowHorizontalPaths,
 } from '../routes';
 import styles from './BusinessFlowHorizontal.module.css';
 
@@ -45,6 +48,8 @@ export type BusinessFlowHorizontalProps = {
   height?: CSSProperties['height'];
   iconSize?: number;
   maxConcurrentBeams?: number;
+  numberOfNodesLeft?: number;
+  numberOfNodesRight?: number;
   nodeProgressMaxDelay?: number;
   nodeProgressMinDelay?: number;
   nodeProgressMode?: Node3DProgressMode;
@@ -90,6 +95,10 @@ type BurstState = {
 function cssSize(value: CSSProperties['width']): string {
   if (typeof value === 'number') return `${value}px`;
   return value ?? 'auto';
+}
+
+function nodeCountLabel(count: number) {
+  return `${count} ${count === 1 ? 'node' : 'nodes'}`;
 }
 
 function useReducedMotionPreference() {
@@ -139,6 +148,8 @@ export function BusinessFlowHorizontal({
   height = '38rem',
   iconSize = 40,
   maxConcurrentBeams = 24,
+  numberOfNodesLeft = 6,
+  numberOfNodesRight = 3,
   nodeProgressMaxDelay = 1800,
   nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
@@ -148,6 +159,16 @@ export function BusinessFlowHorizontal({
 }: BusinessFlowHorizontalProps) {
   const reducedMotion = useReducedMotionPreference();
   const resolvedSpeed = Math.max(0.1, beamSpeed);
+  const layoutNodes = useMemo(
+    () => createBusinessFlowHorizontalLayoutNodes(numberOfNodesLeft, numberOfNodesRight),
+    [numberOfNodesLeft, numberOfNodesRight],
+  );
+  const paths = useMemo(
+    () => createBusinessFlowHorizontalPaths(layoutNodes),
+    [layoutNodes],
+  );
+  const resolvedLeftNodeCount = layoutNodes.filter((node) => node.id.startsWith('left-')).length;
+  const resolvedRightNodeCount = layoutNodes.filter((node) => node.id.startsWith('right-')).length;
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
@@ -176,11 +197,13 @@ export function BusinessFlowHorizontal({
   const beamSource = useMemo(
     () => createBusinessFlowHorizontalBeamSource({
       emissionRandomness: beamEmissionRandomness,
+      layoutNodes,
       maxConcurrentBeams,
+      paths,
       speed: resolvedSpeed,
       trailLengthInIllustrationUnits: beamTrailLength,
     }),
-    [beamEmissionRandomness, beamTrailLength, maxConcurrentBeams, resolvedSpeed],
+    [beamEmissionRandomness, beamTrailLength, layoutNodes, maxConcurrentBeams, paths, resolvedSpeed],
   );
   const nodes = useMemo(() => createBusinessFlowHorizontalNodes({
     auxiliaryIconColor: auxiliaryIconFillColor,
@@ -188,6 +211,7 @@ export function BusinessFlowHorizontal({
     centralIconStrokeOpacity,
     iconSize,
     iconStrokeColor: color,
+    layoutNodes,
     strokeWidth,
   }), [
     auxiliaryIconFillColor,
@@ -195,6 +219,7 @@ export function BusinessFlowHorizontal({
     centralIconStrokeOpacity,
     color,
     iconSize,
+    layoutNodes,
     strokeWidth,
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
@@ -268,7 +293,7 @@ export function BusinessFlowHorizontal({
       className={rootClassName}
       style={style}
       role="img"
-      aria-label="Horizontal business flow entering from the right, passing through one collector and three relays, then reaching six terminal nodes"
+      aria-label={`Horizontal business flow with ${nodeCountLabel(resolvedRightNodeCount)} on the right, one collector, three relays, and ${nodeCountLabel(resolvedLeftNodeCount)} on the left`}
     >
       <FlowLayer3D
         beam={beam}
@@ -278,7 +303,7 @@ export function BusinessFlowHorizontal({
         nodes={nodes}
         nodeStyle={nodeStyle}
         onArrival={onArrival}
-        paths={businessFlowHorizontalPaths}
+        paths={paths}
         reducedMotion={reducedMotion}
       />
 

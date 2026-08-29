@@ -1,0 +1,117 @@
+'use client';
+
+import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { memo, useId, useRef } from 'react';
+import styles from './BackgroundBeams.module.css';
+
+export interface BackgroundBeamsProps {
+  className?: string;
+}
+
+const pathData = [
+  'M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875',
+  'M-358 -213C-358 -213 -290 192 174 319C638 446 706 851 706 851',
+  'M-336 -237C-336 -237 -268 168 196 295C660 422 728 827 728 827',
+  'M-314 -261C-314 -261 -246 144 218 271C682 398 750 803 750 803',
+  'M-292 -285C-292 -285 -224 120 240 247C704 374 772 779 772 779',
+  'M-270 -309C-270 -309 -202 96 262 223C726 350 794 755 794 755',
+  'M-248 -333C-248 -333 -180 72 284 199C748 326 816 731 816 731',
+  'M-226 -357C-226 -357 -158 48 306 175C770 302 838 707 838 707',
+  'M-204 -381C-204 -381 -136 24 328 151C792 278 860 683 860 683',
+  'M-182 -405C-182 -405 -114 0 350 127C814 254 882 659 882 659',
+  'M-160 -429C-160 -429 -92 -24 372 103C836 230 904 635 904 635',
+  'M-138 -453C-138 -453 -70 -48 394 79C858 206 926 611 926 611',
+  'M-116 -477C-116 -477 -48 -72 416 55C880 182 948 587 948 587',
+  'M-94 -501C-94 -501 -26 -96 438 31C902 158 970 563 970 563',
+  'M-72 -525C-72 -525 -4 -120 460 7C924 134 992 539 992 539',
+  'M-50 -549C-50 -549 18 -144 482 -17C946 110 1014 515 1014 515',
+  'M-28 -573C-28 -573 40 -168 504 -41C968 86 1036 491 1036 491',
+  'M-6 -597C-6 -597 62 -192 526 -65C990 62 1058 467 1058 467',
+  'M16 -621C16 -621 84 -216 548 -89C1012 38 1080 443 1080 443',
+  'M38 -645C38 -645 106 -240 570 -113C1034 14 1102 419 1102 419',
+] as const;
+
+const animations = pathData.map((_, index) => ({
+  duration: 4 + (index % 5) * .8,
+  delay: index * .15,
+}));
+
+export const BackgroundBeams = memo(function BackgroundBeams({ className }: BackgroundBeamsProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(rootRef, { margin: '160px 0px', initial: true });
+  const shouldReduceMotion = useReducedMotion();
+  const gradientPrefix = useId().replaceAll(':', '');
+  const shouldAnimate = isInView && !shouldReduceMotion;
+
+  return (
+    <div
+      ref={rootRef}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      data-background-beams
+      aria-hidden="true"
+      style={{ pointerEvents: 'none' }}
+    >
+      <svg
+        className={styles.svg}
+        fill="none"
+        viewBox="0 0 696 316"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        {pathData.map((path, index) => (
+          <path
+            className={styles.staticPath}
+            key={`static-${index}`}
+            d={path}
+          />
+        ))}
+
+        {pathData.map((path, index) => {
+          const gradientId = `${gradientPrefix}-beam-gradient-${index}`;
+
+          return (
+            <motion.path
+              className={styles.beamPath}
+              key={`beam-${index}`}
+              d={path}
+              stroke={`url(#${gradientId})`}
+              strokeWidth="1"
+              strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={shouldAnimate
+                ? { pathLength: [0, 1], opacity: [0, .68, .68, 0] }
+                : { pathLength: 1, opacity: shouldReduceMotion ? .14 : 0 }}
+              transition={shouldAnimate
+                ? {
+                    duration: animations[index].duration,
+                    delay: animations[index].delay,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: 'easeInOut',
+                  }
+                : { duration: .2 }}
+            />
+          );
+        })}
+
+        <defs>
+          {pathData.map((_, index) => (
+            <linearGradient
+              key={`gradient-${index}`}
+              id={`${gradientPrefix}-beam-gradient-${index}`}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="var(--accent-dark)" stopOpacity="0" />
+              <stop offset="22%" stopColor="var(--accent-dark)" stopOpacity=".92" />
+              <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
+              <stop offset="76%" stopColor="var(--paper-soft)" stopOpacity=".82" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+      </svg>
+    </div>
+  );
+});

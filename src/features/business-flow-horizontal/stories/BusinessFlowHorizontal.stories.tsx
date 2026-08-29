@@ -26,6 +26,16 @@ const meta = {
       control: 'text',
       table: { category: 'Layout' },
     },
+    numberOfNodesLeft: {
+      control: { type: 'range', min: 0, max: 12, step: 1 },
+      description: 'Number of evenly spaced terminal nodes on the left side.',
+      table: { category: 'Auxiliary Nodes' },
+    },
+    numberOfNodesRight: {
+      control: { type: 'range', min: 0, max: 12, step: 1 },
+      description: 'Number of evenly spaced incoming nodes on the right side.',
+      table: { category: 'Auxiliary Nodes' },
+    },
     auxiliaryIconFillColor: {
       control: 'color',
       table: { category: 'Nodes' },

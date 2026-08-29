@@ -130,6 +130,14 @@ it('uses injected randomness for later route selection and emission delay', () =
   expect(later.path.points.at(-1)).toEqual([0.8, 0.82]);
 });
 
+it('uses injected randomness for the first emission cycle', () => {
+  const earlySource = createSource({ emissionRandomness: 100, random: () => 0 });
+  const lateSource = createSource({ emissionRandomness: 100, random: () => 1 });
+
+  expect(earlySource.next(0, 0)?.delayMs).toBeCloseTo(120);
+  expect(lateSource.next(0, 0)?.delayMs).toBeCloseTo(1200);
+});
+
 it('clamps speed to one tenth and scales durations above that floor', () => {
   const zeroSpeedDuration = createSource({ speed: 0 }).next(0, 0)!.durationMs;
   const floorSpeedDuration = createSource({ speed: 0.1 }).next(0, 0)!.durationMs;

@@ -106,6 +106,15 @@ it('renders every delivery detail as supporting body copy', () => {
   expect(container.querySelectorAll('#delivery article p')).toHaveLength(4);
 });
 
+it('continues delivery numbering after the three pillars', () => {
+  const { container } = render(<HomePage />);
+  const numbers = [...container.querySelectorAll('article')].map((article) => (
+    article.querySelector('span')?.textContent
+  ));
+
+  expect(numbers).toEqual(['01', '02', '03', '04', '05', '06', '07']);
+});
+
 it('marks moving homepage text groups without marking stable section headers or illustrations', () => {
   const { container } = render(<HomePage />);
 

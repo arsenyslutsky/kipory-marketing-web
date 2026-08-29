@@ -76,11 +76,30 @@ it('renders one shared Node3D layer instead of DOM icon SVGs', () => {
   expect(screen.getAllByTestId('flow-layer')).toHaveLength(1);
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-paths', '12');
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-slots', '12');
-  expect(capturedNodes).toHaveLength(10);
+  expect(capturedNodes).toHaveLength(13);
   expect(capturedNodes?.find((node) => node.id === 'collector')).toMatchObject({ shape: 'hexagon' });
   expect(capturedNodeStyle).toMatchObject({ assetBasePath: '/assets/nodes' });
   expect(container.querySelectorAll('svg')).toHaveLength(0);
   expect(screen.getByRole('img', { name: /Horizontal business flow/i })).toBeInTheDocument();
+});
+
+it('keeps custom left and right node counts synchronized across nodes, paths, and its description', () => {
+  render(<BusinessFlowHorizontal numberOfNodesLeft={2} numberOfNodesRight={4} />);
+
+  expect(capturedNodes?.filter((node) => node.id.startsWith('left-'))).toHaveLength(2);
+  expect(capturedNodes?.filter((node) => node.id.startsWith('right-'))).toHaveLength(4);
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-paths', '9');
+  expect(screen.getByRole('img', {
+    name: 'Horizontal business flow with 4 nodes on the right, one collector, three relays, and 2 nodes on the left',
+  })).toBeInTheDocument();
+});
+
+it('uses singular node labels when either configurable side has one node', () => {
+  render(<BusinessFlowHorizontal numberOfNodesLeft={1} numberOfNodesRight={1} />);
+
+  expect(screen.getByRole('img', {
+    name: 'Horizontal business flow with 1 node on the right, one collector, three relays, and 1 node on the left',
+  })).toBeInTheDocument();
 });
 
 it('maps its public color to every node stroke without changing the role fill colors', () => {
@@ -92,11 +111,11 @@ it('maps its public color to every node stroke without changing the role fill co
     />,
   );
 
-  expect(capturedNodes).toHaveLength(10);
+  expect(capturedNodes).toHaveLength(13);
   expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
-  expect(capturedNodes?.filter((node) => node.id.startsWith('terminal')).every((node) => node.iconColor === '#111111'))
+  expect(capturedNodes?.filter((node) => /^(left|right)-/.test(node.id)).every((node) => node.iconColor === '#111111'))
     .toBe(true);
-  expect(capturedNodes?.filter((node) => !node.id.startsWith('terminal')).every((node) => node.iconColor === '#222222'))
+  expect(capturedNodes?.filter((node) => !/^(left|right)-/.test(node.id)).every((node) => node.iconColor === '#222222'))
     .toBe(true);
 });
 
@@ -134,6 +153,13 @@ it('renders the homepage illustration another twenty percent wider without excee
 
   const illustration = screen.getByRole('img', { name: /Horizontal business flow/i });
   expect(illustration.style.getPropertyValue('--camera-width')).toBe('min(28.8rem, 100%)');
+});
+
+it('renders the homepage illustration tall enough to span the four-row delivery list', () => {
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+
+  const illustration = screen.getByRole('img', { name: /Horizontal business flow/i });
+  expect(illustration.style.getPropertyValue('--camera-height')).toBe('50rem');
 });
 
 it('propagates the complete homepage beam effect to the shared layer', () => {

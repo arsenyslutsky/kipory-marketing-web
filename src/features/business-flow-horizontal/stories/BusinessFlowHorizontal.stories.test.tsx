@@ -5,6 +5,17 @@ import { businessFlowHorizontalPaths } from '../routes';
 import horizontalMeta from './BusinessFlowHorizontal.stories';
 
 describe('BusinessFlowHorizontal Storybook preview', () => {
+  it('offers bounded controls for left and right node counts', () => {
+    expect(horizontalMeta.argTypes.numberOfNodesLeft).toMatchObject({
+      control: { type: 'range', min: 0, max: 12, step: 1 },
+      table: { category: 'Auxiliary Nodes' },
+    });
+    expect(horizontalMeta.argTypes.numberOfNodesRight).toMatchObject({
+      control: { type: 'range', min: 0, max: 12, step: 1 },
+      table: { category: 'Auxiliary Nodes' },
+    });
+  });
+
   it('gives the percentage-sized illustration a full-width containing block', () => {
     expect(horizontalMeta.parameters.layout).toBe('fullscreen');
 
