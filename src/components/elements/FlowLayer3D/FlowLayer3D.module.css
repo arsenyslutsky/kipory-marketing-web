@@ -9,6 +9,12 @@
   pointer-events: none;
 }
 
+.root {
+  contain: layout paint style;
+  isolation: isolate;
+  overflow: hidden;
+}
+
 .canvas,
 .cssLayer {
   display: block;

@@ -9,7 +9,38 @@ vi.mock('./createFlowLayer3DScene', () => ({ createFlowLayer3DScene: vi.fn() }))
 afterEach(() => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
+
+type ObservedIntersection = {
+  callback: IntersectionObserverCallback;
+  options?: IntersectionObserverInit;
+};
+
+function installIntersectionObservers() {
+  const observers: ObservedIntersection[] = [];
+  vi.stubGlobal('IntersectionObserver', class {
+    readonly root = null;
+    readonly rootMargin: string;
+    readonly thresholds = [0];
+    disconnect = vi.fn();
+    observe = vi.fn();
+    takeRecords = vi.fn(() => []);
+    unobserve = vi.fn();
+
+    constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+      observers.push({ callback, options });
+      this.rootMargin = options?.rootMargin ?? '0px';
+    }
+  });
+  return observers;
+}
+
+function emitIntersection(observer: ObservedIntersection, isIntersecting: boolean) {
+  observer.callback([{
+    isIntersecting,
+  } as IntersectionObserverEntry], {} as IntersectionObserver);
+}
 
 const beam = {
   beamColor: '#449c40',
@@ -60,9 +91,41 @@ const nodeStyle = {
   sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
 };
 
-it('creates one scene and destroys it on unmount', () => {
+it('initializes near the viewport and pauses the scene when it leaves', async () => {
+  const observers = installIntersectionObservers();
   const destroy = vi.fn();
-  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy });
+  const setActive = vi.fn();
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy, setActive });
+
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    loadStrategy="near-viewport"
+    paths={emptyPaths}
+  />);
+
+  expect(createFlowLayer3DScene).not.toHaveBeenCalled();
+  const preloadObserver = observers.find(({ options }) => options?.rootMargin === '600px 0px');
+  const viewportObserver = observers.find(({ options }) => !options?.rootMargin);
+  if (!preloadObserver || !viewportObserver) throw new Error('Expected preload and viewport observers.');
+
+  act(() => emitIntersection(preloadObserver, true));
+  await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledOnce());
+
+  act(() => emitIntersection(viewportObserver, true));
+  await waitFor(() => expect(setActive).toHaveBeenLastCalledWith(true));
+
+  act(() => emitIntersection(viewportObserver, false));
+  await waitFor(() => expect(setActive).toHaveBeenLastCalledWith(false));
+
+  view.unmount();
+  expect(destroy).toHaveBeenCalledOnce();
+});
+
+it('creates one scene and destroys it on unmount', async () => {
+  const destroy = vi.fn();
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy, setActive: vi.fn() });
   const view = render(<FlowLayer3D
     beam={beam}
     beamSource={beamSource}
@@ -70,7 +133,7 @@ it('creates one scene and destroys it on unmount', () => {
     paths={[{ id: 'a', points: [[0, 0], [1, 1]] }]}
   />);
 
-  expect(createFlowLayer3DScene).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledTimes(1));
   expect(view.container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
 
   view.unmount();
@@ -78,11 +141,11 @@ it('creates one scene and destroys it on unmount', () => {
   expect(destroy).toHaveBeenCalledTimes(1);
 });
 
-it('keeps the flow loading until the scene reports its first completed frame', () => {
+it('keeps the flow loading until the scene reports its first completed frame', async () => {
   let reportReady: (() => void) | undefined;
   vi.mocked(createFlowLayer3DScene).mockImplementation((options) => {
     reportReady = options.onReady;
-    return { destroy: vi.fn() };
+    return { destroy: vi.fn(), setActive: vi.fn() };
   });
 
   const view = render(<FlowLayer3D
@@ -96,13 +159,14 @@ it('keeps the flow loading until the scene reports its first completed frame', (
   expect(root).toHaveAttribute('data-flow-state', 'loading');
   expect(view.getByTestId('flow-loader')).toBeInTheDocument();
 
+  await waitFor(() => expect(reportReady).toBeTypeOf('function'));
   act(() => reportReady?.());
 
   expect(root).toHaveAttribute('data-flow-state', 'ready');
 });
 
-it('mounts one shared CSS3D layer and passes serializable nodes to the scene', () => {
-  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn() });
+it('mounts one shared CSS3D layer and passes serializable nodes to the scene', async () => {
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn(), setActive: vi.fn() });
   const view = render(<FlowLayer3D
     beam={beam}
     beamSource={beamSource}
@@ -114,15 +178,17 @@ it('mounts one shared CSS3D layer and passes serializable nodes to the scene', (
 
   expect(view.container.querySelectorAll('canvas')).toHaveLength(1);
   expect(view.container.querySelectorAll('[data-flow-layer-css3d]')).toHaveLength(1);
-  expect(createFlowLayer3DScene).toHaveBeenCalledWith(expect.objectContaining({
-    cssLayer: expect.any(HTMLElement),
-    nodes: [expect.objectContaining({ id: 'server' })],
-  }));
+  await waitFor(() => {
+    expect(createFlowLayer3DScene).toHaveBeenCalledWith(expect.objectContaining({
+      cssLayer: expect.any(HTMLElement),
+      nodes: [expect.objectContaining({ id: 'server' })],
+    }));
+  });
 });
 
-it('does not recreate an omitted-node scene for an unchanged rerender', () => {
+it('does not recreate an omitted-node scene for an unchanged rerender', async () => {
   const destroy = vi.fn();
-  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy });
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy, setActive: vi.fn() });
   const view = render(<FlowLayer3D
     beam={beam}
     beamSource={beamSource}
@@ -130,6 +196,7 @@ it('does not recreate an omitted-node scene for an unchanged rerender', () => {
     paths={emptyPaths}
   />);
 
+  await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledOnce());
   view.rerender(<FlowLayer3D
     beam={beam}
     beamSource={beamSource}
@@ -165,7 +232,7 @@ it('activates the fallback when the scene reports a post-mount rebuild failure',
   let reportSceneError: ((error: unknown) => void) | undefined;
   vi.mocked(createFlowLayer3DScene).mockImplementation((options) => {
     reportSceneError = options.onError;
-    return { destroy: vi.fn() };
+    return { destroy: vi.fn(), setActive: vi.fn() };
   });
   const view = render(<FlowLayer3D
     beam={beam}
@@ -177,7 +244,7 @@ it('activates the fallback when the scene reports a post-mount rebuild failure',
   />);
 
   expect(view.queryByTestId('flow-layer-node-fallback')).not.toBeInTheDocument();
-  expect(reportSceneError).toBeTypeOf('function');
+  await waitFor(() => expect(reportSceneError).toBeTypeOf('function'));
 
   act(() => {
     reportSceneError?.(new Error('resize node rebuild failed'));
@@ -206,8 +273,8 @@ it('renders CSS-pixel node fallbacks after a WebGL failure and clears them after
   />);
 
   expect(view.container.firstElementChild).toBeInTheDocument();
-  expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({ message: 'WebGL unavailable' }));
   const fallback = await view.findByTestId('flow-layer-node-fallback');
+  expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({ message: 'WebGL unavailable' }));
   const fallbackNode = fallback.querySelector('span');
   expect(fallbackNode).toHaveStyle({
     '--flow-node-height': '40px',
@@ -216,7 +283,7 @@ it('renders CSS-pixel node fallbacks after a WebGL failure and clears them after
     '--flow-node-y': '50%',
   });
 
-  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn() });
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn(), setActive: vi.fn() });
   view.rerender(<FlowLayer3D
     beam={beam}
     beamSource={beamSource}

@@ -8,7 +8,12 @@ const renderer = vi.hoisted(() => ({
   setClearColor: vi.fn(),
   setPixelRatio: vi.fn(),
   setSize: vi.fn(),
-  shadowMap: { enabled: false, needsUpdate: false, type: undefined as number | undefined },
+  shadowMap: {
+    autoUpdate: true,
+    enabled: false,
+    needsUpdate: false,
+    type: undefined as number | undefined,
+  },
 }));
 
 const cssRenderer = vi.hoisted(() => ({
@@ -76,12 +81,61 @@ import { normalizedPointToWorld, resolveFlowLayer3DPath } from './resolveFlowLay
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 
 afterEach(() => {
+  renderer.shadowMap.autoUpdate = true;
   renderer.shadowMap.enabled = false;
   renderer.shadowMap.needsUpdate = false;
   renderer.shadowMap.type = undefined;
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('does not schedule frames until activated and cancels them when paused', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  const cancelAnimationFrame = vi.fn();
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrame);
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+  const controller = createFlowLayer3DScene({
+    active: false,
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: false,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: { slots: 0, next: () => null },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    paths: [],
+  });
+
+  expect(requestAnimationFrame).not.toHaveBeenCalled();
+  expect(renderer.render).not.toHaveBeenCalled();
+
+  controller.setActive(true);
+  expect(requestAnimationFrame).toHaveBeenCalledOnce();
+  animationFrames.shift()?.(1000);
+  expect(renderer.render).toHaveBeenCalledOnce();
+
+  controller.setActive(false);
+  expect(cancelAnimationFrame).toHaveBeenCalled();
+  controller.destroy();
 });
 
 it('disposes the renderer when renderer configuration fails', () => {
@@ -448,7 +502,8 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
   }
 
   expect(renderer.shadowMap.enabled).toBe(true);
-  expect(renderer.shadowMap.needsUpdate).toBe(true);
+  expect(renderer.shadowMap.autoUpdate).toBe(false);
+  expect(renderer.shadowMap.needsUpdate).toBe(false);
   expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
   expect(light.castShadow).toBe(true);
   expect(light.position.x).toBeLessThan(0);
@@ -928,7 +983,7 @@ it('applies start and end continuation fading to both trail and packet visibilit
   controller.destroy();
 });
 
-it('starts beam timing at zero and advances by the animation-frame delta without a deprecated clock warning', () => {
+it('starts beam timing at zero and advances by the active animation-frame delta', () => {
   const animationFrames: FrameRequestCallback[] = [];
   const disconnect = vi.fn();
   const observe = vi.fn();
@@ -940,9 +995,6 @@ it('starts beam timing at zero and advances by the animation-frame delta without
   vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
     return { disconnect, observe };
   }));
-  vi.spyOn(performance, 'now').mockReturnValue(400);
-  const timerUpdate = vi.spyOn(THREE.Timer.prototype, 'update');
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   vi.mocked(createBeam3DFlareTexture).mockReturnValueOnce(
     new THREE.CanvasTexture(document.createElement('canvas')),
   );
@@ -980,7 +1032,6 @@ it('starts beam timing at zero and advances by the animation-frame delta without
   firstFrame(1000);
 
   expect(renderer.render).toHaveBeenCalledOnce();
-  expect(timerUpdate).toHaveBeenCalledOnce();
   expect(beam.uniforms.uTime.value).toBe(0);
   expect(beam.uniforms.uProgress.value).toBe(0);
 
@@ -989,10 +1040,8 @@ it('starts beam timing at zero and advances by the animation-frame delta without
   secondFrame(1200);
 
   expect(renderer.render).toHaveBeenCalledTimes(2);
-  expect(timerUpdate).toHaveBeenCalledTimes(2);
   expect(beam.uniforms.uTime.value).toBeCloseTo(0.2);
   expect(beam.uniforms.uProgress.value).toBeCloseTo(0.2);
-  expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('THREE.Clock'));
 
   controller.destroy();
   expect(disconnect).toHaveBeenCalledOnce();
@@ -1132,11 +1181,12 @@ it('shares one CSS3D scene, rebuilds nodes for every viewport-size change, and p
       width: 48,
     }],
     paths: [path],
+    resolutionScale: 0.75,
   });
 
   expect(CSS3DRenderer).toHaveBeenCalledOnce();
   expect(cssLayer).toContainElement(cssRenderer.domElement);
-  expect(renderer.setSize).toHaveBeenCalledWith(320, 640, false);
+  expect(renderer.setSize).toHaveBeenCalledWith(240, 480, false);
   expect(cssRenderer.setSize).toHaveBeenCalledWith(320, 640);
   expect(nodeCssElement.style.pointerEvents).toBe('none');
 

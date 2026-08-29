@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { businessFlowPalette } from '@/features/business-flow-palette';
+import {
+  createActiveFrameLoop,
+  resolveWorkflowRenderScale,
+  type ActiveFrame,
+} from '../workflow-runtime';
 import { createBeam3DFlareTexture, createBeam3DObject, type Beam3DObject } from '../Beam3D/createBeam3DObject';
 import { disposeNode3DGradientTextures } from '../Node3D/node3DGradientTextureCache';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
@@ -67,6 +72,7 @@ function createCssRenderer(cssLayer: HTMLElement) {
 
 export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLayer3DSceneController {
   const {
+    active = true,
     beam: beamStyle,
     beamSource,
     canvas,
@@ -80,6 +86,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     onReady,
     paths,
     reducedMotion = false,
+    resolutionScale = 'display',
     worldHeight = 20,
   } = options;
   const renderer = createRenderer(canvas);
@@ -121,12 +128,10 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   shadowCatcher.receiveShadow = true;
   shadowCatcher.renderOrder = -90;
   scene.add(shadowLight, shadowLight.target, shadowCatcher);
-  const timer = new THREE.Timer();
+  renderer.shadowMap.autoUpdate = false;
   const beamSlots: BeamSlot[] = [];
   let connectorObjects: FlowLayer3DObjects | undefined;
   let nodeObjects: FlowLayer3DNodes | undefined;
-  let frameId = 0;
-  let firstFrameElapsed: number | undefined;
   let ready = false;
   let destroyed = false;
   let aspectRatio = 1;
@@ -327,7 +332,12 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     camera.bottom = -halfHeight;
     camera.updateProjectionMatrix();
     resizeShadowFrustum(halfHeight * aspectRatio, halfHeight);
-    renderer.setSize(width, height, false);
+    const renderScale = resolveWorkflowRenderScale(container, resolutionScale);
+    renderer.setSize(
+      Math.max(1, Math.round(width * renderScale)),
+      Math.max(1, Math.round(height * renderScale)),
+      false,
+    );
     cssRenderer.setSize(width, height);
     if (sizeChanged) rebuildNodes(height);
     if (aspectChanged || !connectorObjects) {
@@ -363,14 +373,10 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
   }
 
-  function animate(timestamp: DOMHighResTimeStamp) {
+  function animate({ elapsedMs }: ActiveFrame) {
     if (destroyed) return;
-    frameId = requestAnimationFrame(animate);
-    timer.update(timestamp);
-    const elapsed = timer.getElapsed();
-    firstFrameElapsed ??= elapsed;
-    const time = elapsed - firstFrameElapsed;
-    const nowMs = time * 1000;
+    const time = elapsedMs / 1000;
+    const nowMs = elapsedMs;
     const nodeProgressBatches = new Map<string, number[]>();
     beamSlots.forEach((slot, index) => {
       if (slot.pendingNextRun) {
@@ -426,16 +432,19 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     ));
     renderer.render(scene, camera);
     cssRenderer.render(scene, camera);
+    renderer.shadowMap.needsUpdate = false;
     if (!ready) {
       ready = true;
       onReady?.();
     }
   }
 
+  const frameLoop = createActiveFrameLoop(animate);
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
-    cancelAnimationFrame(frameId);
+    frameLoop.destroy();
     resizeObserver?.disconnect();
     nodeObjects?.destroy();
     if (nodeObjects) scene.remove(nodeObjects.group);
@@ -464,7 +473,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     resizeObserver.observe(container);
     resize();
     createBeams();
-    frameId = requestAnimationFrame(animate);
+    frameLoop.setActive(active);
   } catch (error) {
     destroy();
     throw error;
@@ -472,5 +481,6 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
 
   return {
     destroy,
+    setActive: frameLoop.setActive,
   };
 }

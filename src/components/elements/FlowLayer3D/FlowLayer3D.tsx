@@ -3,37 +3,57 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { businessFlowPalette } from '@/features/business-flow-palette';
 import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
-import { createFlowLayer3DScene } from './createFlowLayer3DScene';
+import { useWorkflowRuntime } from '../workflow-runtime';
 import styles from './FlowLayer3D.module.css';
 import type { FlowLayer3DNode, FlowLayer3DProps, FlowLayer3DSceneController } from './types';
 
 const emptyNodes: readonly FlowLayer3DNode[] = [];
 
 export function FlowLayer3D({
+  activityStrategy,
   beam,
   beamSource,
   className,
   connector,
+  loadStrategy,
   nodes,
   nodeStyle,
+  onActivityChange,
   onArrival,
   paths,
+  preloadMargin,
   reducedMotion,
+  resolutionScale,
   worldHeight,
 }: FlowLayer3DProps) {
   const flowNodes = nodes ?? emptyNodes;
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
+  const controllerRef = useRef<FlowLayer3DSceneController | undefined>(undefined);
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
+  const runtime = useWorkflowRuntime(containerRef, {
+    activityStrategy,
+    loadStrategy,
+    preloadMargin,
+    resolutionScale,
+  });
+  const runtimeActiveRef = useRef(runtime.active);
 
   useEffect(() => {
+    runtimeActiveRef.current = runtime.active;
+    controllerRef.current?.setActive(runtime.active);
+    onActivityChange?.(runtime.active);
+  }, [onActivityChange, runtime.active]);
+
+  useEffect(() => {
+    if (!runtime.shouldInitialize) return undefined;
     if (!containerRef.current || !canvasRef.current || !cssLayerRef.current) return undefined;
-    let active = true;
+    let mounted = true;
     let controller: FlowLayer3DSceneController | undefined;
     queueMicrotask(() => {
-      if (active) {
+      if (mounted) {
         setError('');
         setReady(false);
       }
@@ -42,36 +62,59 @@ export function FlowLayer3D({
       if (process.env.NODE_ENV !== 'production') console.error(error);
       const message = error instanceof Error ? error.message : 'Unable to render FlowLayer3D.';
       queueMicrotask(() => {
-        if (active) setError(message);
+        if (mounted) setError(message);
       });
     };
-    try {
-      controller = createFlowLayer3DScene({
-        beam,
-        beamSource,
-        canvas: canvasRef.current,
-        connector,
-        container: containerRef.current,
-        cssLayer: cssLayerRef.current,
-        nodes: flowNodes,
-        nodeStyle,
-        onArrival,
-        onError: reportError,
-        onReady: () => {
-          if (active) setReady(true);
-        },
-        paths,
-        reducedMotion,
-        worldHeight,
-      });
-    } catch (error) {
-      reportError(error);
-    }
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    const cssLayer = cssLayerRef.current;
+    void import('./createFlowLayer3DScene').then(({ createFlowLayer3DScene }) => {
+      if (!mounted) return;
+      try {
+        controller = createFlowLayer3DScene({
+          active: false,
+          beam,
+          beamSource,
+          canvas,
+          connector,
+          container,
+          cssLayer,
+          nodes: flowNodes,
+          nodeStyle,
+          onArrival,
+          onError: reportError,
+          onReady: () => {
+            if (mounted) setReady(true);
+          },
+          paths,
+          reducedMotion,
+          resolutionScale,
+          worldHeight,
+        });
+        controllerRef.current = controller;
+        controller.setActive(runtimeActiveRef.current);
+      } catch (error) {
+        reportError(error);
+      }
+    }, reportError);
     return () => {
-      active = false;
+      mounted = false;
+      if (controllerRef.current === controller) controllerRef.current = undefined;
       controller?.destroy();
     };
-  }, [beam, beamSource, connector, flowNodes, nodeStyle, onArrival, paths, reducedMotion, worldHeight]);
+  }, [
+    beam,
+    beamSource,
+    connector,
+    flowNodes,
+    nodeStyle,
+    onArrival,
+    paths,
+    reducedMotion,
+    resolutionScale,
+    runtime.shouldInitialize,
+    worldHeight,
+  ]);
 
   const rootClassName = className ? `${styles.root} ${className}` : styles.root;
   const flowState = error ? 'error' : ready ? 'ready' : 'loading';

@@ -7,6 +7,7 @@ import type {
   Node3DResolvedGradient,
   Node3DShape,
 } from '../Node3D/types';
+import type { WorkflowRuntimeOptions } from '../workflow-runtime';
 
 export type FlowLayer3DPoint = readonly [x: number, y: number];
 
@@ -134,20 +135,25 @@ export type FlowLayer3DBeamSource = {
   next: (slot: number, generation: number) => FlowLayer3DBeamRun | null;
 };
 
-export type FlowLayer3DProps = {
+export type FlowLayer3DProps = WorkflowRuntimeOptions & {
   beam: FlowLayer3DBeamStyle;
   beamSource: FlowLayer3DBeamSource;
   className?: string;
   connector: FlowLayer3DConnectorStyle;
   nodes?: readonly FlowLayer3DNode[];
   nodeStyle?: FlowLayer3DNodeStyle;
+  onActivityChange?: (active: boolean) => void;
   onArrival?: (event: FlowLayer3DArrivalEvent) => void;
   paths: readonly FlowLayer3DPath[];
   reducedMotion?: boolean;
   worldHeight?: number;
 };
 
-export type FlowLayer3DSceneOptions = Omit<FlowLayer3DProps, 'className'> & {
+export type FlowLayer3DSceneOptions = Omit<
+  FlowLayer3DProps,
+  'activityStrategy' | 'className' | 'loadStrategy' | 'onActivityChange' | 'preloadMargin'
+> & {
+  active?: boolean;
   canvas: HTMLCanvasElement;
   container: HTMLElement;
   cssLayer: HTMLElement;
@@ -155,6 +161,9 @@ export type FlowLayer3DSceneOptions = Omit<FlowLayer3DProps, 'className'> & {
   onReady?: () => void;
 };
 
-export type FlowLayer3DSceneController = { destroy: () => void };
+export type FlowLayer3DSceneController = {
+  destroy: () => void;
+  setActive: (active: boolean) => void;
+};
 
 export type { FlowPath3DPoint };

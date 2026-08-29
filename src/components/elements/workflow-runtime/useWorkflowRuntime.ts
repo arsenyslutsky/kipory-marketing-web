@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { workflowRuntimeDefaults, type WorkflowRuntimeOptions, type WorkflowRuntimeState } from './types';
 
 export function useWorkflowRuntime<T extends Element>(
@@ -10,6 +10,7 @@ export function useWorkflowRuntime<T extends Element>(
   const activityStrategy = options.activityStrategy ?? workflowRuntimeDefaults.activityStrategy;
   const loadStrategy = options.loadStrategy ?? workflowRuntimeDefaults.loadStrategy;
   const preloadMargin = options.preloadMargin ?? workflowRuntimeDefaults.preloadMargin;
+  const initializedRef = useRef(loadStrategy === 'eager');
   const [state, setState] = useState<WorkflowRuntimeState>(() => {
     const shouldInitialize = loadStrategy === 'eager';
     return {
@@ -23,7 +24,8 @@ export function useWorkflowRuntime<T extends Element>(
     const element = ref.current;
     if (!element) return undefined;
 
-    let shouldInitialize = state.shouldInitialize || loadStrategy === 'eager';
+    let shouldInitialize = initializedRef.current || loadStrategy === 'eager';
+    initializedRef.current = shouldInitialize;
     let inViewport = false;
     let documentVisible = document.visibilityState !== 'hidden';
     const observers: IntersectionObserver[] = [];
@@ -47,6 +49,7 @@ export function useWorkflowRuntime<T extends Element>(
         const preloadObserver = new IntersectionObserver((entries) => {
           if (!entries.some((entry) => entry.isIntersecting)) return;
           shouldInitialize = true;
+          initializedRef.current = true;
           preloadObserver.disconnect();
           sync();
         }, { rootMargin: preloadMargin });
@@ -75,7 +78,7 @@ export function useWorkflowRuntime<T extends Element>(
       observers.forEach((observer) => observer.disconnect());
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [activityStrategy, loadStrategy, preloadMargin, ref, state.shouldInitialize]);
+  }, [activityStrategy, loadStrategy, preloadMargin, ref]);
 
   return state;
 }
