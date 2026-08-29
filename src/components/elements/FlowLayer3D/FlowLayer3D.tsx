@@ -117,7 +117,13 @@ export function FlowLayer3D({
   ]);
 
   const rootClassName = className ? `${styles.root} ${className}` : styles.root;
-  const flowState = error ? 'error' : ready ? 'ready' : 'loading';
+  const flowState = error
+    ? 'error'
+    : !runtime.shouldInitialize
+      ? 'deferred'
+      : ready
+        ? 'ready'
+        : 'loading';
   return (
     <div
       ref={containerRef}
@@ -125,8 +131,12 @@ export function FlowLayer3D({
       className={rootClassName}
       data-flow-state={flowState}
     >
-      <canvas ref={canvasRef} className={styles.canvas} />
-      <div ref={cssLayerRef} className={styles.cssLayer} data-flow-layer-css3d />
+      {runtime.shouldInitialize && (
+        <>
+          <canvas ref={canvasRef} className={styles.canvas} />
+          <div ref={cssLayerRef} className={styles.cssLayer} data-flow-layer-css3d />
+        </>
+      )}
       <FlowLoadingOverlay active={flowState === 'loading'} />
       {error && (
         <div className={styles.fallbackLayer} data-testid="flow-layer-node-fallback">

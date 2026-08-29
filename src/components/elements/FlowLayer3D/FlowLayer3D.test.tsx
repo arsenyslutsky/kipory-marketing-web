@@ -106,12 +106,15 @@ it('initializes near the viewport and pauses the scene when it leaves', async ()
   />);
 
   expect(createFlowLayer3DScene).not.toHaveBeenCalled();
+  expect(view.container.querySelector('canvas')).not.toBeInTheDocument();
+  expect(view.container.firstElementChild).toHaveAttribute('data-flow-state', 'deferred');
   const preloadObserver = observers.find(({ options }) => options?.rootMargin === '600px 0px');
   const viewportObserver = observers.find(({ options }) => !options?.rootMargin);
   if (!preloadObserver || !viewportObserver) throw new Error('Expected preload and viewport observers.');
 
   act(() => emitIntersection(preloadObserver, true));
   await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledOnce());
+  expect(view.container.querySelector('canvas')).toBeInTheDocument();
 
   act(() => emitIntersection(viewportObserver, true));
   await waitFor(() => expect(setActive).toHaveBeenLastCalledWith(true));
