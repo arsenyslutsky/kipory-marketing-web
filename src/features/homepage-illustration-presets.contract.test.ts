@@ -51,6 +51,22 @@ describe('homepage illustration preset contract', () => {
     expect(movementRule).not.toContain('will-change');
   });
 
+  it('keeps the hero height override stronger than the reusable viewport height', () => {
+    const marketingCss = source('../app/marketing.module.css');
+    const flowCss = source('./business-flow-3d/components/BusinessFlow3D.module.css');
+    const heroRule = marketingCss.match(/^(\.heroVisual\s*>\s*[^\{]+)\{([^}]*)\}/m)?.slice(1) ?? [];
+    const rootRule = flowCss.match(/^(\.root[^\{]*)\{([^}]*)\}/m)?.slice(1) ?? [];
+    const countClassAndAttributeSelectors = (selector = '') => (
+      selector.match(/\.[\w-]+|\[[^\]]+\]/g)?.length ?? 0
+    );
+
+    expect(heroRule[1]).toMatch(/height:\s*100%/);
+    expect(heroRule[1]).toMatch(/min-height:\s*0/);
+    expect(rootRule[1]).toMatch(/height:\s*100dvh/);
+    expect(countClassAndAttributeSelectors(heroRule[0]))
+      .toBeGreaterThan(countClassAndAttributeSelectors(rootRule[0]));
+  });
+
   it.each(cases)('$feature exports one preset used by its website story', ({ feature, preset, story }) => {
     const presetSource = source(`./${feature}/presets.ts`);
     const indexSource = source(`./${feature}/index.ts`);
