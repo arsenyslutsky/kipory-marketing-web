@@ -1,11 +1,16 @@
-import type { SVGProps } from 'react';
+import Image, { type ImageProps } from 'next/image';
 
-export function BrandMark(props: SVGProps<SVGSVGElement>) {
+type BrandMarkProps = Omit<ImageProps, 'src' | 'alt' | 'width' | 'height' | 'unoptimized'>;
+
+export function BrandMark(props: BrandMarkProps) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
-      <path d="M6 8.5 13.8 4 26 11 18.2 15.5 6 8.5Z" stroke="currentColor" strokeWidth="1.6" />
-      <path d="m6 14.5 12.2 7L26 17" stroke="currentColor" strokeWidth="1.6" />
-      <path d="m6 20.5 12.2 7L26 23" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
+    <Image
+      {...props}
+      src="/brand/kipory-logo.svg"
+      alt=""
+      width={80}
+      height={80}
+      unoptimized
+    />
   );
 }

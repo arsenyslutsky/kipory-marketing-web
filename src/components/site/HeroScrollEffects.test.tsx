@@ -1,4 +1,4 @@
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HeroScrollEffects } from './HeroScrollEffects';
 
@@ -218,6 +218,80 @@ describe('HeroScrollEffects', () => {
     expect(main).toHaveAttribute('data-scroll-motion-ready', 'reduced');
     expect(text?.style.getPropertyValue('--scroll-text-visibility')).toBe('');
     expect(text?.style.getPropertyValue('--scroll-text-shift')).toBe('');
+  });
+
+  it('shows mobile text immediately without scroll-driven reveal state', () => {
+    let scheduledFrame: FrameRequestCallback | undefined;
+    const observe = vi.fn();
+
+    vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+      scheduledFrame = callback;
+      return 1;
+    }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
+      matches: query === '(max-width: 620px)',
+    }) as MediaQueryList));
+    vi.stubGlobal('IntersectionObserver', class {
+      observe = observe;
+      unobserve() {}
+      disconnect() {}
+    });
+
+    const { container } = render(
+      <HeroScrollEffects data-content-reveal-ready="false">
+        <span data-hero-reveal="actions">Hero actions</span>
+        <section data-section-reveal>
+          <p data-scroll-parallax>Immediately visible mobile text</p>
+        </section>
+      </HeroScrollEffects>,
+    );
+    const main = container.querySelector('main');
+    const section = container.querySelector('[data-section-reveal]');
+    const text = container.querySelector<HTMLElement>('[data-scroll-parallax]');
+
+    act(() => scheduledFrame?.(0));
+
+    expect(main).toHaveAttribute('data-scroll-motion-ready', 'static');
+    expect(main).toHaveAttribute('data-content-reveal-ready', 'true');
+    expect(section).toHaveAttribute('data-section-reveal-visible', 'true');
+    expect(observe).not.toHaveBeenCalled();
+    expect(main?.style.getPropertyValue('--hero-scroll-progress')).toBe('');
+    expect(text?.style.getPropertyValue('--scroll-text-visibility')).toBe('');
+    expect(text?.style.getPropertyValue('--scroll-text-shift')).toBe('');
+  });
+
+  it('uses instant in-page navigation on mobile', () => {
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
+      matches: query === '(max-width: 620px)',
+    }) as MediaQueryList));
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element) => ({
+      transform: 'none',
+      fontSize: element === document.documentElement ? '16px' : '',
+    }) as CSSStyleDeclaration);
+
+    const { container } = render(
+      <HeroScrollEffects>
+        <a href="#pillars" data-scroll-shift-rem="0">Explore our pillars</a>
+        <section id="pillars">Pillars</section>
+      </HeroScrollEffects>,
+    );
+    const target = container.querySelector<HTMLElement>('#pillars')!;
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue({
+      top: 780,
+      bottom: 980,
+      height: 200,
+    } as DOMRect);
+
+    fireEvent.click(container.querySelector('a')!);
+
+    expect(scrollTo).toHaveBeenCalledWith({
+      top: 780,
+      behavior: 'auto',
+    });
   });
 
   it('waits only for the hero workflow before marking the hero reveal ready', async () => {

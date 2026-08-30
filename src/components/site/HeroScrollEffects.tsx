@@ -12,6 +12,7 @@ type HeroScrollEffectsProps = ComponentPropsWithoutRef<'main'> & {
 
 const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
 const easeOutQuadratic = (value: number) => 1 - ((1 - value) ** 2);
+const mobileStaticMotionQuery = '(max-width: 620px)';
 
 export function HeroScrollEffects({ scrollRange = 700, ...props }: HeroScrollEffectsProps) {
   return (
@@ -48,6 +49,11 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
   useEffect(() => {
     const main = mainRef.current;
     if (!main) return;
+
+    if (window.matchMedia(mobileStaticMotionQuery).matches) {
+      main.dataset.contentRevealReady = 'true';
+      return;
+    }
 
     const finalHeroStage = main.querySelector<HTMLElement>('[data-hero-reveal="actions"]');
     if (!finalHeroStage) {
@@ -92,7 +98,7 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
     if (!main) return;
 
     const sections = Array.from(main.querySelectorAll<HTMLElement>('[data-section-reveal]'));
-    if (typeof IntersectionObserver === 'undefined') {
+    if (window.matchMedia(mobileStaticMotionQuery).matches || typeof IntersectionObserver === 'undefined') {
       sections.forEach((section) => {
         section.dataset.sectionRevealVisible = 'true';
       });
@@ -118,10 +124,22 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
 
     const textGroups = Array.from(main.querySelectorAll<HTMLElement>('[data-scroll-parallax]'));
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileViewport = window.matchMedia(mobileStaticMotionQuery);
 
-    main.dataset.scrollMotionReady = motionPreference.matches ? 'reduced' : 'true';
+    main.dataset.scrollMotionReady = motionPreference.matches
+      ? 'reduced'
+      : mobileViewport.matches ? 'static' : 'true';
 
     const render = ({ progress }: { progress: number }) => {
+      if (mobileViewport.matches) {
+        main.style.removeProperty('--hero-scroll-progress');
+        textGroups.forEach((group) => {
+          group.style.removeProperty('--scroll-text-visibility');
+          group.style.removeProperty('--scroll-text-shift');
+        });
+        return;
+      }
+
       if (motionPreference.matches) {
         main.style.setProperty('--hero-scroll-progress', String(progress));
         textGroups.forEach((group) => {
@@ -186,7 +204,7 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
       window.history.pushState(null, '', url.hash);
       window.scrollTo({
         top: destination,
-        behavior: motionPreference.matches ? 'auto' : 'smooth',
+        behavior: motionPreference.matches || mobileViewport.matches ? 'auto' : 'smooth',
       });
     };
 

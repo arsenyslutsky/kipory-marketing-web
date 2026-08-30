@@ -132,7 +132,7 @@
 @media (max-width: 620px) {
   .hero { min-height: 780px; height: 780px; }
   .heroVisual { left: -48%; height: max(760px, 100svh); opacity: .55; transform: none; }
-  .heroCopy { width: 100%; padding-top: 104px; }
+  .heroCopy { width: 100%; padding-top: 104px; transform: none; }
   .heroTitle { font-size: var(--type-display-size-hero-mobile); }
   .heroLead { max-width: 90%; font-size: var(--type-body-size-sm); }
   .heroActionsReveal { flex-direction: column; align-items: stretch; }
@@ -141,23 +141,13 @@
   .movementSection { scroll-margin-top: 64px; }
   .useCaseSection { scroll-margin-top: 64px; }
   .contactForm { grid-template-columns: 1fr; }
-  .main[data-workflows-ready='false'] .heroReveal,
-  .main[data-content-reveal-ready='false'] .sectionRevealHeader > *,
-  .main[data-content-reveal-ready='false'] .sectionRevealRow > *,
-  .main[data-content-reveal-ready='false'] .sectionRevealLink,
-  .main[data-scroll-motion-ready] [data-section-reveal]:not([data-section-reveal-visible='true']) .sectionRevealHeader > *,
-  .main[data-scroll-motion-ready] [data-section-reveal]:not([data-section-reveal-visible='true']) .sectionRevealRow > *,
-  .main[data-scroll-motion-ready] [data-section-reveal]:not([data-section-reveal-visible='true']) .sectionRevealLink {
-    clip-path: none;
+  .main .heroReveal,
+  .main .sectionRevealHeader > *,
+  .main .sectionRevealRow > *,
+  .main .sectionRevealLink {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
+    animation: none !important;
   }
-  .main[data-workflows-ready='true'] .heroReveal,
-  .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealHeader > *,
-  .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealRow > *,
-  .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealLink {
-    animation-name: heroSignalRevealMobile;
-  }
-}
-@keyframes heroSignalRevealMobile {
-  from { opacity: 0; transform: translate3d(-12px, 0, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }

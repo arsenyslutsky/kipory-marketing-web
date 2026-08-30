@@ -27,3 +27,22 @@ it('keeps retired routes out and exposes contact, waitlist, and app access', () 
   expect(waitlistLink.closest('.site-header__actions')).toBeNull();
   expect(talkLink.compareDocumentPosition(signInLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
+
+it('uses the supplied logo asset in the header and footer brands', () => {
+  render(
+    <>
+      <SiteHeader />
+      <SiteFooter />
+    </>,
+  );
+
+  screen.getAllByRole('link', { name: 'Kipory home' }).forEach((brand) => {
+    const logo = brand.querySelector('img.brand__mark');
+
+    expect(logo).not.toBeNull();
+    expect(logo).toHaveAttribute('src', '/brand/kipory-logo.svg');
+    expect(logo).toHaveAttribute('alt', '');
+    expect(logo).toHaveAttribute('width', '80');
+    expect(logo).toHaveAttribute('height', '80');
+  });
+});

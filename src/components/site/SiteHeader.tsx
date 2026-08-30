@@ -13,7 +13,7 @@ export function SiteHeader() {
     <header className="site-header">
       <SiteContainer {...siteContainerHomepageProps} className="site-header__inner">
         <Link className="brand" href="/" aria-label="Kipory home">
-          <BrandMark className="brand__mark" />
+          <BrandMark className="brand__mark" loading="eager" />
           <span>KIPORY</span>
         </Link>
 
