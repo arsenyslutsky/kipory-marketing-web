@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const siteConfig = {
-  appUrl: 'https://app.kipory.com/',
+  appUrl: 'https://backoffice.staging.kipory.com',
   defaultDescription: 'Kipory gives product and operations teams a live, traceable view of every workflow moving through their business.',
   defaultTitle: 'Kipory — See every signal. Shape what happens next.',
   name: 'Kipory',
