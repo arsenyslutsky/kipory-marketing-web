@@ -96,7 +96,7 @@ jobs:
           # Every page this site publishes. `trailingSlash: true` means each one
           # is a DIRECTORY with an index, which is also the only shape a plain
           # file server resolves without rewrite rules.
-          for page in index.html 404.html about/index.html contact/index.html product/index.html; do
+          for page in index.html 404.html contact/index.html waitlist/index.html; do
             test -s "out/$page" || { echo "::error::out/$page is missing or empty"; exit 1; }
           done
 
