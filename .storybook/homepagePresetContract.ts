@@ -13,6 +13,7 @@ export const HOMEPAGE_PRESET_STORY_IDS = [
   'marketing-sectionheader--current-nextjs-app',
   'marketing-numberedrow--current-nextjs-app',
   'marketing-formfield--current-nextjs-app',
+  'icons-protocoliconlist--current-nextjs-app',
 ] as const;
 
 export type HomepagePresetStoryId = (typeof HOMEPAGE_PRESET_STORY_IDS)[number];

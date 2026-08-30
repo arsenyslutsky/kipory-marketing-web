@@ -10,9 +10,17 @@ Create a reusable `ProtocolIconList` component that renders caller-selected prot
 type ProtocolIconListLayout = 'wrap' | 'scroll';
 
 type ProtocolIconListProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
-  iconHeight?: number;
   layout?: ProtocolIconListLayout;
+  logoOpacity?: number;
+  logoScale?: number;
+  scaleOfSpaceItems?: number;
+  scaleOfSpaceLogos?: number;
+  size?: number;
+  textOpacity?: number;
+  textScale?: number;
   title?: ReactNode;
+  titleOpacity?: number;
+  titleScale?: number;
   variants: readonly ProtocolIconVariant[];
 };
 ```
@@ -20,7 +28,10 @@ type ProtocolIconListProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
 - `variants` accepts only the variants already supported by `ProtocolIcon` and preserves the array order exactly. Each variant is expected to appear at most once.
 - `title` is optional and may contain formatted React content.
 - `layout` defaults to `wrap`. `scroll` keeps every item on one row and enables horizontal overflow.
-- `iconHeight` defaults to `48` and is passed to every child `ProtocolIcon`.
+- `size` defaults to `48`, is passed to every child `ProtocolIcon` as its height, and proportionally scales the optional title, leading rule, and title-to-list spacing. Small-size floors preserve title legibility.
+- `logoOpacity`, `textOpacity`, and `titleOpacity` independently control their named visual layers, default to `1`, and clamp to the standard CSS opacity range from `0` to `1`.
+- `logoScale`, `textScale`, and `titleScale` independently multiply their size-derived baselines, default to `1`, and clamp from `0.5` to `1.5`.
+- `scaleOfSpaceItems` multiplies the gap between protocol entries, while `scaleOfSpaceLogos` multiplies the gap between each logo and its visible name. Both default to `1` and clamp from `0.5` to `1.5`.
 - Standard `HTMLAttributes<HTMLDivElement>` other than the native string-only `title` field allow consumers to provide an accessible label, class name, data attributes, and CSS custom properties without expanding the component API.
 
 ## Structure and Rendering
@@ -37,7 +48,7 @@ type ProtocolIconListProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
 - The title uses the existing accent font tokens, accent green, uppercase lettering, and wide tracking.
 - A 56px leading rule and 22px line-to-title gap reproduce the supplied reference while using `currentColor` so theming remains coherent.
 - The component does not draw the reference image’s grid; the grid belongs to the containing marketing surface.
-- The title-to-list gap uses `--protocol-icon-list-title-gap` with a 32px fallback. The item gap uses `--protocol-icon-list-item-gap` with a `clamp(24px, 4vw, 48px)` fallback so page compositions can tune density without introducing more React props.
+- The title-to-list gap uses `--protocol-icon-list-title-gap` with a 32px fallback. The item gap uses `--protocol-icon-list-item-gap`; `size` scales it from a 12px floor to the existing 48px default ceiling, while page compositions may override the custom property to tune density without another React prop.
 - `wrap` uses a flexible row that wraps naturally at narrow widths.
 - `scroll` uses one non-wrapping row with horizontal overflow, touch momentum, and the project’s themed scrollbar treatment.
 
@@ -49,7 +60,7 @@ Add `Icons/ProtocolIconList` stories for:
 - the same ordered variants in scrolling mode;
 - a list without a title.
 
-Expose controls for `variants`, `title`, `layout`, and `iconHeight`.
+Expose controls for `variants`, `title`, `layout`, `size`, the three opacity controls, the three visual scale controls, and the two spacing scale controls.
 
 ## Accessibility and Edge Cases
 

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import HomePage from './page';
@@ -87,10 +87,34 @@ it('routes homepage conversion actions to active destinations', () => {
 
   const destinationPaths = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
   expect(screen.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', '/contact');
-  expect(screen.getAllByRole('link', { name: /learn more/i })[0]).toHaveAttribute('href', '#pillars');
+  expect(screen.getByRole('link', { name: 'Explore our pillars' })).toHaveAttribute('href', '#pillars');
+  expect(screen.getByRole('link', { name: 'See how Kipory delivers' })).toHaveAttribute('href', '#delivery');
   expect(destinationPaths).toContain('/waitlist');
   expect(destinationPaths).not.toContain('/product');
   expect(destinationPaths).not.toContain('/about');
+});
+
+it('places the canonical protocol strip before the hero learn-more link', () => {
+  render(<HomePage />);
+
+  const hero = screen.getByRole('heading', { level: 1 }).closest('section');
+  const protocolTitle = within(hero!).getByText('Connect & Deliver');
+  const protocolLists = within(hero!).getAllByRole('list');
+  const protocolLabels = protocolLists.flatMap((list) => within(list).getAllByRole('listitem')).map((item) => {
+    const spans = item.querySelectorAll('span');
+
+    return spans.item(spans.length - 1).textContent;
+  });
+  const protocolReveal = protocolTitle.closest('[data-hero-reveal="protocols"]');
+  const protocolRoot = protocolTitle.closest('[data-coming-soon-layout]');
+  const pillarsLink = within(hero!).getByRole('link', { name: 'Explore our pillars' });
+
+  expect(protocolLabels).toEqual(['REST', 'SSE', 'JSONata', 'MCP', 'Webhook', 'GraphQL']);
+  expect(protocolLists).toHaveLength(2);
+  expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'new-row');
+  expect(protocolReveal).not.toHaveAttribute('data-scroll-parallax');
+  expect(protocolReveal?.parentElement).toHaveAttribute('data-scroll-parallax');
+  expect(protocolReveal?.parentElement?.nextElementSibling).toBe(pillarsLink);
 });
 
 it('uses the accelerated-fit delivery label', () => {
@@ -98,6 +122,27 @@ it('uses the accelerated-fit delivery label', () => {
 
   expect(screen.getByText('Designed to fit and accelerate')).toBeInTheDocument();
   expect(screen.queryByText('Designed around real flow')).not.toBeInTheDocument();
+});
+
+it('uses the future-minded pillars label', () => {
+  render(<HomePage />);
+
+  expect(screen.getByText('With future in mind')).toBeInTheDocument();
+  expect(screen.queryByText('From movement to meaning')).not.toBeInTheDocument();
+});
+
+it('uses complete, actionable language throughout the homepage', () => {
+  render(<HomePage />);
+
+  expect(screen.queryAllByText('Placeholder text')).toHaveLength(0);
+  expect(screen.getByRole('heading', {
+    level: 2,
+    name: 'Everything your team needs to move faster - without compromise.',
+  })).toBeInTheDocument();
+  expect(screen.getByText('From idea to production')).toBeInTheDocument();
+  expect(screen.getByText('Change without redeployment')).toBeInTheDocument();
+  expect(screen.getByText('Governed at every layer')).toBeInTheDocument();
+  expect(screen.getByText('Built for lean teams')).toBeInTheDocument();
 });
 
 it('renders every delivery detail as supporting body copy', () => {
@@ -121,7 +166,7 @@ it('marks moving homepage text groups without marking stable section headers or 
   const heroHeading = screen.getByRole('heading', { level: 1 });
   expect(heroHeading).toHaveAttribute('data-scroll-parallax');
   expect(heroHeading).toHaveAttribute('data-scroll-fade', 'false');
-  expect(screen.getByText(/Kipory is a data and analysis platform/).closest('[data-scroll-parallax]'))
+  expect(screen.getByText(/Kipory turns datasets/).closest('[data-scroll-parallax]'))
     .toHaveAttribute('data-scroll-parallax');
   screen.getAllByRole('heading', { level: 2 }).forEach((heading) => {
     expect(heading.closest('header')).not.toHaveAttribute('data-scroll-parallax');
@@ -129,13 +174,13 @@ it('marks moving homepage text groups without marking stable section headers or 
   container.querySelectorAll('article').forEach((row) => {
     expect(row).toHaveAttribute('data-scroll-parallax');
   });
-  screen.getAllByRole('link', { name: /learn more/i }).forEach((link) => {
+  screen.getAllByRole('link', { name: /Explore our pillars|See how Kipory delivers/ }).forEach((link) => {
     expect(link).toHaveAttribute('data-scroll-parallax');
   });
   expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
 });
 
-it('gates the hero entrance and exposes the four requested reveal stages', () => {
+it('gates the hero entrance and exposes the requested reveal stages', () => {
   const { container } = render(<HomePage />);
   const main = container.querySelector('main');
   const stages = Array.from(container.querySelectorAll<HTMLElement>('[data-hero-reveal]'));
@@ -147,6 +192,7 @@ it('gates the hero entrance and exposes the four requested reveal stages', () =>
     'accent',
     'lead',
     'actions',
+    'protocols',
   ]);
 });
 

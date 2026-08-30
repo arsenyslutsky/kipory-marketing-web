@@ -10,7 +10,8 @@ import type {
 } from './homepagePresetContract.ts';
 
 type Primitive = string | number | boolean;
-type PresetEntry = { key: string; value: Primitive };
+type PresetValue = Primitive | Primitive[];
+type PresetEntry = { key: string; value: PresetValue };
 type HomepagePresetTarget = { relativePath: string; exportName: string };
 
 const presetSaveQueues = new Map<string, Promise<void>>();
@@ -59,6 +60,10 @@ const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarge
   'marketing-formfield--current-nextjs-app': {
     relativePath: 'src/components/marketing/presets.ts',
     exportName: 'formFieldHomepageProps',
+  },
+  'icons-protocoliconlist--current-nextjs-app': {
+    relativePath: 'src/components/icons/ProtocolIconList/presets.ts',
+    exportName: 'protocolIconListHomepageProps',
   },
 };
 
@@ -110,6 +115,21 @@ function readPrimitive(node: ts.Expression): Primitive {
   throw new HomepagePresetSourceError('Preset values must be literal primitives.');
 }
 
+function readPresetValue(node: ts.Expression): PresetValue {
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.map((element) => {
+      if (ts.isOmittedExpression(element) || ts.isSpreadElement(element)) {
+        throw new HomepagePresetSourceError(
+          'Preset arrays must contain only literal primitives.',
+        );
+      }
+      return readPrimitive(element);
+    });
+  }
+
+  return readPrimitive(node);
+}
+
 function readPresetEntries(object: ts.ObjectLiteralExpression): PresetEntry[] {
   const keys = new Set<string>();
 
@@ -126,17 +146,23 @@ function readPresetEntries(object: ts.ObjectLiteralExpression): PresetEntry[] {
 
     return {
       key,
-      value: readPrimitive(property.initializer),
+      value: readPresetValue(property.initializer),
     };
   });
+}
+
+function renderPrimitive(value: Primitive): string {
+  return typeof value === 'string'
+    ? `'${JSON.stringify(value).slice(1, -1).replaceAll("'", "\\'").replaceAll('\\"', '"')}'`
+    : String(value);
 }
 
 function renderPresetObject(entries: PresetEntry[]): string {
   const properties = entries
     .map(({ key, value }) => {
-      const serialized = typeof value === 'string'
-        ? `'${JSON.stringify(value).slice(1, -1).replaceAll("'", "\\'").replaceAll('\\"', '"')}'`
-        : String(value);
+      const serialized = Array.isArray(value)
+        ? `[${value.map(renderPrimitive).join(', ')}]`
+        : renderPrimitive(value);
       return `  ${key}: ${serialized},`;
     })
     .join('\n');
@@ -203,7 +229,17 @@ export function rewriteHomepagePresetSource(
     if (!existingValues.has(key)) {
       throw new HomepagePresetSourceError(`Unknown preset property ${key}.`);
     }
-    if (!['string', 'number', 'boolean'].includes(typeof value)) {
+    if (Array.isArray(value)) {
+      if (!value.every((item) => (
+        typeof item === 'string' ||
+        typeof item === 'boolean' ||
+        (typeof item === 'number' && Number.isFinite(item))
+      ))) {
+        throw new HomepagePresetSourceError(
+          `Preset property ${key} arrays may contain only strings, finite numbers, or booleans.`,
+        );
+      }
+    } else if (!['string', 'number', 'boolean'].includes(typeof value)) {
       throw new HomepagePresetSourceError(
         `Preset property ${key} must be a string, finite number, or boolean.`,
       );
@@ -213,7 +249,13 @@ export function rewriteHomepagePresetSource(
     }
 
     const currentValue = existingValues.get(key);
-    if (typeof value !== typeof currentValue) {
+    if (Array.isArray(value) !== Array.isArray(currentValue)) {
+      const expectedType = Array.isArray(currentValue) ? 'array' : typeof currentValue;
+      throw new HomepagePresetSourceError(
+        `Preset property ${key} must remain a ${expectedType}.`,
+      );
+    }
+    if (!Array.isArray(value) && typeof value !== typeof currentValue) {
       throw new HomepagePresetSourceError(
         `Preset property ${key} must remain a ${typeof currentValue}.`,
       );
@@ -222,7 +264,7 @@ export function rewriteHomepagePresetSource(
 
   const merged = entries.map((entry) => ({
     ...entry,
-    value: entry.key in args ? (args[entry.key] as Primitive) : entry.value,
+    value: entry.key in args ? (args[entry.key] as PresetValue) : entry.value,
   }));
 
   return `${source.slice(0, object.getStart(sourceFile))}${renderPresetObject(merged)}${source.slice(object.getEnd())}`;
