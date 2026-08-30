@@ -10,7 +10,7 @@
 .heroShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 98%, transparent) 0%, color-mix(in srgb, var(--ink) 80%, transparent) 35%, color-mix(in srgb, var(--ink) 8%, transparent) 72%), linear-gradient(0deg, color-mix(in srgb, var(--ink) 68%, transparent), transparent 38%); }
 .heroInner { position: relative; z-index: 2; min-height: inherit; display: flex; align-items: flex-start; }
 .heroCopy { width: min(660px, 62vw); min-height: inherit; padding: 15svh 0 32px; display: flex; flex-direction: column; transform: perspective(1300px) translate3d(calc(-5rem * var(--hero-scroll-progress, 0)), calc(-7rem * var(--hero-scroll-progress, 0)), calc(5rem * var(--hero-scroll-progress, 0))); transform-origin: left center; }
-.heroTitle { margin: 0; max-width: 700px; display: flex; flex-direction: column; gap: 12px; font-family: var(--type-display-family); font-size: var(--type-display-size-hero); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
+.heroTitle { margin: 0; max-width: 700px; display: flex; flex-direction: column; gap: 20px; font-family: var(--type-display-family); font-size: var(--type-display-size-hero); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
 .heroTitlePrimary { display: block; }
 .heroTitle em { color: var(--accent); font-family: var(--type-accent-family); font-style: normal; font-weight: var(--type-accent-weight); letter-spacing: var(--type-accent-tracking); }
 .heroTitle em { font-size: var(--type-accent-size-hero); line-height: var(--type-accent-leading); text-transform: uppercase; }
@@ -18,6 +18,8 @@
 .heroLeadContent { display: block; --hero-reveal-delay: 190ms; }
 .heroActions { margin-top: 36px; }
 .heroActionsReveal { display: flex; flex-wrap: wrap; gap: 12px; --hero-reveal-delay: 290ms; }
+.heroProtocols { width: min(920px, calc(100vw - 48px)); margin-top: 50px; }
+.heroProtocolsReveal { --hero-reveal-delay: 390ms; }
 .heroTitlePrimary { --hero-reveal-delay: 0ms; }
 .heroTitle em { --hero-reveal-delay: 90ms; }
 .heroReveal { animation-delay: var(--hero-reveal-delay, 0ms); }
@@ -118,6 +120,7 @@
 @media (max-width: 900px) {
   .heroVisual { left: 0; height: max(1014px, 133.333svh); transform: translateX(4vw) scale(.75); -webkit-mask-image: none; mask-image: none; }
   .heroCopy { width: min(700px, 86vw); padding-top: 12.5svh; }
+  .heroProtocols { width: 100%; }
   .heroShade { background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 97%, transparent), color-mix(in srgb, var(--ink) 68%, transparent) 65%, color-mix(in srgb, var(--ink) 18%, transparent)); }
   .capabilityVisual, .deliveryIllustration { min-height: 360px; }
   .capabilityVisual { position: relative; }
@@ -130,6 +133,7 @@
   .heroTitle { font-size: var(--type-display-size-hero-mobile); }
   .heroLead { max-width: 90%; font-size: var(--type-body-size-sm); }
   .heroActionsReveal { flex-direction: column; align-items: stretch; }
+  .heroProtocols { margin-top: 32px; }
   .heroLearnMore { margin-top: 22px; font-size: var(--type-control-size-xs); }
   .movementSection { scroll-margin-top: 64px; }
   .useCaseSection { scroll-margin-top: 64px; }

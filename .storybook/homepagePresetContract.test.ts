@@ -20,6 +20,7 @@ describe('homepage preset contract', () => {
     'marketing-sectionheader--current-nextjs-app',
     'marketing-numberedrow--current-nextjs-app',
     'marketing-formfield--current-nextjs-app',
+    'icons-protocoliconlist--current-nextjs-app',
   ])('accepts the supported story %s', (storyId) => {
     expect(isHomepagePresetStoryId(storyId)).toBe(true);
   });

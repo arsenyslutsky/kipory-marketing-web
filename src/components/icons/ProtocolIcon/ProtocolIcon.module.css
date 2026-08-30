@@ -1,0 +1,22 @@
+.withText {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  font: inherit;
+  vertical-align: middle;
+}
+
+.withText > svg {
+  flex: 0 0 auto;
+  opacity: var(--protocol-icon-logo-opacity, 1);
+}
+
+.label {
+  font-family: var(--type-accent-family);
+  font-style: normal;
+  font-weight: var(--type-accent-weight);
+  line-height: var(--type-accent-leading);
+  letter-spacing: var(--type-accent-tracking);
+  opacity: var(--protocol-icon-text-opacity, 1);
+  white-space: nowrap;
+}

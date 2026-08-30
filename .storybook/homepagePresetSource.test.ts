@@ -39,6 +39,23 @@ it('serializes apostrophes and control characters safely in project quote style'
   );
 });
 
+it('updates literal primitive arrays submitted by Storybook controls', () => {
+  const source = `export const demo = {
+  gap: 40,
+  variants: ['rest', 'mcp'],
+} satisfies Props;
+`;
+
+  expect(rewriteHomepagePresetSource(source, 'demo', {
+    gap: 48,
+    variants: ['rest', 'sse', 'mcp'],
+  })).toBe(`export const demo = {
+  gap: 48,
+  variants: ['rest', 'sse', 'mcp'],
+} satisfies Props;
+`);
+});
+
 it.each([
   ['unknown key', { missing: 1 }, 'Unknown preset property'],
   ['type change', { speed: 'fast' }, 'must remain a number'],
@@ -103,6 +120,11 @@ it.each([
   ['marketing-sectionheader--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'sectionHeaderHomepageProps'],
   ['marketing-numberedrow--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'numberedRowHomepageProps'],
   ['marketing-formfield--current-nextjs-app' as const, 'src/components/marketing/presets.ts', 'formFieldHomepageProps'],
+  [
+    'icons-protocoliconlist--current-nextjs-app' as const,
+    'src/components/icons/ProtocolIconList/presets.ts',
+    'protocolIconListHomepageProps',
+  ],
 ])('maps %s to its canonical preset', (storyId, relativePath, exportName) => {
   expect(getHomepagePresetTarget(storyId)).toEqual({ relativePath, exportName });
 });
