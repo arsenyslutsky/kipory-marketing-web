@@ -57,6 +57,7 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
 
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let revealTimer = 0;
+    let restoreFrame = 0;
     const unlockContent = (event: AnimationEvent) => {
       if (event.target !== finalHeroStage) return;
       window.clearTimeout(revealTimer);
@@ -64,12 +65,25 @@ function HeroScrollEffectsContent({ scrollRange = 700, ...props }: HeroScrollEff
         main.dataset.contentRevealReady = 'true';
       }, motionPreference.matches ? 0 : 500);
     };
+    const unlockRestoredContent = () => {
+      if (restoreFrame) window.cancelAnimationFrame(restoreFrame);
+      restoreFrame = window.requestAnimationFrame(() => {
+        restoreFrame = 0;
+        if (window.scrollY <= 0) return;
+        window.clearTimeout(revealTimer);
+        main.dataset.contentRevealReady = 'true';
+      });
+    };
 
     finalHeroStage.addEventListener('animationend', unlockContent);
+    window.addEventListener('pageshow', unlockRestoredContent);
+    unlockRestoredContent();
 
     return () => {
       window.clearTimeout(revealTimer);
+      if (restoreFrame) window.cancelAnimationFrame(restoreFrame);
       finalHeroStage.removeEventListener('animationend', unlockContent);
+      window.removeEventListener('pageshow', unlockRestoredContent);
     };
   }, []);
 

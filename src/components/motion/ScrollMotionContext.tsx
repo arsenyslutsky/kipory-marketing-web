@@ -50,10 +50,12 @@ export function ScrollMotionProvider({
     update();
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
+    window.addEventListener('pageshow', update);
     return () => {
       if (frameId) window.cancelAnimationFrame(frameId);
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
+      window.removeEventListener('pageshow', update);
     };
   }, [scrollRange]);
 

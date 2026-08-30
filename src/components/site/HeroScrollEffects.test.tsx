@@ -140,6 +140,46 @@ describe('HeroScrollEffects', () => {
     expect(paragraph.style.getPropertyValue('--scroll-text-visibility')).toBe('0.474375');
   });
 
+  it('reconciles visible text when the browser restores scroll without a scroll event', () => {
+    const scheduledFrames: FrameRequestCallback[] = [];
+    let rect: RectState = { top: 1200, bottom: 1300, height: 100 };
+
+    vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+      scheduledFrames.push(callback);
+      return scheduledFrames.length;
+    }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1000 });
+
+    const { container } = render(
+      <HeroScrollEffects data-content-reveal-ready="false">
+        <span data-hero-reveal="actions">Hero actions</span>
+        <section data-section-reveal>
+          <p data-scroll-parallax>Restored viewport text</p>
+        </section>
+      </HeroScrollEffects>,
+    );
+    const main = container.querySelector('main');
+    const text = container.querySelector<HTMLElement>('[data-scroll-parallax]')!;
+    vi.spyOn(text, 'getBoundingClientRect').mockImplementation(() => rect as DOMRect);
+
+    act(() => {
+      scheduledFrames.splice(0).forEach((frame) => frame(0));
+    });
+    expect(text.style.getPropertyValue('--scroll-text-visibility')).toBe('0');
+
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 900 });
+    rect = { top: 450, bottom: 550, height: 100 };
+    act(() => {
+      window.dispatchEvent(new Event('pageshow'));
+      scheduledFrames.splice(0).forEach((frame) => frame(16));
+    });
+
+    expect(main).toHaveAttribute('data-content-reveal-ready', 'true');
+    expect(text.style.getPropertyValue('--scroll-text-visibility')).toBe('1');
+  });
+
   it('keeps marked text static when reduced motion is requested', () => {
     let scheduledFrame: FrameRequestCallback | undefined;
     const motionPreference = {
