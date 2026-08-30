@@ -15,12 +15,15 @@ import {
 } from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import { BackgroundBeams } from '../../components/ui/BackgroundBeams';
+import { createPageMetadata } from '@/lib/siteMetadata';
 import styles from '../marketing.module.css';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Contact',
+  socialTitle: 'Contact — Kipory',
   description: 'Start a conversation with Kipory about mapping and improving the operational flow behind your business.',
-};
+  path: '/contact/',
+});
 
 export default function ContactPage() {
   return (

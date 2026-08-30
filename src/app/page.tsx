@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   MarketingSection,
@@ -29,7 +30,15 @@ import {
   BusinessFlowHorizontal,
   businessFlowHorizontalHomepageProps,
 } from '@/features/business-flow-horizontal';
+import { createPageMetadata, siteConfig } from '@/lib/siteMetadata';
 import styles from './marketing.module.css';
+
+export const metadata: Metadata = createPageMetadata({
+  title: { absolute: siteConfig.defaultTitle },
+  socialTitle: siteConfig.defaultTitle,
+  description: siteConfig.defaultDescription,
+  path: '/',
+});
 
 const capabilities = [
   {

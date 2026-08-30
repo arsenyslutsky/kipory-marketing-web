@@ -2,16 +2,18 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
+import { siteConfig } from '@/lib/siteMetadata';
 import { fontVariables } from './fonts';
 import './typography.css';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: siteConfig.url,
   title: {
-    default: 'Kipory — See every signal. Shape what happens next.',
+    default: siteConfig.defaultTitle,
     template: '%s — Kipory',
   },
-  description: 'Kipory gives product and operations teams a live, traceable view of every workflow moving through their business.',
+  description: siteConfig.defaultDescription,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

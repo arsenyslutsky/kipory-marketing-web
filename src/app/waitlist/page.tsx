@@ -15,12 +15,15 @@ import {
 } from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import { BackgroundBeams } from '../../components/ui/BackgroundBeams';
+import { createPageMetadata } from '@/lib/siteMetadata';
 import styles from '../marketing.module.css';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Join the waiting list',
+  socialTitle: 'Join the waiting list — Kipory',
   description: 'Join the Kipory waiting list and be among the first to hear when access expands.',
-};
+  path: '/waitlist/',
+});
 
 export default function WaitlistPage() {
   return (

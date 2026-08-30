@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
+import { siteConfig } from '@/lib/siteMetadata';
 import { BrandMark } from './BrandMark';
 
 const navigation = [
@@ -23,9 +24,9 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <Link className="button button--compact button--light site-header__cta" href="/waitlist">
-            Join waiting list
-          </Link>
+          <a className="button button--compact button--light site-header__cta" href={siteConfig.appUrl}>
+            Sign in
+          </a>
         </div>
       </SiteContainer>
     </header>

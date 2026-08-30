@@ -1,0 +1,212 @@
+{
+  "summary": {
+    "health_score": 48,
+    "business_type": "Early-stage B2B SaaS / data-and-analysis platform",
+    "top_findings": [
+      "Missing robots, sitemap, canonical, social metadata, favicon, and approved canonical origin",
+      "Generic positioning and thin buyer-evaluation content across all four routes",
+      "Header Sign-in link routes to Contact and the mailto conversion flow adds friction",
+      "No structured data and very limited entity, trust, or first-party proof signals",
+      "Homepage WebGL adds a material but not field-measured JavaScript/performance risk"
+    ],
+    "quick_wins": [
+      "Confirm the production hostname and publish robots, sitemap, and canonicals",
+      "Rename the misleading Sign-in CTA",
+      "Replace the illustration placeholder",
+      "Write intent-led titles and descriptions",
+      "Add favicon and approved social preview metadata"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 55,
+      "what_works": [
+        "All public routes are statically prerendered",
+        "Core content is present in HTML",
+        "Internal links reach every route",
+        "No noindex or crawler-blocking directive was found"
+      ],
+      "findings": [
+        {
+          "title": "Crawl discovery and canonicalization files are absent",
+          "severity": "High",
+          "description": "The local production export returns 404 for robots.txt and sitemap.xml and emits no canonical links.",
+          "recommendation": "After confirming the canonical HTTPS hostname, add metadataBase, route canonicals, robots.ts, and sitemap.ts and verify root deployment."
+        },
+        {
+          "title": "Deployment security and redirect policy is unknown",
+          "severity": "Medium",
+          "description": "Static export delegates HTTPS redirects and response security headers to the host/CDN.",
+          "recommendation": "Validate one-hop HTTP-to-HTTPS, HSTS, CSP, content-type, framing, and referrer policy on the real deployment."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 42,
+      "what_works": [
+        "Homepage states a product category and audience",
+        "Product page has a logical capabilities and process hierarchy",
+        "Copy is readable and brand-consistent"
+      ],
+      "findings": [
+        {
+          "title": "Positioning is broad and unsupported by proof",
+          "severity": "High",
+          "description": "Pages do not identify a concrete priority workflow, industry, integration surface, measurable result, or public evidence.",
+          "recommendation": "Approve an ICP and workflow narrative, then add verified use cases, implementation details, and proof."
+        },
+        {
+          "title": "All substantive routes are thin for their intent",
+          "severity": "High",
+          "description": "Rendered main content ranges from 79 to 188 words and omits decision-critical coverage.",
+          "recommendation": "Expand only with unique product mechanisms, objections, evidence, and next-step guidance."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 51,
+      "what_works": [
+        "One H1 per route",
+        "Generally logical heading nesting",
+        "Unique page descriptions",
+        "No orphan public routes"
+      ],
+      "findings": [
+        {
+          "title": "Three page titles are generic and too short",
+          "severity": "High",
+          "description": "Product, About, and Contact titles are 14-16 characters and do not identify their unique intent.",
+          "recommendation": "Write concise intent-led titles and descriptions after messaging and keyword approval."
+        },
+        {
+          "title": "Mobile navigation and CTA labels misrepresent the journey",
+          "severity": "High",
+          "description": "Primary navigation is hidden at 390px while Sign-in remains visible and points to Contact.",
+          "recommendation": "Provide mobile navigation and make the header CTA label/destination truthful."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 12,
+      "what_works": [
+        "Visible content can support a truthful basic entity graph once facts are confirmed"
+      ],
+      "findings": [
+        {
+          "title": "No structured data is present",
+          "severity": "Medium",
+          "description": "No JSON-LD, Microdata, or RDFa markers were found in source or rendered pages.",
+          "recommendation": "Add Organization and WebSite schema, then page/breadcrumb and verified software/app markup where visible facts support it."
+        }
+      ]
+    },
+    {
+      "name": "Performance / Core Web Vitals",
+      "score": 68,
+      "what_works": [
+        "Static HTML renders primary copy",
+        "Animation pauses when hidden or offscreen",
+        "Mobile frame rate and DPR are capped",
+        "Reduced-motion styling exists"
+      ],
+      "findings": [
+        {
+          "title": "WebGL homepage performance is a material unmeasured risk",
+          "severity": "Medium",
+          "description": "Homepage script references total about 1.29 MB raw / 304 KB local Brotli estimate and render two canvases.",
+          "recommendation": "Measure deployed mobile Lighthouse, traces, and CrUX before deciding whether to defer or replace the scene."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness",
+      "score": 43,
+      "what_works": [
+        "Core explanatory copy is server-rendered",
+        "Semantic headings and answer-style homepage lead exist",
+        "No repository-level AI crawler block was found"
+      ],
+      "findings": [
+        {
+          "title": "Low citability and entity authority",
+          "severity": "High",
+          "description": "Generic claims lack named sources, evidence, expert identity, case studies, and structured entities.",
+          "recommendation": "Publish compact, verifiable answer sections and primary evidence after eligibility and trust foundations are complete."
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 74,
+      "what_works": [
+        "Current image inventory is limited to small SVG assets",
+        "Decorative hero visual is hidden from assistive technology",
+        "No oversized raster content was found"
+      ],
+      "findings": [
+        {
+          "title": "Future raster assets have no optimization pipeline",
+          "severity": "Low",
+          "description": "images.unoptimized is appropriate for current SVG-only use but will not optimize future raster media.",
+          "recommendation": "Choose a CDN loader or build-time responsive AVIF/WebP process before raster publication."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Launch eligibility and trust",
+        "timeframe": "Week 1",
+        "items": [
+          "Confirm canonical hostname",
+          "Publish robots, sitemap, canonicals, favicon, and social metadata",
+          "Repair Sign-in destination/label",
+          "Remove the illustration placeholder"
+        ]
+      },
+      {
+        "name": "Phase 2: Relevance and evaluation depth",
+        "timeframe": "Weeks 2-3",
+        "items": [
+          "Approve ICP and workflow positioning",
+          "Rewrite metadata",
+          "Expand Product with verified mechanisms and decision details",
+          "Add truthful proof, company, and legal content"
+        ]
+      },
+      {
+        "name": "Phase 3: Entities and conversion",
+        "timeframe": "Month 2",
+        "items": [
+          "Add verified Organization/WebSite and supported page schema",
+          "Improve contact handling and privacy expectations",
+          "Build mobile and contextual navigation"
+        ]
+      },
+      {
+        "name": "Phase 4: Monitoring and iteration",
+        "timeframe": "Ongoing",
+        "items": [
+          "Measure deployed Lighthouse and CrUX",
+          "Monitor Search Console and qualified conversion paths",
+          "Re-audit after the first SEO release"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  },
+  "limitations": [
+    "No deployed production URL or confirmed canonical hostname",
+    "No Search Console, CrUX, analytics, backlink, or live SERP data",
+    "SEO isolated renderer unavailable until an explicitly requested /seo setup",
+    "Deployment/CDN-injected metadata, redirects, headers, and crawl files could not be tested"
+  ]
+}
