@@ -23,7 +23,7 @@ const ADDON_ID = 'kipory/homepage-parameters';
 const TOOL_ID = `${ADDON_ID}/tool`;
 
 function HomepagePresetTool() {
-  const [args] = useArgs();
+  const [args, , , initialArgs] = useArgs();
   const argTypes = useArgTypes();
   const homepagePreset = useParameter<HomepagePresetParameter | undefined>(
     'homepagePreset',
@@ -54,6 +54,7 @@ function HomepagePresetTool() {
       key={storyId}
       storyId={storyId}
       args={args}
+      initialArgs={initialArgs}
       argTypes={argTypes}
       presetKeys={homepagePreset.keys}
       getCurrentArgs={getCurrentArgs}

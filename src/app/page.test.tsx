@@ -94,6 +94,20 @@ it('routes homepage conversion actions to active destinations', () => {
   expect(destinationPaths).not.toContain('/about');
 });
 
+it('aligns the pillars separator with the fixed header after the hero jump', () => {
+  render(<HomePage />);
+
+  expect(screen.getByRole('link', { name: 'Explore our pillars' }))
+    .toHaveAttribute('data-scroll-shift-rem', '0');
+});
+
+it('keeps the pillars content close to its separator', () => {
+  render(<HomePage />);
+
+  expect(screen.getByRole('region', { name: 'Our Pillars' }))
+    .toHaveStyle({ '--marketing-section-padding-top': '32px' });
+});
+
 it('places the canonical protocol strip before the hero learn-more link', () => {
   render(<HomePage />);
 
@@ -176,6 +190,7 @@ it('marks moving homepage text groups without marking stable section headers or 
   });
   screen.getAllByRole('link', { name: /Explore our pillars|See how Kipory delivers/ }).forEach((link) => {
     expect(link).toHaveAttribute('data-scroll-parallax');
+    expect(link).toHaveAttribute('data-scroll-fade', 'false');
   });
   expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
 });

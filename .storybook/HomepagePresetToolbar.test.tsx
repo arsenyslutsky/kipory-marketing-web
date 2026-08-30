@@ -67,6 +67,33 @@ it('submits filtered current args and shows saving then saved states', async () 
   expect(await screen.findByRole('button', { name: 'Saved' })).toBeEnabled();
 });
 
+it('submits only values changed from the story initial args', async () => {
+  const fetcher = vi.fn(async (_input: string, init?: RequestInit) => (
+    init?.method === 'GET'
+      ? Response.json({ available: true })
+      : Response.json({ saved: true })
+  ));
+  render(
+    <ThemeProvider theme={ensure(themes.light)}>
+      <HomepagePresetToolbar
+        storyId={storyId}
+        args={{ beamColor: '#449c40', connectorOpacity: 0.8 }}
+        initialArgs={{ beamColor: '#449c40', connectorOpacity: 0.66 }}
+        argTypes={{ beamColor: {}, connectorOpacity: {} }}
+        presetKeys={['beamColor', 'connectorOpacity']}
+        fetcher={fetcher}
+      />
+    </ThemeProvider>,
+  );
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Save to Next.js' }));
+  await screen.findByRole('button', { name: 'Saved' });
+
+  expect(fetcher.mock.calls[1][1]?.body).toBe(
+    JSON.stringify({ storyId, args: { connectorOpacity: 0.8 } }),
+  );
+});
+
 it('keeps copy available and disables saving outside the local development server', async () => {
   const fetcher = vi.fn(async () => new Response(null, { status: 404 }));
   renderToolbar(fetcher);

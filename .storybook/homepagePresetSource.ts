@@ -11,7 +11,9 @@ import type {
 
 type Primitive = string | number | boolean;
 type PresetValue = Primitive | Primitive[];
-type PresetEntry = { key: string; value: PresetValue };
+type PresetEntry =
+  | { key: string; value: PresetValue }
+  | { expression: string; key: string };
 type HomepagePresetTarget = { relativePath: string; exportName: string };
 
 const presetSaveQueues = new Map<string, Promise<void>>();
@@ -144,10 +146,11 @@ function readPresetEntries(object: ts.ObjectLiteralExpression): PresetEntry[] {
     }
     keys.add(key);
 
-    return {
-      key,
-      value: readPresetValue(property.initializer),
-    };
+    if (ts.isPropertyAccessExpression(property.initializer)) {
+      return { expression: property.initializer.getText(), key };
+    }
+
+    return { key, value: readPresetValue(property.initializer) };
   });
 }
 
@@ -159,7 +162,13 @@ function renderPrimitive(value: Primitive): string {
 
 function renderPresetObject(entries: PresetEntry[]): string {
   const properties = entries
-    .map(({ key, value }) => {
+    .map((entry) => {
+      const { key } = entry;
+      if ('expression' in entry) {
+        return `  ${key}: ${entry.expression},`;
+      }
+
+      const { value } = entry;
       const serialized = Array.isArray(value)
         ? `[${value.map(renderPrimitive).join(', ')}]`
         : renderPrimitive(value);
@@ -223,10 +232,10 @@ export function rewriteHomepagePresetSource(
   );
   const object = findPresetObject(sourceFile, exportName);
   const entries = readPresetEntries(object);
-  const existingValues = new Map(entries.map(({ key, value }) => [key, value]));
+  const existingEntries = new Map(entries.map((entry) => [entry.key, entry]));
 
   for (const [key, value] of Object.entries(args)) {
-    if (!existingValues.has(key)) {
+    if (!existingEntries.has(key)) {
       throw new HomepagePresetSourceError(`Unknown preset property ${key}.`);
     }
     if (Array.isArray(value)) {
@@ -248,7 +257,12 @@ export function rewriteHomepagePresetSource(
       throw new HomepagePresetSourceError(`Preset property ${key} must be finite.`);
     }
 
-    const currentValue = existingValues.get(key);
+    const currentEntry = existingEntries.get(key);
+    if (!currentEntry || 'expression' in currentEntry) {
+      continue;
+    }
+
+    const currentValue = currentEntry.value;
     if (Array.isArray(value) !== Array.isArray(currentValue)) {
       const expectedType = Array.isArray(currentValue) ? 'array' : typeof currentValue;
       throw new HomepagePresetSourceError(
@@ -263,8 +277,7 @@ export function rewriteHomepagePresetSource(
   }
 
   const merged = entries.map((entry) => ({
-    ...entry,
-    value: entry.key in args ? (args[entry.key] as PresetValue) : entry.value,
+    ...(entry.key in args ? { key: entry.key, value: args[entry.key] as PresetValue } : entry),
   }));
 
   return `${source.slice(0, object.getStart(sourceFile))}${renderPresetObject(merged)}${source.slice(object.getEnd())}`;

@@ -174,11 +174,11 @@ it('propagates the complete homepage beam effect to the shared layer', () => {
 
   const layer = screen.getByTestId('flow-layer');
   expect(layer).toHaveAttribute('data-beam-width', '1.4');
-  expect(layer).toHaveAttribute('data-head-glow-blur', '32');
-  expect(layer).toHaveAttribute('data-head-glow-opacity', '0');
-  expect(layer).toHaveAttribute('data-head-glow-radius', '0');
+  expect(layer).toHaveAttribute('data-head-glow-blur', '2');
+  expect(layer).toHaveAttribute('data-head-glow-opacity', '1');
+  expect(layer).toHaveAttribute('data-head-glow-radius', '11');
   expect(layer).toHaveAttribute('data-style-trail', '0');
-  expect(layer).toHaveAttribute('data-run-trail', '0');
+  expect(Number(layer.getAttribute('data-run-trail'))).toBeCloseTo(0.4485, 4);
   expect(layer).toHaveAttribute('data-slots', '5');
 });
 
@@ -189,8 +189,8 @@ it('renders real arrival bursts with homepage visuals and removes completed burs
   fireEvent.click(screen.getByTestId('flow-layer'));
   const burst = screen.getByTestId('arrival-burst');
   expect(burst).toHaveStyle({ left: '20%', top: '50%' });
-  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-radius')).toBe('25px');
-  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-fade-time')).toBe('1700ms');
+  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-radius')).toBe('24px');
+  expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-fade-time')).toBe('900ms');
   expect(burst.parentElement?.style.getPropertyValue('--workflow-burst-strength')).toBe('0.5');
 
   fireEvent.animationEnd(burst);

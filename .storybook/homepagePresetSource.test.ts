@@ -56,6 +56,29 @@ it('updates literal primitive arrays submitted by Storybook controls', () => {
 `);
 });
 
+it('updates controlled palette expressions while preserving untouched expressions', () => {
+  const source = `import { palette } from './palette';
+
+export const demo = {
+  primaryColor: palette.primary,
+  secondaryColor: palette.secondary,
+  speed: 1.4,
+} satisfies Props;
+`;
+
+  expect(rewriteHomepagePresetSource(source, 'demo', {
+    primaryColor: '#55aa44',
+    speed: 0.8,
+  })).toBe(`import { palette } from './palette';
+
+export const demo = {
+  primaryColor: '#55aa44',
+  secondaryColor: palette.secondary,
+  speed: 0.8,
+} satisfies Props;
+`);
+});
+
 it.each([
   ['unknown key', { missing: 1 }, 'Unknown preset property'],
   ['type change', { speed: 'fast' }, 'must remain a number'],

@@ -19,6 +19,7 @@ export type HomepagePresetFetcher = (
 type HomepagePresetToolbarProps = {
   storyId: HomepagePresetStoryId;
   args: HomepagePresetArgs;
+  initialArgs?: HomepagePresetArgs;
   argTypes: HomepagePresetArgTypes;
   presetKeys: readonly string[];
   fetcher?: HomepagePresetFetcher;
@@ -48,6 +49,7 @@ async function readServerError(response: Response): Promise<string> {
 export function HomepagePresetToolbar({
   storyId,
   args,
+  initialArgs,
   argTypes,
   presetKeys,
   fetcher = globalThis.fetch,
@@ -134,7 +136,18 @@ export function HomepagePresetToolbar({
       argTypes,
       presetKeys,
     );
-    const request = createHomepagePresetSaveRequest(storyId, latestParameterValues);
+    const initialParameterValues = initialArgs
+      ? filterHomepagePresetArgs(initialArgs, argTypes, presetKeys)
+      : undefined;
+    const changedParameterValues = initialParameterValues
+      ? Object.fromEntries(Object.entries(latestParameterValues).filter(([key, value]) => {
+        const initialValue = initialParameterValues[key];
+        return Array.isArray(value) && Array.isArray(initialValue)
+          ? value.length !== initialValue.length || value.some((item, index) => item !== initialValue[index])
+          : value !== initialValue;
+      }))
+      : latestParameterValues;
+    const request = createHomepagePresetSaveRequest(storyId, changedParameterValues);
 
     try {
       const response = await fetcher(request.url, request.init);

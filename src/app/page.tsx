@@ -98,7 +98,7 @@ export default function HomePage() {
         data-section-reveal
         tone="alternate-to-base"
         gridFade="none"
-        paddingTop={60}
+        paddingTop={32}
         paddingBottom={60}
       >
         <SiteContainer {...siteContainerHomepageProps}>

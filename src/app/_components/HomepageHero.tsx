@@ -54,7 +54,7 @@ export function HomepageHero() {
             className={styles.heroLearnMore}
             href="#pillars"
             label="Explore our pillars"
-            scrollShiftRem={10}
+            scrollShiftRem={0}
           />
         </div>
       </SiteContainer>

@@ -15,6 +15,7 @@ export function LearnMoreLink({ className, href, label, scrollShiftRem = 0 }: Le
       className={`${styles.learnMoreLink} ${className}`}
       href={href}
       data-scroll-parallax
+      data-scroll-fade="false"
       data-scroll-shift-rem={scrollShiftRem}
     >
       <span>{label}</span>
