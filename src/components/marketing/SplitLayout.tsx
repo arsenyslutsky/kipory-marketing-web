@@ -6,6 +6,7 @@ export type SplitLayoutVisualProps = {
   visualRatio?: number;
   gap?: number;
   reversed?: boolean;
+  hideVisualOnMobile?: boolean;
 };
 
 export type SplitLayoutProps = SplitLayoutVisualProps & Omit<HTMLAttributes<HTMLDivElement>, 'content'> & {
@@ -21,6 +22,7 @@ export function SplitLayout({
   visualRatio = 2,
   gap = 72,
   reversed = false,
+  hideVisualOnMobile = false,
   style,
   ...props
 }: SplitLayoutProps) {
@@ -35,6 +37,7 @@ export function SplitLayout({
     <div
       className={[styles.split, className].filter(Boolean).join(' ')}
       data-reversed={String(reversed)}
+      data-mobile-hide-visual={hideVisualOnMobile ? 'true' : undefined}
       role={props['aria-label'] ? 'group' : undefined}
       style={visualStyle}
       {...props}

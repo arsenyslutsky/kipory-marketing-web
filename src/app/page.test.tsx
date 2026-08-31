@@ -81,7 +81,9 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   const pageSource = readFileSync(new URL(pageSourcePath, import.meta.url), 'utf8');
   expect(pageSource).not.toMatch(/^['"]use client['"];?/);
   expect(screen.queryByText(/illustration placeholder/i)).not.toBeInTheDocument();
-  expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).toBeInTheDocument();
+  const horizontalFlow = screen.getByRole('figure', { name: 'Horizontal business flow' });
+  expect(horizontalFlow).toBeInTheDocument();
+  expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
   expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDHomepageProps));
   expect(verticalRender.mock.calls[0][0]).toEqual(expect.objectContaining(verticalHomepageProps));
   expect(horizontalRender).toHaveBeenCalledWith(expect.objectContaining(horizontalHomepageProps));
@@ -92,7 +94,9 @@ it('routes homepage conversion actions to active destinations', () => {
   render(<HomePage />);
 
   const destinationPaths = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-  expect(screen.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', '/contact');
+  screen.getAllByRole('link', { name: 'Let’s talk' }).forEach((link) => {
+    expect(link).toHaveAttribute('href', '/contact');
+  });
   expect(screen.getByRole('link', { name: 'Explore our pillars' })).toHaveAttribute('href', '#pillars');
   expect(screen.getByRole('link', { name: 'See how Kipory delivers' })).toHaveAttribute('href', '#delivery');
   expect(destinationPaths).toContain('/waitlist');
@@ -100,14 +104,29 @@ it('routes homepage conversion actions to active destinations', () => {
   expect(destinationPaths).not.toContain('/about');
 });
 
+it('ends the homepage with compact non-glowing conversion actions', () => {
+  render(<HomePage />);
+
+  const actions = screen.getByRole('region', { name: 'End-of-page actions' });
+  const waitlistLink = within(actions).getByRole('link', { name: 'Join waiting list' });
+  const talkLink = within(actions).getByRole('link', { name: 'Let’s talk' });
+  const delivery = screen.getByRole('region', { name: 'Everything your team needs to move faster - without compromise.' });
+
+  expect(delivery.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(waitlistLink).toHaveClass('button', 'button--compact', 'button--accent');
+  expect(talkLink).toHaveClass('button', 'button--compact', 'button--outline');
+  expect(waitlistLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  expect(actions).not.toHaveTextContent('↗');
+  expect(actions.querySelector('[data-glow-active]')).not.toBeInTheDocument();
+});
+
 it('renders the waiting-list CTA arrow as a decorative vector icon', () => {
   render(<HomePage />);
 
-  const waitlistLink = screen.getByRole('link', { name: 'Join waiting list' });
-  const icon = waitlistLink.querySelector('svg');
-
-  expect(icon).toHaveAttribute('aria-hidden', 'true');
-  expect(waitlistLink).not.toHaveTextContent('↗');
+  screen.getAllByRole('link', { name: 'Join waiting list' }).forEach((waitlistLink) => {
+    expect(waitlistLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(waitlistLink).not.toHaveTextContent('↗');
+  });
 });
 
 it('aligns the pillars separator with the fixed header after the hero jump', () => {

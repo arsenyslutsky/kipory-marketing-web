@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import {
   MarketingSection,
   NumberedRow,
@@ -169,6 +170,7 @@ export default function HomePage() {
             contentRatio={2.1}
             visualRatio={2.9}
             reversed
+            hideVisualOnMobile
             content={(
               <div className={styles.capabilityContent}>
               <SectionHeader
@@ -210,7 +212,19 @@ export default function HomePage() {
         </SiteContainer>
       </MarketingSection>
 
-        <BackToTop />
+      <section className={styles.finalActions} aria-label="End-of-page actions">
+        <SiteContainer {...siteContainerHomepageProps} className={styles.finalActionsInner}>
+          <Link className="button button--compact button--accent" href="/waitlist">
+            Join waiting list
+            <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M4 12 12 4M6 4h6v6" />
+            </svg>
+          </Link>
+          <Link className="button button--compact button--outline" href="/contact">Let’s talk</Link>
+        </SiteContainer>
+      </section>
+
+      <BackToTop />
       </HeroScrollEffects>
     </RouteTransition>
   );

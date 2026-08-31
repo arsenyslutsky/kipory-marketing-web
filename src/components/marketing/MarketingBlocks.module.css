@@ -292,6 +292,7 @@
 }
 
 @media (max-width: 620px) {
+  .split[data-mobile-hide-visual='true'] .splitVisual { display: none; }
   .section {
     padding-block: min(var(--marketing-section-padding-top, 80px), 80px)
       min(var(--marketing-section-padding-bottom, 80px), 80px);
