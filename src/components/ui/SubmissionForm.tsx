@@ -1,13 +1,19 @@
 'use client';
 
-import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import styles from './SubmissionForm.module.css';
+
+const successRevealStyle = {
+  '--submission-reveal-delay': '100ms',
+  '--submission-reveal-duration': '900ms',
+} as CSSProperties;
 
 type SubmissionFormProps = {
   ariaLabel: string;
   children: ReactNode;
   className: string;
+  onSubmitted?: () => void;
   panelSize?: 'default' | 'tall';
   successBody: string;
   successStatus: string;
@@ -18,12 +24,14 @@ export function SubmissionForm({
   ariaLabel,
   children,
   className,
+  onSubmitted,
   panelSize = 'default',
   successBody,
   successStatus,
   successTitle,
 }: SubmissionFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const submittedRef = useRef(false);
   const leftShiftPressedRef = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
   const titleId = useId();
@@ -56,6 +64,14 @@ export function SubmissionForm({
     if (submitted) panelRef.current?.focus();
   }, [submitted]);
 
+  function completeSubmission() {
+    if (submittedRef.current) return;
+
+    submittedRef.current = true;
+    setSubmitted(true);
+    onSubmitted?.();
+  }
+
   function handleClickCapture(event: ReactMouseEvent<HTMLFormElement>) {
     if (!leftShiftPressedRef.current) return;
 
@@ -66,12 +82,12 @@ export function SubmissionForm({
     if (!submitControl || !event.currentTarget.contains(submitControl)) return;
 
     event.preventDefault();
-    setSubmitted(true);
+    completeSubmission();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    completeSubmission();
   }
 
   if (submitted) {
@@ -79,9 +95,11 @@ export function SubmissionForm({
       <section
         ref={panelRef}
         className={`${styles.panel} ${panelSize === 'tall' ? styles.panelTall : ''}`}
+        data-reveal-duration="1000ms"
         role="status"
         aria-atomic="true"
         aria-labelledby={titleId}
+        style={successRevealStyle}
         tabIndex={-1}
       >
         <svg
@@ -105,6 +123,7 @@ export function SubmissionForm({
     <form
       className={className}
       aria-label={ariaLabel}
+      autoComplete="off"
       onClickCapture={handleClickCapture}
       onSubmit={handleSubmit}
     >

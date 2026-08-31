@@ -4,6 +4,7 @@ import styles from './MarketingBlocks.module.css';
 export type FormFieldVisualProps = {
   fieldGap?: number;
   controlPadding?: number;
+  controlMargin?: number;
   textareaHeight?: number;
 };
 
@@ -23,6 +24,7 @@ export function FormField({
   className,
   fieldGap = 10,
   controlPadding = 16,
+  controlMargin = 0,
   textareaHeight = 130,
   style,
   ...props
@@ -30,6 +32,7 @@ export function FormField({
   const visualStyle = {
     '--form-field-gap': `${fieldGap}px`,
     '--form-field-control-padding': `${controlPadding}px`,
+    '--form-field-control-margin': `${controlMargin}px`,
     '--form-field-textarea-height': `${textareaHeight}px`,
     ...style,
   } as CSSProperties;

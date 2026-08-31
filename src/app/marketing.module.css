@@ -74,6 +74,10 @@
   from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translate3d(-12px, 0, 0); }
   to { opacity: 1; clip-path: inset(0); transform: translate3d(0, 0, 0); }
 }
+@keyframes submissionSignalReveal {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translate3d(-12px, 0, 0); }
+  to { opacity: 1; clip-path: inset(0); transform: translate3d(0, 0, 0); }
+}
 .movementSection { z-index: 3; border-block: .1rem solid var(--accent); scroll-margin-top: 72px; }
 .movementSection,
 .useCaseSection { content-visibility: auto; contain-intrinsic-size: auto 900px; }
@@ -87,13 +91,15 @@
 .useCaseList { --numbered-row-padding-top: 15px; --numbered-row-padding-bottom: 20px; margin-top: 48px; }
 .contactNotes { color: var(--surface-alternate-muted); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); }
 .contactNotes strong { display: block; margin-bottom: 12px; color: var(--surface-alternate-text); font-family: var(--type-display-family); font-size: var(--type-body-size-lg); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-display-tracking); }
+.contactCoreFlow { margin-top: clamp(36px, 5vw, 56px); }
 .pageTextReveal { animation: heroSignalReveal 560ms cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: var(--page-text-reveal-delay, 0ms); }
 .pageTextRevealFirst { --page-text-reveal-delay: 0ms; }
 .pageTextRevealSecond { --page-text-reveal-delay: 90ms; }
 .pageTextRevealLead { --page-text-reveal-delay: 190ms; }
 .pageTextRevealBody { --page-text-reveal-delay: 280ms; }
+.submissionTextRevealHeading { animation: submissionSignalReveal 900ms cubic-bezier(.16, 1, .3, 1) both; }
+.submissionTextRevealBody { animation: submissionSignalReveal 900ms 100ms cubic-bezier(.16, 1, .3, 1) both; }
 .contactForm { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.contactForm :global(.button) { width: max-content; }
 .buttonIcon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .finalActions { padding-block: 40px 44px; background: var(--ink); }
 .finalActionsInner { display: flex; align-items: center; justify-content: center; gap: 12px; }
@@ -119,6 +125,8 @@
     animation-delay: 0ms;
   }
   .pageTextReveal { animation: heroSignalRevealReduced 160ms ease-out backwards; animation-delay: 0ms; }
+  .submissionTextRevealHeading,
+  .submissionTextRevealBody { animation: heroSignalRevealReduced 160ms ease-out both; }
 }
 @keyframes heroSignalRevealReduced {
   from { opacity: 0; }

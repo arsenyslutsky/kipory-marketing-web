@@ -132,6 +132,11 @@ it.each([
     'businessFlowHorizontalHomepageProps',
   ],
   [
+    'animated-illustrations-businesscorenodeflow--current-nextjs-app' as const,
+    'src/features/business-core-node-flow/presets.ts',
+    'businessCoreNodeFlowContactProps',
+  ],
+  [
     'ui-glowlink--current-nextjs-app' as const,
     'src/components/ui/GlowLink.presets.ts',
     'glowLinkHomepageProps',
@@ -150,6 +155,17 @@ it.each([
   ],
 ])('maps %s to its canonical preset', (storyId, relativePath, exportName) => {
   expect(getHomepagePresetTarget(storyId)).toEqual({ relativePath, exportName });
+});
+
+it('maps Current Next.js App 2 to the independent waitlist core-flow preset', () => {
+  const storyId = (
+    'animated-illustrations-businesscorenodeflow--current-nextjs-app-2'
+  ) as Parameters<typeof getHomepagePresetTarget>[0];
+
+  expect(getHomepagePresetTarget(storyId)).toEqual({
+    relativePath: 'src/features/business-core-node-flow/presets.ts',
+    exportName: 'businessCoreNodeFlowWaitlistProps',
+  });
 });
 
 it('atomically saves only the registered preset and leaves invalid saves unchanged', async () => {

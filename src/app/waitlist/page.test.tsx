@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import controlStyles from '@/components/form-controls/FormControls.module.css';
 import styles from '../marketing.module.css';
 
 it('replaces a submitted waiting-list form with an accessible success panel', async () => {
@@ -28,23 +29,58 @@ it('replaces a submitted waiting-list form with an accessible success panel', as
   expect(title).toHaveClass(styles.pageTextReveal, styles.pageTextRevealFirst);
   expect(subtitle).toHaveClass(styles.pageTextReveal, styles.pageTextRevealSecond);
 
-  const notesHeading = screen.getByText('What happens next');
+  const notesHeading = screen.getByText('Want early access?');
   const notesBody = screen.getByText(
-    'Tell us who you are and where you work. We will use your email to follow up about Kipory access.',
+    'Tell us who you are and where you work. We’ll follow up by email as Kipory access expands.',
   );
   expect(notesHeading).toHaveClass(styles.pageTextReveal, styles.pageTextRevealLead);
   expect(notesBody).toHaveClass(styles.pageTextReveal, styles.pageTextRevealBody);
+  const coreFlow = screen.getByRole('img', {
+    name: /Business core node flow with .* outward auxiliary connections/,
+  });
+  expect(coreFlow.parentElement).toBe(notesBody.parentElement);
+  expect(notesBody.compareDocumentPosition(coreFlow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.queryByText('What happens next')).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(
+      'We’ll review your request and keep you informed by email as access expands.',
+    ),
+  ).not.toBeInTheDocument();
   expect(screen.queryByText(/Leave your details and we will keep you informed/)).not.toBeInTheDocument();
   expect(screen.queryByText(/This form opens your email application/)).not.toBeInTheDocument();
   expect(screen.queryByText(/Submitting opens a message addressed/)).not.toBeInTheDocument();
 
   const form = screen.getByRole('form', { name: 'Join the Kipory waiting list' });
   expect(form).not.toHaveAttribute('action');
+  expect(form).toHaveAttribute('autocomplete', 'off');
   expect(form).not.toHaveClass(styles.pageTextReveal);
-  expect(screen.getByRole('textbox', { name: 'Name' })).toBeRequired();
-  expect(screen.getByRole('textbox', { name: 'Work email' })).toBeRequired();
-  expect(screen.getByRole('textbox', { name: 'Company (optional)' })).not.toBeRequired();
-  expect(screen.getByRole('button', { name: 'Join waitlist' })).toBeInTheDocument();
+  const name = screen.getByRole('textbox', { name: 'Name' });
+  const email = screen.getByRole('textbox', { name: 'Work email' });
+  const company = screen.getByRole('textbox', { name: 'Company (optional)' });
+  const submitButton = screen.getByRole('button', { name: 'Join waitlist' });
+  [name, email, company].forEach((control) => {
+    expect(control).toHaveClass(controlStyles.control);
+    expect(control).toHaveStyle({ fontSize: '24px' });
+    expect(control.style.getPropertyValue('--form-control-padding')).toBe('9px');
+    expect(control.style.getPropertyValue('--form-control-margin')).toBe('0px');
+    expect(control.style.getPropertyValue('--form-control-horizontal-padding')).toBe('10px');
+    expect(control.style.getPropertyValue('--form-control-background')).toBe('#006838');
+    expect(control.style.getPropertyValue('--form-control-background-opacity')).toBe('5%');
+    expect(control.style.getPropertyValue('--form-control-focused-background')).toBe('#006838');
+    expect(control.style.getPropertyValue('--form-control-focused-background-opacity')).toBe('25%');
+  });
+  expect(submitButton).toHaveClass(controlStyles.button);
+  expect(name.parentElement).toHaveStyle({
+    '--form-field-control-padding': '8px',
+    '--form-field-control-margin': '8px',
+  });
+  expect(name).toBeRequired();
+  expect(name).toHaveAttribute('autocomplete', 'off');
+  expect(email).toBeRequired();
+  expect(email).toHaveAttribute('autocomplete', 'off');
+  expect(company).not.toBeRequired();
+  expect(company).toHaveAttribute('autocomplete', 'off');
+  expect(submitButton).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Prepare waitlist email' })).not.toBeInTheDocument();
   expect(screen.queryByText('Early access')).not.toBeInTheDocument();
   expect(screen.queryByText('Stay in the loop')).not.toBeInTheDocument();
@@ -54,6 +90,19 @@ it('replaces a submitted waiting-list form with an accessible success panel', as
 
   const status = await screen.findByRole('status');
   expect(screen.queryByRole('form', { name: 'Join the Kipory waiting list' })).not.toBeInTheDocument();
+  const submittedNotesHeading = screen.getByText('What happens next');
+  const submittedNotesBody = screen.getByText(
+    'We’ll review your request and keep you informed by email as access expands.',
+  );
+  expect(submittedNotesHeading).toHaveClass(styles.submissionTextRevealHeading);
+  expect(submittedNotesBody).toHaveClass(styles.submissionTextRevealBody);
+  expect(screen.queryByText('Want early access?')).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(
+      'Tell us who you are and where you work. We’ll follow up by email as Kipory access expands.',
+    ),
+  ).not.toBeInTheDocument();
+  expect(status).toHaveAttribute('data-reveal-duration', '1000ms');
   expect(within(status).getByText('ACCESS REQUESTED')).toBeInTheDocument();
   expect(within(status).getByRole('heading', { name: "YOU'RE ON THE LIST." })).toBeInTheDocument();
   expect(
@@ -80,9 +129,9 @@ it('reuses the waitlist hero treatment for the contact hero', async () => {
   render(<ContactPage />);
   const contactTitle = screen.getByRole('heading', {
     level: 1,
-    name: 'Show us how your system moves.',
+    name: 'Let’s talk about what’s next.',
   });
-  const contactSubtitle = screen.getByText('SHOW US WHERE WORK STOPS.');
+  const contactSubtitle = screen.getByText('QUESTIONS AND IDEAS - START HERE.');
   const contactHero = contactTitle.closest('section');
   const contactHeading = contactTitle.parentElement;
   const contactGrid = contactHeading?.parentElement;

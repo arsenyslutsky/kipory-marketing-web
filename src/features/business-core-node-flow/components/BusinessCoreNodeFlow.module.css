@@ -1,0 +1,30 @@
+.root {
+  position: relative;
+  isolation: isolate;
+  width: min(var(--camera-size), 100%);
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  color: var(--camera-color);
+  background: transparent;
+}
+
+.root::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  opacity: var(--camera-grid-opacity);
+  background-image:
+    linear-gradient(to right, var(--camera-grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--camera-grid-color) 1px, transparent 1px);
+  background-size: var(--camera-grid-density) var(--camera-grid-density);
+}
+
+.flowLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}

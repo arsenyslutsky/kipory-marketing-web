@@ -31,6 +31,14 @@ const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarge
     relativePath: 'src/features/business-flow-horizontal/presets.ts',
     exportName: 'businessFlowHorizontalHomepageProps',
   },
+  'animated-illustrations-businesscorenodeflow--current-nextjs-app': {
+    relativePath: 'src/features/business-core-node-flow/presets.ts',
+    exportName: 'businessCoreNodeFlowContactProps',
+  },
+  'animated-illustrations-businesscorenodeflow--current-nextjs-app-2': {
+    relativePath: 'src/features/business-core-node-flow/presets.ts',
+    exportName: 'businessCoreNodeFlowWaitlistProps',
+  },
   'ui-glowlink--current-nextjs-app': {
     relativePath: 'src/components/ui/GlowLink.presets.ts',
     exportName: 'glowLinkHomepageProps',

@@ -258,24 +258,6 @@
   text-transform: uppercase;
 }
 
-.field :is(input, textarea, select) {
-  width: 100%;
-  padding-block: var(--form-field-control-padding, 16px);
-  color: var(--surface-alternate-text);
-  caret-color: var(--accent);
-  background-color: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--surface-alternate-line);
-  border-radius: 0;
-  outline: 0;
-  font-size: var(--type-body-size-input);
-}
-
-.field textarea { min-height: var(--form-field-textarea-height, 130px); resize: vertical; }
-.field select:invalid { color: var(--text-muted); }
-.field option { color: var(--surface-alternate-text); background: var(--surface-alternate); }
-.field :is(input, textarea, select):focus { border-color: var(--accent); }
-
 @media (max-width: 900px) {
   .split { grid-template-columns: 1fr; gap: min(var(--split-layout-gap, 72px), 40px); }
   .split[data-reversed='true'] .splitContent,

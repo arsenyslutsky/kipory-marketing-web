@@ -52,6 +52,7 @@ export const numberedRowHomepageProps = {
 
 export const formFieldHomepageProps = {
   fieldGap: 10,
-  controlPadding: 16,
+  controlPadding: 8,
+  controlMargin: 8,
   textareaHeight: 130,
 } satisfies FormFieldVisualProps;

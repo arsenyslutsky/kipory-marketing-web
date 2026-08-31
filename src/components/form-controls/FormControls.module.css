@@ -1,0 +1,98 @@
+.control {
+  width: 100%;
+  margin-block: var(--form-control-margin, var(--form-field-control-margin, 0px));
+  margin-inline: var(--form-control-horizontal-margin);
+  padding-block: var(--form-control-padding, var(--form-field-control-padding, 16px));
+  padding-inline: var(--form-control-horizontal-padding);
+  color: var(--surface-alternate-text);
+  caret-color: var(--accent);
+  background-color: color-mix(
+    in srgb,
+    var(
+      --form-control-background,
+      color-mix(in srgb, var(--ink) 14%, transparent)
+    ) var(--form-control-background-opacity, 100%),
+    transparent
+  );
+  border: 0;
+  border-bottom: 1px solid var(--surface-alternate-line);
+  border-radius: 0;
+  outline: 0;
+  font-size: var(--type-body-size-input);
+}
+
+.control::placeholder {
+  color: currentColor;
+  opacity: 1;
+}
+
+.control:focus {
+  background-color: color-mix(
+    in srgb,
+    var(
+      --form-control-focused-background,
+      var(
+        --form-control-background,
+        color-mix(in srgb, var(--ink) 14%, transparent)
+      )
+    ) var(
+      --form-control-focused-background-opacity,
+      var(--form-control-background-opacity, 100%)
+    ),
+    transparent
+  );
+  border-color: var(--accent);
+}
+
+.control:focus-visible {
+  outline: 0;
+}
+
+.textarea {
+  min-height: calc(var(--form-field-textarea-height, 130px) - 2 * var(--form-field-control-margin, 0px));
+  resize: vertical;
+}
+
+.dropdown {
+  appearance: none;
+  padding-inline-end: calc(var(--form-control-horizontal-padding, 0px) + 24px);
+}
+
+.dropdown:invalid { color: var(--text-muted); }
+.dropdown option { color: var(--surface-alternate-text); background: var(--surface-alternate); }
+
+@supports (appearance: base-select) {
+  .dropdown,
+  .dropdown::picker(select) {
+    appearance: base-select;
+  }
+
+  .dropdown::picker(select) {
+    color: var(--surface-alternate-text);
+    background: var(--surface-alternate);
+    border: 1px solid var(--surface-alternate-line);
+  }
+
+  .dropdown::picker-icon,
+  .dropdown option::checkmark {
+    display: none;
+  }
+
+  .dropdown option:checked {
+    color: var(--ink);
+    background: var(--accent);
+  }
+}
+
+.button { width: max-content; }
+
+.buttonIcon {
+  width: var(--form-button-icon-size, 1rem);
+  height: var(--form-button-icon-size, 1rem);
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

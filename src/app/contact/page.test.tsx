@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import controlStyles from '@/components/form-controls/FormControls.module.css';
 import styles from '../marketing.module.css';
 
 it('replaces a submitted contact inquiry form with an accessible success panel', async () => {
@@ -9,8 +10,8 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
 
   expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
 
-  const title = screen.getByRole('heading', { level: 1, name: 'Show us how your system moves.' });
-  const subtitle = screen.getByText('SHOW US WHERE WORK STOPS.');
+  const title = screen.getByRole('heading', { level: 1, name: 'Let’s talk about what’s next.' });
+  const subtitle = screen.getByText('QUESTIONS AND IDEAS - START HERE.');
   const hero = title.closest('section');
   const beams = hero?.querySelector('[data-background-beams]');
   expect(beams).toBeTruthy();
@@ -20,9 +21,9 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
   expect(title).toHaveClass(styles.pageTextReveal, styles.pageTextRevealFirst);
   expect(subtitle).toHaveClass(styles.pageTextReveal, styles.pageTextRevealSecond);
 
-  const notesHeading = screen.getByText('What happens next');
+  const notesHeading = screen.getByText('We’d love to hear from you.');
   const notesBody = screen.getByText(
-    'Thanks for reaching out. We’ll review your message and get back to you as soon as possible.',
+    'Reach out with questions, product inquiries, or anything else you’d like to discuss. Share a few details and we’ll take it from there.',
   );
   expect(screen.getByText('Start a conversation')).toHaveClass(
     styles.pageTextReveal,
@@ -30,9 +31,23 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
   );
   expect(notesHeading).toHaveClass(styles.pageTextReveal, styles.pageTextRevealLead);
   expect(notesBody).toHaveClass(styles.pageTextReveal, styles.pageTextRevealBody);
+  const coreFlow = screen.getByRole('img', {
+    name: /Business core node flow with .* outward auxiliary connections/,
+  });
+  expect(coreFlow.parentElement).toBe(notesBody.parentElement);
+  expect(
+    notesBody.compareDocumentPosition(coreFlow) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(screen.queryByText('What happens next')).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(
+      'Thanks for reaching out. We’ll review your message and get back to you as soon as possible.',
+    ),
+  ).not.toBeInTheDocument();
 
   const form = screen.getByRole('form', { name: 'Contact Kipory' });
   expect(form).not.toHaveAttribute('action');
+  expect(form).toHaveAttribute('autocomplete', 'off');
   expect(form).not.toHaveClass(styles.pageTextReveal);
 
   const firstName = screen.getByRole('textbox', { name: 'First name' });
@@ -42,19 +57,42 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
   const comments = screen.getByRole('textbox', { name: 'Comments' });
   const role = screen.getByRole('combobox', { name: 'Role' });
   const inquiryReason = screen.getByRole('combobox', { name: 'Reason for inquiry' });
+  const submitButton = screen.getByRole('button', { name: 'Send message' });
+
+  [firstName, lastName, company, companyEmail, comments, role, inquiryReason].forEach((control) => {
+    expect(control).toHaveClass(controlStyles.control);
+    expect(control).toHaveStyle({ fontSize: '24px' });
+    expect(control.style.getPropertyValue('--form-control-padding')).toBe('9px');
+    expect(control.style.getPropertyValue('--form-control-margin')).toBe('0px');
+    expect(control.style.getPropertyValue('--form-control-horizontal-padding')).toBe('10px');
+    expect(control.style.getPropertyValue('--form-control-background')).toBe('#006838');
+    expect(control.style.getPropertyValue('--form-control-background-opacity')).toBe('5%');
+    expect(control.style.getPropertyValue('--form-control-focused-background')).toBe('#006838');
+    expect(control.style.getPropertyValue('--form-control-focused-background-opacity')).toBe('25%');
+  });
+  expect(comments).toHaveClass(controlStyles.textarea);
+  expect(role).toHaveClass(controlStyles.dropdown);
+  expect(inquiryReason).toHaveClass(controlStyles.dropdown);
+  expect(submitButton).toHaveClass(controlStyles.button);
+
+  expect(firstName.parentElement).toHaveStyle({
+    '--form-field-control-padding': '8px',
+    '--form-field-control-margin': '8px',
+  });
 
   expect(firstName).toBeRequired();
-  expect(firstName).toHaveAttribute('autocomplete', 'given-name');
+  expect(firstName).toHaveAttribute('autocomplete', 'off');
   expect(lastName).toBeRequired();
-  expect(lastName).toHaveAttribute('autocomplete', 'family-name');
+  expect(lastName).toHaveAttribute('autocomplete', 'off');
   expect(company).toBeRequired();
-  expect(company).toHaveAttribute('autocomplete', 'organization');
+  expect(company).toHaveAttribute('autocomplete', 'off');
   expect(companyEmail).toBeRequired();
   expect(companyEmail).toHaveAttribute('type', 'email');
-  expect(companyEmail).toHaveAttribute('autocomplete', 'email');
+  expect(companyEmail).toHaveAttribute('autocomplete', 'off');
   expect(role).toBeRequired();
   expect(inquiryReason).toBeRequired();
   expect(comments).not.toBeRequired();
+  expect(comments).toHaveAttribute('autocomplete', 'off');
 
   expect(within(role).getAllByRole('option').map((option) => option.textContent)).toEqual([
     'Select your role',
@@ -75,7 +113,7 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
     'Other',
   ]);
   expect(within(inquiryReason).queryByRole('option', { name: 'Careers' })).not.toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Send message' })).toBeInTheDocument();
+  expect(submitButton).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Prepare message' })).not.toBeInTheDocument();
   expect(screen.queryByText('↗')).not.toBeInTheDocument();
   expect(screen.queryByText(/email application/)).not.toBeInTheDocument();
@@ -84,7 +122,21 @@ it('replaces a submitted contact inquiry form with an accessible success panel',
 
   const status = await screen.findByRole('status');
   expect(screen.queryByRole('form', { name: 'Contact Kipory' })).not.toBeInTheDocument();
+  expect(screen.getByText('What happens next')).toBeInTheDocument();
+  const submittedNotesHeading = screen.getByText('What happens next');
+  const submittedNotesBody = screen.getByText(
+    'Thanks for reaching out. We’ll review your message and get back to you as soon as possible.',
+  );
+  expect(submittedNotesHeading).toHaveClass(styles.submissionTextRevealHeading);
+  expect(submittedNotesBody).toHaveClass(styles.submissionTextRevealBody);
+  expect(screen.queryByText('We’d love to hear from you.')).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(
+      'Reach out with questions, product inquiries, or anything else you’d like to discuss. Share a few details and we’ll take it from there.',
+    ),
+  ).not.toBeInTheDocument();
   expect(within(status).getByText('MESSAGE SENT')).toBeInTheDocument();
+  expect(status).toHaveAttribute('data-reveal-duration', '1000ms');
   expect(within(status).getByRole('heading', { name: "WE'LL TAKE IT FROM HERE." })).toBeInTheDocument();
   expect(
     within(status).getByText('Thanks for the context. Our team will review your note and follow up by email.'),

@@ -8,8 +8,8 @@ export function BrandMark(props: BrandMarkProps) {
       {...props}
       src="/brand/kipory-logo.svg"
       alt=""
-      width={80}
-      height={80}
+      width={34}
+      height={32}
       unoptimized
     />
   );

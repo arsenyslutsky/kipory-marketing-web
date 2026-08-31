@@ -41,7 +41,7 @@
   color: var(--accent);
   font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
   letter-spacing: var(--type-control-tracking);
-  animation: message-status-reveal 420ms 90ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: message-status-reveal var(--submission-reveal-duration) cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .status::before {
@@ -63,7 +63,7 @@
   letter-spacing: -.02em;
   text-wrap: balance;
   overflow-wrap: break-word;
-  animation: message-title-reveal 560ms 150ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: message-title-reveal var(--submission-reveal-duration) cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .body {
@@ -74,7 +74,7 @@
   line-height: var(--type-body-leading);
   text-wrap: pretty;
   overflow-wrap: break-word;
-  animation: message-body-reveal 440ms 300ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: message-body-reveal var(--submission-reveal-duration) var(--submission-reveal-delay) cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .mark {

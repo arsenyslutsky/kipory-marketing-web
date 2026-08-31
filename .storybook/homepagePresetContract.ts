@@ -5,6 +5,8 @@ export const HOMEPAGE_PRESET_STORY_IDS = [
   'animated-illustrations-businessflow3d--current-nextjs-app',
   'animated-illustrations-businessflowvertical--current-nextjs-app',
   'animated-illustrations-businessflowhorizontal--current-nextjs-app',
+  'animated-illustrations-businesscorenodeflow--current-nextjs-app',
+  'animated-illustrations-businesscorenodeflow--current-nextjs-app-2',
   'ui-glowlink--current-nextjs-app',
   'marketing-sitecontainer--current-nextjs-app',
   'marketing-section--current-nextjs-app',

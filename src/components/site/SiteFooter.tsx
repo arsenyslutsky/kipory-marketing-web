@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
+import { siteConfig } from '@/lib/siteMetadata';
 import { BrandMark } from './BrandMark';
 
 export function SiteFooter() {
@@ -18,6 +19,10 @@ export function SiteFooter() {
           <div>
             <span className="site-footer__link-heading">Explore</span>
             <Link href="/">Home</Link>
+          </div>
+          <div>
+            <span className="site-footer__link-heading">Create</span>
+            <a href={siteConfig.appUrl}>Sign in</a>
           </div>
           <div>
             <span className="site-footer__link-heading">Connect</span>
