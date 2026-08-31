@@ -7,6 +7,7 @@ import {
   formControlCurrentNextjsAppProps,
 } from '@/components/form-controls';
 import { FormField, SplitLayout } from '@/components/marketing';
+import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import {
   formFieldHomepageProps,
   splitLayoutHomepageProps,
@@ -48,10 +49,19 @@ export function WaitlistInquiry() {
         <div className={styles.contactNotes}>
           <strong className={notesHeadingClassName}>{notes.heading}</strong>
           <p className={notesBodyClassName}>{notes.body}</p>
-          <BusinessCoreNodeFlow
-            {...businessCoreNodeFlowWaitlistProps}
+          <MobileWorkflowFallback
+            alt="Business core node flow"
             className={styles.contactCoreFlow}
-          />
+            height={176}
+            name="waitlist-core"
+            src="/images/workflows/mobile/waitlist-core-flow.png"
+            width={176}
+          >
+            <BusinessCoreNodeFlow
+              {...businessCoreNodeFlowWaitlistProps}
+              className={styles.contactCoreFlow}
+            />
+          </MobileWorkflowFallback>
         </div>
       )}
       visual={(

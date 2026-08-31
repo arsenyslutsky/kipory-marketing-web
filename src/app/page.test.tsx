@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
 import { render, screen, within } from '@testing-library/react';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import HomePage from './page';
 
@@ -66,6 +66,37 @@ beforeEach(() => {
   horizontalRender.mockClear();
   threeDRender.mockClear();
   verticalRender.mockClear();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+it('uses density-aware static workflow artwork without mounting WebGL on mobile', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }) as unknown as MediaQueryList));
+
+  const { container } = render(<HomePage />);
+  const fallbacks = Array.from(
+    container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
+  );
+
+  expect(fallbacks.map((image) => image.getAttribute('src'))).toEqual([
+    '/images/workflows/mobile/hero-flow.png',
+    '/images/workflows/mobile/pillars-flow.png',
+    '/images/workflows/mobile/delivery-flow.png',
+  ]);
+  expect(fallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
+    '/images/workflows/mobile/hero-flow.png 1x, /images/workflows/mobile/hero-flow@2x.png 2x, /images/workflows/mobile/hero-flow@3x.png 3x',
+    '/images/workflows/mobile/pillars-flow.png 1x, /images/workflows/mobile/pillars-flow@2x.png 2x, /images/workflows/mobile/pillars-flow@3x.png 3x',
+    '/images/workflows/mobile/delivery-flow.png 1x, /images/workflows/mobile/delivery-flow@2x.png 2x, /images/workflows/mobile/delivery-flow@3x.png 3x',
+  ]);
+  expect(threeDRender).not.toHaveBeenCalled();
+  expect(verticalRender).not.toHaveBeenCalled();
+  expect(horizontalRender).not.toHaveBeenCalled();
 });
 
 it('participates in the quiet navigation handoff', () => {

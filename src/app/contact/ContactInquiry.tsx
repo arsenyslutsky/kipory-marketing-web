@@ -9,6 +9,7 @@ import {
   formControlCurrentNextjsAppProps,
 } from '@/components/form-controls';
 import { FormField, SplitLayout } from '@/components/marketing';
+import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import {
   formFieldHomepageProps,
   splitLayoutHomepageProps,
@@ -57,10 +58,19 @@ export function ContactInquiry() {
           <p className={notesBodyClassName}>
             {notes.body}
           </p>
-          <BusinessCoreNodeFlow
-            {...businessCoreNodeFlowContactProps}
+          <MobileWorkflowFallback
+            alt="Business core node flow"
             className={styles.contactCoreFlow}
-          />
+            height={176}
+            name="contact-core"
+            src="/images/workflows/mobile/contact-core-flow.png"
+            width={176}
+          >
+            <BusinessCoreNodeFlow
+              {...businessCoreNodeFlowContactProps}
+              className={styles.contactCoreFlow}
+            />
+          </MobileWorkflowFallback>
         </div>
       )}
       visual={(

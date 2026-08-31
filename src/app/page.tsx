@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import {
   MarketingSection,
   NumberedRow,
@@ -136,10 +137,18 @@ export default function HomePage() {
             )}
             visual={(
               <div className={styles.capabilityVisual}>
-                <BusinessFlowVertical
-                  {...businessFlowVerticalHomepageProps}
-                  className={styles.pillarsIllustration}
-                />
+                <MobileWorkflowFallback
+                  alt="Vertical business flow"
+                  height={360}
+                  name="pillars"
+                  src="/images/workflows/mobile/pillars-flow.png"
+                  width={360}
+                >
+                  <BusinessFlowVertical
+                    {...businessFlowVerticalHomepageProps}
+                    className={styles.pillarsIllustration}
+                  />
+                </MobileWorkflowFallback>
               </div>
             )}
           />
@@ -205,7 +214,15 @@ export default function HomePage() {
             )}
             visual={(
               <div className={styles.deliveryIllustration}>
-                <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
+                <MobileWorkflowFallback
+                  alt="Horizontal business flow"
+                  height={608}
+                  name="delivery"
+                  src="/images/workflows/mobile/delivery-flow.png"
+                  width={360}
+                >
+                  <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
+                </MobileWorkflowFallback>
               </div>
             )}
           />

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { ProtocolIconList } from '@/components/icons/ProtocolIconList';
+import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import { protocolIconListHomepageProps } from '@/components/icons/ProtocolIconList/presets';
 import { SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
@@ -17,7 +18,17 @@ export function HomepageHero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={styles.heroVisual} data-hero-workflow aria-hidden="true">
-        <BusinessFlow3D {...businessFlow3DHomepageProps} />
+        <MobileWorkflowFallback
+          alt=""
+          fill
+          fit="cover"
+          height={780}
+          name="hero"
+          src="/images/workflows/mobile/hero-flow.png"
+          width={390}
+        >
+          <BusinessFlow3D {...businessFlow3DHomepageProps} />
+        </MobileWorkflowFallback>
       </div>
       <div className={styles.heroShade} />
       <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>

@@ -6,7 +6,7 @@ export function BrandMark(props: BrandMarkProps) {
   return (
     <Image
       {...props}
-      src="/brand/kipory-logo.svg"
+      src="/brand/kipory-symbol-vector.svg"
       alt=""
       width={34}
       height={32}

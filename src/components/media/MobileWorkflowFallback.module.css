@@ -1,0 +1,22 @@
+.picture {
+  display: block;
+}
+
+.fill,
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  object-position: center;
+}
+
+.contain {
+  object-fit: contain;
+}
+
+.cover {
+  object-fit: cover;
+}

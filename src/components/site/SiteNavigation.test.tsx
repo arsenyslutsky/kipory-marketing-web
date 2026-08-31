@@ -49,7 +49,7 @@ it('uses the supplied logo asset in the header and footer brands', () => {
     const logo = brand.querySelector('img.brand__mark');
 
     expect(logo).not.toBeNull();
-    expect(logo).toHaveAttribute('src', '/brand/kipory-logo.svg');
+    expect(logo).toHaveAttribute('src', '/brand/kipory-symbol-vector.svg');
     expect(logo).toHaveAttribute('alt', '');
     expect(logo).toHaveAttribute('width', '34');
     expect(logo).toHaveAttribute('height', '32');

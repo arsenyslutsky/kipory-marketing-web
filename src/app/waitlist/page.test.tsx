@@ -1,7 +1,37 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import controlStyles from '@/components/form-controls/FormControls.module.css';
 import styles from '../marketing.module.css';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+it('uses the waitlist core PNG set instead of mounting WebGL on mobile', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }) as unknown as MediaQueryList));
+  const { default: WaitlistPage } = await import('./page');
+
+  const { container } = render(<WaitlistPage />);
+  const image = container.querySelector<HTMLImageElement>(
+    '[data-mobile-workflow-fallback="waitlist-core"] img',
+  );
+
+  expect(image).toHaveAttribute('src', '/images/workflows/mobile/waitlist-core-flow.png');
+  expect(image).toHaveAttribute(
+    'srcset',
+    '/images/workflows/mobile/waitlist-core-flow.png 1x, /images/workflows/mobile/waitlist-core-flow@2x.png 2x, /images/workflows/mobile/waitlist-core-flow@3x.png 3x',
+  );
+  expect(image?.parentElement).toHaveStyle({
+    aspectRatio: '176 / 176',
+    width: 'min(100%, 176px)',
+  });
+  expect(container.querySelector('[data-flow-state]')).not.toBeInTheDocument();
+  expect(container.querySelector('canvas')).not.toBeInTheDocument();
+});
 
 it('replaces a submitted waiting-list form with an accessible success panel', async () => {
   const pageModulePath = './page';

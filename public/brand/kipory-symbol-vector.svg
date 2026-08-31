@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34.04 32" role="img" aria-labelledby="kipory-symbol-title">
+  <title id="kipory-symbol-title">Kipory</title>
+  <defs>
+    <linearGradient id="kipory-left" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#85aa4a" />
+      <stop offset="1" stop-color="#38501c" />
+    </linearGradient>
+    <linearGradient id="kipory-upper" x1="10.01" y1="0" x2="34.04" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38501c" />
+      <stop offset="1" stop-color="#85aa4a" />
+    </linearGradient>
+    <linearGradient id="kipory-lower" x1="14.079" y1="18.672" x2="27.495" y2="36.464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#85aa4a" />
+      <stop offset="1" stop-color="#3d571f" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#kipory-left)" d="M9.82 0 0 9.82V32l9.97-9.93V0h-.15Z" />
+  <path fill="url(#kipory-upper)" d="M21.96 0 9.965 16H22.08L34.1 0H21.96Z" />
+  <path fill="url(#kipory-lower)" d="M9.965 16 21.96 32H34.1L22.08 16H9.965Z" />
+</svg>
