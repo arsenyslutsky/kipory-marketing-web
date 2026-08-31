@@ -1,21 +1,39 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import styles from '../marketing.module.css';
 
 it('replaces a submitted contact inquiry form with an accessible success panel', async () => {
   const { default: ContactPage } = await import('./page');
 
   render(<ContactPage />);
 
+  expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
+
   const title = screen.getByRole('heading', { level: 1, name: 'Show us how your system moves.' });
+  const subtitle = screen.getByText('SHOW US WHERE WORK STOPS.');
   const hero = title.closest('section');
   const beams = hero?.querySelector('[data-background-beams]');
   expect(beams).toBeTruthy();
   if (!beams) throw new Error('Contact hero beams were not rendered');
   expect(beams).toHaveAttribute('aria-hidden', 'true');
   expect(beams.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(title).toHaveClass(styles.pageTextReveal, styles.pageTextRevealFirst);
+  expect(subtitle).toHaveClass(styles.pageTextReveal, styles.pageTextRevealSecond);
+
+  const notesHeading = screen.getByText('What happens next');
+  const notesBody = screen.getByText(
+    'Thanks for reaching out. We’ll review your message and get back to you as soon as possible.',
+  );
+  expect(screen.getByText('Start a conversation')).toHaveClass(
+    styles.pageTextReveal,
+    styles.pageTextRevealLead,
+  );
+  expect(notesHeading).toHaveClass(styles.pageTextReveal, styles.pageTextRevealLead);
+  expect(notesBody).toHaveClass(styles.pageTextReveal, styles.pageTextRevealBody);
 
   const form = screen.getByRole('form', { name: 'Contact Kipory' });
   expect(form).not.toHaveAttribute('action');
+  expect(form).not.toHaveClass(styles.pageTextReveal);
 
   const firstName = screen.getByRole('textbox', { name: 'First name' });
   const lastName = screen.getByRole('textbox', { name: 'Last name' });

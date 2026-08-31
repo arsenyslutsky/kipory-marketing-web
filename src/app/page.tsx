@@ -15,6 +15,7 @@ import {
 } from '@/components/marketing/presets';
 import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
+import { RouteTransition } from '@/components/site/RouteTransition';
 import {
   BusinessFlowVertical,
   businessFlowVerticalHomepageProps,
@@ -81,13 +82,14 @@ const useCases = [
 
 export default function HomePage() {
   return (
-    <HeroScrollEffects
-      id="main-content"
-      className={styles.main}
-      data-content-reveal-ready="false"
-      data-workflows-ready="false"
-      scrollRange={700}
-    >
+    <RouteTransition>
+      <HeroScrollEffects
+        id="main-content"
+        className={styles.main}
+        data-content-reveal-ready="false"
+        data-workflows-ready="false"
+        scrollRange={700}
+      >
       <HomepageHero />
 
       <MarketingSection
@@ -208,7 +210,8 @@ export default function HomePage() {
         </SiteContainer>
       </MarketingSection>
 
-      <BackToTop />
-    </HeroScrollEffects>
+        <BackToTop />
+      </HeroScrollEffects>
+    </RouteTransition>
   );
 }

@@ -14,6 +14,8 @@ export type PageHeroProps = PageHeroVisualProps & HTMLAttributes<HTMLElement> & 
   title: ReactNode;
   subtitle: ReactNode;
   titleId?: string;
+  titleClassName?: string;
+  subtitleClassName?: string;
   background?: ReactNode;
 };
 
@@ -21,6 +23,8 @@ export function PageHero({
   title,
   subtitle,
   titleId,
+  titleClassName,
+  subtitleClassName,
   background,
   className,
   paddingTop = 164,
@@ -48,8 +52,15 @@ export function PageHero({
       {background ? <div className={styles.pageHeroBackground}>{background}</div> : null}
       <SiteContainer {...siteContainerHomepageProps} className={styles.pageHeroContent}>
         <div className={styles.pageHeroHeading}>
-          <h1 id={titleId} className={styles.pageHeroTitle}>{title}</h1>
-          <p className={styles.pageHeroSubtitle}>{subtitle}</p>
+          <h1
+            id={titleId}
+            className={[styles.pageHeroTitle, titleClassName].filter(Boolean).join(' ')}
+          >
+            {title}
+          </h1>
+          <p className={[styles.pageHeroSubtitle, subtitleClassName].filter(Boolean).join(' ')}>
+            {subtitle}
+          </p>
         </div>
       </SiteContainer>
     </section>

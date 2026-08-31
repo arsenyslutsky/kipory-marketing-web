@@ -51,6 +51,7 @@
   animation: heroSignalReveal 560ms cubic-bezier(.16, 1, .3, 1) both;
   animation-delay: var(--hero-reveal-delay, 0ms);
 }
+.main[data-workflows-ready='true'] .heroActionsReveal { animation-fill-mode: backwards; }
 .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealHeader > *,
 .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealRow > *,
 .main[data-content-reveal-ready='true'] [data-section-reveal-visible='true'] .sectionRevealLink {
@@ -86,6 +87,11 @@
 .useCaseList { --numbered-row-padding-top: 15px; --numbered-row-padding-bottom: 20px; margin-top: 48px; }
 .contactNotes { color: var(--surface-alternate-muted); font-size: var(--type-body-size-md); line-height: var(--type-body-leading); }
 .contactNotes strong { display: block; margin-bottom: 12px; color: var(--surface-alternate-text); font-family: var(--type-display-family); font-size: var(--type-body-size-lg); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-card); letter-spacing: var(--type-display-tracking); }
+.pageTextReveal { animation: heroSignalReveal 560ms cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: var(--page-text-reveal-delay, 0ms); }
+.pageTextRevealFirst { --page-text-reveal-delay: 0ms; }
+.pageTextRevealSecond { --page-text-reveal-delay: 90ms; }
+.pageTextRevealLead { --page-text-reveal-delay: 190ms; }
+.pageTextRevealBody { --page-text-reveal-delay: 280ms; }
 .contactForm { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .contactForm :global(.button) { width: max-content; }
 .buttonIcon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -109,6 +115,7 @@
     animation: heroSignalRevealReduced 160ms ease-out both;
     animation-delay: 0ms;
   }
+  .pageTextReveal { animation: heroSignalRevealReduced 160ms ease-out backwards; animation-delay: 0ms; }
 }
 @keyframes heroSignalRevealReduced {
   from { opacity: 0; }
@@ -145,6 +152,12 @@
   .main .sectionRevealHeader > *,
   .main .sectionRevealRow > *,
   .main .sectionRevealLink {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .pageTextReveal {
     opacity: 1 !important;
     clip-path: none !important;
     transform: none !important;

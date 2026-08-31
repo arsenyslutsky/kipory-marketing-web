@@ -38,7 +38,12 @@ export function HomepageHero() {
           </p>
           <div className={styles.heroActions} data-scroll-parallax>
             <div className={`${styles.heroActionsReveal} ${styles.heroReveal}`} data-hero-reveal="actions">
-              <GlowLink {...glowLinkHomepageProps} href="/waitlist">Join waiting list <span>↗</span></GlowLink>
+              <GlowLink {...glowLinkHomepageProps} href="/waitlist">
+                Join waiting list
+                <svg className={styles.buttonIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M4 12 12 4M6 4h6v6" />
+                </svg>
+              </GlowLink>
               <Link className="button button--outline" href="/contact">Let’s talk</Link>
             </div>
           </div>

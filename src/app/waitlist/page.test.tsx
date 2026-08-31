@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import styles from '../marketing.module.css';
 
 it('replaces a submitted waiting-list form with an accessible success panel', async () => {
   const pageModulePath = './page';
@@ -10,6 +11,8 @@ it('replaces a submitted waiting-list form with an accessible success panel', as
   const { default: WaitlistPage } = pageModule;
 
   render(<WaitlistPage />);
+
+  expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
 
   const title = screen.getByRole('heading', { level: 1, name: 'Join the waiting list.' });
   const subtitle = screen.getByText('SEE THE FLOW SOONER.');
@@ -22,12 +25,22 @@ it('replaces a submitted waiting-list form with an accessible success panel', as
   expect(subtitle.closest('h1')).toBeNull();
   expect(subtitle.parentElement).toBe(title.parentElement);
   expect(title.compareDocumentPosition(subtitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(title).toHaveClass(styles.pageTextReveal, styles.pageTextRevealFirst);
+  expect(subtitle).toHaveClass(styles.pageTextReveal, styles.pageTextRevealSecond);
+
+  const notesHeading = screen.getByText('What happens next');
+  const notesBody = screen.getByText(
+    'Tell us who you are and where you work. We will use your email to follow up about Kipory access.',
+  );
+  expect(notesHeading).toHaveClass(styles.pageTextReveal, styles.pageTextRevealLead);
+  expect(notesBody).toHaveClass(styles.pageTextReveal, styles.pageTextRevealBody);
   expect(screen.queryByText(/Leave your details and we will keep you informed/)).not.toBeInTheDocument();
   expect(screen.queryByText(/This form opens your email application/)).not.toBeInTheDocument();
   expect(screen.queryByText(/Submitting opens a message addressed/)).not.toBeInTheDocument();
 
   const form = screen.getByRole('form', { name: 'Join the Kipory waiting list' });
   expect(form).not.toHaveAttribute('action');
+  expect(form).not.toHaveClass(styles.pageTextReveal);
   expect(screen.getByRole('textbox', { name: 'Name' })).toBeRequired();
   expect(screen.getByRole('textbox', { name: 'Work email' })).toBeRequired();
   expect(screen.getByRole('textbox', { name: 'Company (optional)' })).not.toBeRequired();

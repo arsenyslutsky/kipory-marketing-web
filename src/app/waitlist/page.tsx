@@ -15,6 +15,7 @@ import {
 } from '@/components/marketing/presets';
 import { SubmissionForm } from '../../components/ui/SubmissionForm';
 import { BackgroundBeams } from '../../components/ui/BackgroundBeams';
+import { RouteTransition } from '@/components/site/RouteTransition';
 import { createPageMetadata } from '@/lib/siteMetadata';
 import styles from '../marketing.module.css';
 
@@ -27,11 +28,14 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function WaitlistPage() {
   return (
-    <main id="main-content" className={styles.main}>
+    <RouteTransition>
+      <main id="main-content" className={styles.main}>
       <PageHero
         {...pageHeroHomepageProps}
         title="Join the waiting list."
         subtitle="SEE THE FLOW SOONER."
+        titleClassName={`${styles.pageTextReveal} ${styles.pageTextRevealFirst}`}
+        subtitleClassName={`${styles.pageTextReveal} ${styles.pageTextRevealSecond}`}
         background={<BackgroundBeams />}
       />
 
@@ -44,8 +48,10 @@ export default function WaitlistPage() {
             gap={118}
             content={(
               <div className={styles.contactNotes}>
-                <strong>What happens next</strong>
-                <p>Tell us who you are and where you work. We will use your email to follow up about Kipory access.</p>
+                <strong className={`${styles.pageTextReveal} ${styles.pageTextRevealLead}`}>What happens next</strong>
+                <p className={`${styles.pageTextReveal} ${styles.pageTextRevealBody}`}>
+                  Tell us who you are and where you work. We will use your email to follow up about Kipory access.
+                </p>
               </div>
             )}
             visual={(
@@ -76,6 +82,7 @@ export default function WaitlistPage() {
           />
         </SiteContainer>
       </MarketingSection>
-    </main>
+      </main>
+    </RouteTransition>
   );
 }

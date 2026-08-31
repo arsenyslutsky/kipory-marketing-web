@@ -68,6 +68,12 @@ beforeEach(() => {
   verticalRender.mockClear();
 });
 
+it('participates in the quiet navigation handoff', () => {
+  render(<HomePage />);
+
+  expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
+});
+
 it('renders all shared homepage presets and replaces the delivery placeholder', () => {
   render(<HomePage />);
 
@@ -92,6 +98,16 @@ it('routes homepage conversion actions to active destinations', () => {
   expect(destinationPaths).toContain('/waitlist');
   expect(destinationPaths).not.toContain('/product');
   expect(destinationPaths).not.toContain('/about');
+});
+
+it('renders the waiting-list CTA arrow as a decorative vector icon', () => {
+  render(<HomePage />);
+
+  const waitlistLink = screen.getByRole('link', { name: 'Join waiting list' });
+  const icon = waitlistLink.querySelector('svg');
+
+  expect(icon).toHaveAttribute('aria-hidden', 'true');
+  expect(waitlistLink).not.toHaveTextContent('↗');
 });
 
 it('aligns the pillars separator with the fixed header after the hero jump', () => {

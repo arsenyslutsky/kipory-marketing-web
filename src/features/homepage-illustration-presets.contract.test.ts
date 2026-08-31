@@ -93,6 +93,15 @@ describe('homepage illustration preset contract', () => {
     expect(shiftAt(2696)).toBe(630);
   });
 
+  it('releases the CTA reveal mask after the entrance animation', () => {
+    const marketingCss = source('../app/marketing.module.css');
+    const actionsRevealRule = marketingCss.match(
+      /\.main\[data-workflows-ready='true'\]\s+\.heroActionsReveal\s*\{([^}]*)\}/,
+    )?.[1] ?? '';
+
+    expect(actionsRevealRule).toMatch(/animation-fill-mode:\s*backwards/);
+  });
+
   it('keeps the pillars illustration inside its split-layout visual column', () => {
     const marketingCss = source('../app/marketing.module.css');
     const visualRule = marketingCss.match(/\.capabilityVisual\s*\{([^}]*)\}/)?.[1] ?? '';
