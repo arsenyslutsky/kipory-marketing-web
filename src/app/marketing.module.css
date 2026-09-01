@@ -9,7 +9,7 @@
 .heroVisual > [data-flow-state] { min-height: 0; height: 100%; }
 .heroShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 98%, transparent) 0%, color-mix(in srgb, var(--ink) 80%, transparent) 35%, color-mix(in srgb, var(--ink) 8%, transparent) 72%), linear-gradient(0deg, color-mix(in srgb, var(--ink) 68%, transparent), transparent 38%); }
 .heroInner { position: relative; z-index: 2; min-height: inherit; display: flex; align-items: flex-start; }
-.heroCopy { width: min(660px, 62vw); min-height: inherit; padding: 15svh 0 32px; display: flex; flex-direction: column; transform: perspective(1300px) translate3d(calc(-5rem * var(--hero-scroll-progress, 0)), calc(-7rem * var(--hero-scroll-progress, 0)), calc(5rem * var(--hero-scroll-progress, 0))); transform-origin: left center; }
+.heroCopy { width: min(660px, 62vw); min-height: inherit; padding: 130px 0 10px; display: flex; flex-direction: column; transform: perspective(1300px) translate3d(calc(-5rem * var(--hero-scroll-progress, 0)), calc(-7rem * var(--hero-scroll-progress, 0)), calc(5rem * var(--hero-scroll-progress, 0))); transform-origin: left center; }
 .heroTitle { margin: 0; max-width: 700px; display: flex; flex-direction: column; gap: 20px; font-family: var(--type-display-family); font-size: var(--type-display-size-hero); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
 .heroTitlePrimary { display: block; }
 .heroTitle em { color: var(--accent); font-family: var(--type-accent-family); font-style: normal; font-weight: var(--type-accent-weight); letter-spacing: var(--type-accent-tracking); }
@@ -19,6 +19,7 @@
 .heroActions { margin-top: 36px; }
 .heroActionsReveal { display: flex; flex-wrap: wrap; gap: 12px; --hero-reveal-delay: 290ms; }
 .heroProtocols { width: min(920px, calc(100vw - 48px)); margin-top: 50px; }
+.heroProtocolsList { padding: 70px 0 18px; }
 .heroProtocolsReveal { --hero-reveal-delay: 390ms; }
 .heroTitlePrimary { --hero-reveal-delay: 0ms; }
 .heroTitle em { --hero-reveal-delay: 90ms; }
@@ -62,7 +63,7 @@
   animation-fill-mode: backwards;
 }
 .learnMoreLink { width: max-content; display: inline-flex; align-items: center; gap: .55rem; color: var(--accent); font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking-wide); text-transform: uppercase; }
-.heroLearnMore { margin: auto 0 0; padding-top: 18px; }
+.heroLearnMore { margin: 30px 0 0; padding-top: 15px; }
 .sectionLearnMore { margin-top: 52px; }
 .learnMoreChevron { position: relative; top: -.125rem; width: 1rem; height: 1.125rem; display: inline-flex; flex: 0 0 auto; animation: learnMoreChevronFloat 1.8s ease-in-out infinite; }
 .learnMoreChevron svg { width: 100%; height: 100%; display: block; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -139,9 +140,11 @@
   .main[data-content-reveal-ready='false'] .sectionRevealLink { opacity: 1; clip-path: none; transform: none; }
 }
 @media (max-width: 900px) {
+  .main .movementSection { padding-bottom: 35px; }
   .heroVisual { left: 0; height: max(1014px, 133.333svh); transform: translateX(4vw) scale(.75); -webkit-mask-image: none; mask-image: none; }
-  .heroCopy { width: min(700px, 86vw); padding-top: 12.5svh; }
+  .heroCopy { width: min(700px, 86vw); padding: 12.5svh 0 32px; }
   .heroProtocols { width: 100%; }
+  .heroProtocolsList { padding: 0; }
   .heroShade { background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 97%, transparent), color-mix(in srgb, var(--ink) 68%, transparent) 65%, color-mix(in srgb, var(--ink) 18%, transparent)); }
   .capabilityVisual, .deliveryIllustration { min-height: 360px; }
   .capabilityVisual { position: relative; }
@@ -150,7 +153,7 @@
 @media (max-width: 620px) {
   .hero { min-height: 780px; height: 780px; }
   .heroVisual { left: -48%; height: max(760px, 100svh); opacity: .55; transform: none; }
-  .heroCopy { width: 100%; padding-top: 104px; transform: none; }
+  .heroCopy { width: 100%; padding: 104px 0 32px; transform: none; }
   .heroTitle { font-size: var(--type-display-size-hero-mobile); }
   .heroLead { max-width: 90%; font-size: var(--type-body-size-sm); }
   .heroActionsReveal { flex-direction: column; align-items: stretch; }

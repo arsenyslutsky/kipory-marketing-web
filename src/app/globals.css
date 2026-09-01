@@ -102,7 +102,16 @@ canvas { touch-action: none; }
   backdrop-filter: blur(18px);
 }
 .site-header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; font: var(--type-control-weight) var(--type-control-size-lg)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking-wide); }
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--type-display-family);
+  font-size: var(--type-control-size-lg);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  letter-spacing: var(--type-control-tracking-wide);
+}
 .brand__mark { width: auto; height: 25px; color: var(--accent); }
 .site-header__actions { margin-left: auto; display: flex; align-items: center; gap: 28px; }
 .site-nav { display: flex; align-items: center; gap: 34px; color: var(--text-secondary); font-family: var(--type-display-family); font-size: var(--type-control-size-md); font-weight: var(--type-display-weight); letter-spacing: var(--type-display-tracking); text-transform: uppercase; }

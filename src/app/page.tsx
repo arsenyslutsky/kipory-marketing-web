@@ -103,7 +103,7 @@ export default function HomePage() {
         tone="alternate-to-base"
         gridFade="none"
         paddingTop={32}
-        paddingBottom={60}
+        paddingBottom={12}
       >
         <SiteContainer {...siteContainerHomepageProps}>
           <SplitLayout
@@ -156,7 +156,7 @@ export default function HomePage() {
             <LearnMoreLink
               className={styles.sectionLearnMore}
               href="#delivery"
-              label="See how Kipory delivers"
+              label="See how teams move faster"
             />
           </div>
         </SiteContainer>

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34.04 32" role="img" aria-labelledby="kipory-symbol-title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.68 40.22" role="img" aria-labelledby="kipory-symbol-title">
   <title id="kipory-symbol-title">Kipory</title>
   <defs>
-    <linearGradient id="kipory-left" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#85aa4a" />
-      <stop offset="1" stop-color="#38501c" />
+    <linearGradient id="kipory-left" x1="0" y1="20.23" x2="12.12" y2="20.23" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#449c40" />
+      <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
-    <linearGradient id="kipory-upper" x1="10.01" y1="0" x2="34.04" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#38501c" />
-      <stop offset="1" stop-color="#85aa4a" />
+    <linearGradient id="kipory-lower" x1="38.87" y1="26.93" x2="16.31" y2="33.4" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#449c40" />
+      <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
-    <linearGradient id="kipory-lower" x1="14.079" y1="18.672" x2="27.495" y2="36.464" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#85aa4a" />
-      <stop offset="1" stop-color="#3d571f" />
+    <linearGradient id="kipory-upper" x1="12.5" y1="10.05" x2="42.68" y2="10.05" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#449c40" />
+      <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
   </defs>
-  <path fill="url(#kipory-left)" d="M9.82 0 0 9.82V32l9.97-9.93V0h-.15Z" />
-  <path fill="url(#kipory-upper)" d="M21.96 0 9.965 16H22.08L34.1 0H21.96Z" />
-  <path fill="url(#kipory-lower)" d="M9.965 16 21.96 32H34.1L22.08 16H9.965Z" />
+  <polygon fill="url(#kipory-left)" points="12.12 30.24 12.12 .77 .12 10.64 0 39.7 12.12 30.24" />
+  <polygon fill="url(#kipory-lower)" points="42.68 40.22 25.24 37.08 12.5 20.11 27.6 20.11 42.68 40.22" />
+  <polygon fill="url(#kipory-upper)" points="42.68 0 24.77 3.77 12.5 20.11 27.6 20.11 42.68 0" />
 </svg>

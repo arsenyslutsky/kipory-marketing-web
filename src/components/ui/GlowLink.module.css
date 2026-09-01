@@ -79,6 +79,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  color: var(--ink);
   background:
     linear-gradient(115deg, color-mix(in srgb, var(--paper) 8%, transparent), transparent 42%),
     var(--accent);

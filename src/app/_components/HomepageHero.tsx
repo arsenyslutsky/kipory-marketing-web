@@ -63,7 +63,10 @@ export function HomepageHero() {
               className={`${styles.heroProtocolsReveal} ${styles.heroReveal}`}
               data-hero-reveal="protocols"
             >
-              <ProtocolIconList {...protocolIconListHomepageProps} />
+              <ProtocolIconList
+                {...protocolIconListHomepageProps}
+                className={styles.heroProtocolsList}
+              />
             </div>
           </div>
           <LearnMoreLink

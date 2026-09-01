@@ -4,6 +4,7 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import HomePage from './page';
+import styles from './marketing.module.css';
 
 const {
   glowLinkRender,
@@ -129,7 +130,7 @@ it('routes homepage conversion actions to active destinations', () => {
     expect(link).toHaveAttribute('href', '/contact');
   });
   expect(screen.getByRole('link', { name: 'Explore our pillars' })).toHaveAttribute('href', '#pillars');
-  expect(screen.getByRole('link', { name: 'See how Kipory delivers' })).toHaveAttribute('href', '#delivery');
+  expect(screen.getByRole('link', { name: 'See how teams move faster' })).toHaveAttribute('href', '#delivery');
   expect(destinationPaths).toContain('/waitlist');
   expect(destinationPaths).not.toContain('/product');
   expect(destinationPaths).not.toContain('/about');
@@ -171,7 +172,10 @@ it('keeps the pillars content close to its separator', () => {
   render(<HomePage />);
 
   expect(screen.getByRole('region', { name: 'Our Pillars' }))
-    .toHaveStyle({ '--marketing-section-padding-top': '32px' });
+    .toHaveStyle({
+      '--marketing-section-padding-top': '32px',
+      '--marketing-section-padding-bottom': '12px',
+    });
 });
 
 it('places the canonical protocol strip before the hero learn-more link', () => {
@@ -192,6 +196,7 @@ it('places the canonical protocol strip before the hero learn-more link', () => 
   expect(protocolLabels).toEqual(['REST', 'SSE', 'JSONata', 'MCP', 'Webhook', 'GraphQL']);
   expect(protocolLists).toHaveLength(2);
   expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'new-row');
+  expect(protocolRoot).toHaveClass(styles.heroProtocolsList);
   expect(protocolReveal).not.toHaveAttribute('data-scroll-parallax');
   expect(protocolReveal?.parentElement).toHaveAttribute('data-scroll-parallax');
   expect(protocolReveal?.parentElement?.nextElementSibling).toBe(pillarsLink);
@@ -254,7 +259,7 @@ it('marks moving homepage text groups without marking stable section headers or 
   container.querySelectorAll('article').forEach((row) => {
     expect(row).toHaveAttribute('data-scroll-parallax');
   });
-  screen.getAllByRole('link', { name: /Explore our pillars|See how Kipory delivers/ }).forEach((link) => {
+  screen.getAllByRole('link', { name: /Explore our pillars|See how teams move faster/ }).forEach((link) => {
     expect(link).toHaveAttribute('data-scroll-parallax');
     expect(link).toHaveAttribute('data-scroll-fade', 'false');
   });
