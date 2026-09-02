@@ -1,9 +1,9 @@
 import { expect, it, vi } from 'vitest';
 
 vi.mock('next/font/google', () => ({
-  Chakra_Petch: () => ({ className: '', variable: '--font-chakra-petch' }),
   Crimson_Pro: () => ({ className: '', variable: '--font-crimson-pro' }),
   Outfit: () => ({ className: '', variable: '--font-outfit' }),
+  Oxanium: () => ({ className: '', variable: '--font-oxanium' }),
 }));
 import { metadata as contactMetadata } from './contact/page';
 import { metadata as layoutMetadata } from './layout';

@@ -44,7 +44,7 @@ function TypographySheet() {
         <span className="type-control type-control-wide">Kipory typography</span>
         <h1 className="type-display type-display-section">One system for every block.</h1>
         <p className="type-body type-body-lg">
-          Outfit carries display content, Crimson Pro ExtraLight carries body copy, and Chakra Petch covers accent statements, controls, and operational metadata.
+          Outfit carries display content, Crimson Pro ExtraLight carries body copy, and Oxanium covers accent statements, controls, and operational metadata.
         </p>
         <code className={styles.rootToken}>--type-root-size: 16px; /* change once to scale the type system */</code>
       </header>

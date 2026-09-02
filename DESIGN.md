@@ -42,7 +42,7 @@ typography:
     lineHeight: 1.2
     letterSpacing: "0"
   accent:
-    fontFamily: "Chakra Petch, Arial, Helvetica, sans-serif"
+    fontFamily: "Oxanium, Arial, Helvetica, sans-serif"
     fontSize: "1.375rem"
     fontWeight: 300
     lineHeight: 1
@@ -60,7 +60,7 @@ typography:
     lineHeight: 1.3
     letterSpacing: "0"
   label:
-    fontFamily: "Chakra Petch, Arial, Helvetica, sans-serif"
+    fontFamily: "Oxanium, Arial, Helvetica, sans-serif"
     fontSize: ".8125rem"
     fontWeight: 700
     lineHeight: 1
@@ -163,9 +163,9 @@ Interface color values are declared once in `src/app/globals.css`. Flow-specific
 
 **Display Font:** Outfit (with Arial, Helvetica, sans-serif fallback)
 **Body Font:** Crimson Pro (with Georgia, serif fallback)
-**Accent / Control Font:** Chakra Petch (with Arial, Helvetica, sans-serif fallback)
+**Accent / Control Font:** Oxanium (with Arial, Helvetica, sans-serif fallback)
 
-**Character:** Outfit supplies open, low-weight geometric authority; Crimson Pro makes dense system explanations feel editorial and legible; Chakra Petch gives actions, labels, and signal language a measured technical cadence.
+**Character:** Outfit supplies open, low-weight geometric authority; Crimson Pro makes dense system explanations feel editorial and legible; Oxanium gives actions, labels, and signal language a measured technical cadence.
 
 ### Hierarchy
 
@@ -181,7 +181,7 @@ All authored font sizes route through semantic `--type-*` tokens in `src/app/typ
 
 ### Named Rules
 
-**The Three-Voice Rule.** Outfit states the idea, Crimson Pro explains it, and Chakra Petch operates it. Do not substitute one role for another merely for emphasis.
+**The Three-Voice Rule.** Outfit states the idea, Crimson Pro explains it, and Oxanium operates it. Do not substitute one role for another merely for emphasis.
 
 **The Light Authority Rule.** Display hierarchy comes from scale and spacing, not heavy font weight; primary headings remain light.
 
@@ -258,7 +258,7 @@ Horizontal, vertical, and 3D flows share Node3D geometry, dashed connectors, con
 
 - **Do** use Signal Green for actions, focus, live flow, and state changes—not for broad decorative fills.
 - **Do** keep large surfaces square and let hairlines, tonal layers, and spacing create hierarchy.
-- **Do** preserve the Outfit / Crimson Pro / Chakra Petch role split.
+- **Do** preserve the Outfit / Crimson Pro / Oxanium role split.
 - **Do** use brighter greens, highlights, and dimensional shading inside technical illustrations when they clarify movement or depth.
 - **Do** pair motion with a useful event and provide a reduced-motion equivalent.
 - **Do** keep body copy readable against dark fields and within a controlled measure.

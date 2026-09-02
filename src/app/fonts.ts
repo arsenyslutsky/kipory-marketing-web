@@ -1,4 +1,4 @@
-import { Chakra_Petch, Crimson_Pro, Outfit } from 'next/font/google';
+import { Crimson_Pro, Outfit, Oxanium } from 'next/font/google';
 
 export const outfit = Outfit({
   subsets: ['latin'],
@@ -6,10 +6,10 @@ export const outfit = Outfit({
   variable: '--font-outfit',
 });
 
-export const chakraPetch = Chakra_Petch({
+export const oxanium = Oxanium({
   subsets: ['latin'],
   weight: ['300', '700'],
-  variable: '--font-chakra-petch',
+  variable: '--font-oxanium',
 });
 
 export const crimsonPro = Crimson_Pro({
@@ -19,4 +19,4 @@ export const crimsonPro = Crimson_Pro({
   variable: '--font-crimson-pro',
 });
 
-export const fontVariables = `${outfit.variable} ${chakraPetch.variable} ${crimsonPro.variable}`;
+export const fontVariables = `${outfit.variable} ${oxanium.variable} ${crimsonPro.variable}`;

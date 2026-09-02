@@ -1,9 +1,9 @@
 :root {
   --type-root-size: 16px;
   --type-display-family: var(--font-outfit), Arial, Helvetica, sans-serif;
-  --type-accent-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
+  --type-accent-family: var(--font-oxanium), Arial, Helvetica, sans-serif;
   --type-body-family: var(--font-crimson-pro), Georgia, serif;
-  --type-control-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
+  --type-control-family: var(--font-oxanium), Arial, Helvetica, sans-serif;
   --type-display-size-hero: 3.5rem;
   --type-display-size-hero-mobile: clamp(2.1875rem, 10.5vw, 3.125rem);
   --type-display-size-page: clamp(3.75rem, 8vw, 6rem);
