@@ -376,13 +376,16 @@ describe('homepage illustration preset contract', () => {
       .toBeGreaterThan(countClassAndAttributeSelectors(rootRule[0]));
   });
 
-  it('uses the standalone Storybook viewport framing for the desktop hero workflow', () => {
+  it('keeps Storybook framing while positioning the desktop hero workflow clear of the copy', () => {
     const marketingCss = source('../app/marketing.module.css');
     const heroVisualRule = marketingCss.match(/\.heroVisual\s*\{([^}]*)\}/)?.[1] ?? '';
 
     expect(heroVisualRule).toMatch(/inset:\s*0/);
     expect(heroVisualRule).toMatch(/height:\s*100dvh/);
-    expect(heroVisualRule).toMatch(/transform:\s*none/);
+    expect(heroVisualRule).toMatch(
+      /transform:\s*translate3d\(clamp\(72px,\s*7vw,\s*144px\),\s*-64px,\s*0\)/,
+    );
+    expect(heroVisualRule).not.toMatch(/scale\(/);
   });
 
   it('releases the CTA reveal mask after the entrance animation', () => {
