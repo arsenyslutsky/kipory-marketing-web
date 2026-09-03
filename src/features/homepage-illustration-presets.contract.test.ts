@@ -6,24 +6,33 @@ import {
 } from './business-core-node-flow/presets';
 import { defaultColors } from './business-flow-3d/config';
 import { businessFlow3DHomepageProps } from './business-flow-3d/presets';
+import { CurrentNextjsApp as businessFlow3DCurrentApp } from './business-flow-3d/stories/BusinessFlow3D.stories';
 import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
+import { CurrentNextjsApp as businessFlowHorizontalCurrentApp } from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
 import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
+import { CurrentNextjsApp as businessFlowVerticalCurrentApp } from './business-flow-vertical/stories/BusinessFlowVertical.stories';
 
 const cases = [
   {
     feature: 'business-flow-3d',
     preset: 'businessFlow3DHomepageProps',
+    presetValue: businessFlow3DHomepageProps,
     story: 'BusinessFlow3D',
+    storyArgs: businessFlow3DCurrentApp.args ?? {},
   },
   {
     feature: 'business-flow-vertical',
     preset: 'businessFlowVerticalHomepageProps',
+    presetValue: businessFlowVerticalHomepageProps,
     story: 'BusinessFlowVertical',
+    storyArgs: businessFlowVerticalCurrentApp.args ?? {},
   },
   {
     feature: 'business-flow-horizontal',
     preset: 'businessFlowHorizontalHomepageProps',
+    presetValue: businessFlowHorizontalHomepageProps,
     story: 'BusinessFlowHorizontal',
+    storyArgs: businessFlowHorizontalCurrentApp.args ?? {},
   },
 ] as const;
 
@@ -352,7 +361,13 @@ describe('homepage illustration preset contract', () => {
     expect(illustrationRule).toMatch(/height:\s*100%/);
   });
 
-  it.each(cases)('$feature exports one preset used by its website story', ({ feature, preset, story }) => {
+  it.each(cases)('$feature exports one preset used by its website story', ({
+    feature,
+    preset,
+    presetValue,
+    story,
+    storyArgs,
+  }) => {
     const presetSource = source(`./${feature}/presets.ts`);
     const indexSource = source(`./${feature}/index.ts`);
     const storySource = source(`./${feature}/stories/${story}.stories.tsx`);
@@ -360,8 +375,6 @@ describe('homepage illustration preset contract', () => {
     expect(presetSource).toContain(`export const ${preset} =`);
     expect(indexSource).toContain(`export { ${preset} } from './presets';`);
     expect(storySource).toContain(`import { ${preset} } from '../presets';`);
-    expect(storySource).toMatch(new RegExp(
-      `export const CurrentNextjsApp: Story = \\{[\\s\\S]*?args: ${preset}`,
-    ));
+    expect(storyArgs).toMatchObject(presetValue);
   });
 });

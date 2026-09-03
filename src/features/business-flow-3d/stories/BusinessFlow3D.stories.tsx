@@ -332,8 +332,22 @@ export const Workflow1: Story = {
 };
 
 export const CurrentNextjsApp: Story = {
-  name: 'Current Next.js App',
-  args: businessFlow3DHomepageProps,
+  name: 'Current App (Dark)',
+  args: {
+    ...businessFlow3DHomepageProps,
+    mode: 'dark',
+  },
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
+  },
+};
+
+export const CurrentAppLight: Story = {
+  name: 'Current App (Light)',
+  args: {
+    ...businessFlow3DHomepageProps,
+    mode: 'light',
+  },
   parameters: {
     homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
   },
