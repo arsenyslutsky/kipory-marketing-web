@@ -32,7 +32,8 @@ html[data-theme='dark'] {
   --action-surface: var(--signal);
   --action-hover-surface: color-mix(in srgb, var(--signal) 86%, var(--text-primary));
   --action-text: var(--on-signal);
-  --action-highlight: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --action-highlight-idle: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --action-highlight-interactive: color-mix(in srgb, var(--text-primary) 12%, transparent);
   --header-action-surface: var(--text-primary);
   --header-action-hover-surface: color-mix(in srgb, var(--text-primary) 88%, var(--surface-base));
   --header-action-text: var(--text-inverse);
@@ -115,7 +116,8 @@ html[data-theme='light'] {
   --action-surface: var(--signal-strong);
   --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
   --action-text: var(--on-signal);
-  --action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);
+  --action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);
+  --action-highlight-interactive: color-mix(in srgb, var(--text-inverse) 12%, transparent);
   --header-action-surface: var(--signal-strong);
   --header-action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
   --header-action-text: var(--on-signal);
@@ -203,7 +205,8 @@ html[data-theme='light'] {
     --action-surface: var(--signal-strong);
     --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
     --action-text: var(--on-signal);
-    --action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);
+    --action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);
+    --action-highlight-interactive: color-mix(in srgb, var(--text-inverse) 12%, transparent);
     --header-action-surface: var(--signal-strong);
     --header-action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
     --header-action-text: var(--on-signal);

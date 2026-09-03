@@ -49,7 +49,8 @@ const moduleTokenContracts = {
   'src/components/ui/GlowLink.module.css': [
     '--action-surface',
     '--action-text',
-    '--action-highlight',
+    '--action-highlight-idle',
+    '--action-highlight-interactive',
     '--focus-ring',
   ],
   'src/components/ui/SubmissionForm.module.css': [
@@ -82,7 +83,8 @@ describe('system-aware stylesheet contract', () => {
       '--text-primary', '--text-secondary', '--text-muted', '--text-inverse',
       '--line-default', '--line-strong', '--signal', '--signal-strong', '--on-signal',
       '--header-surface', '--header-edge', '--focus-ring', '--selection-background',
-      '--grid-color', '--glow-color', '--action-highlight', '--final-actions-edge',
+      '--grid-color', '--glow-color', '--action-highlight-idle',
+      '--action-highlight-interactive', '--final-actions-edge',
     ];
     const darkBlock = getThemeBlock('dark');
     const lightBlock = getThemeBlock('light');
@@ -157,11 +159,17 @@ describe('system-aware stylesheet contract', () => {
     const lightBlock = getThemeBlock('light');
 
     expect(darkBlock).toContain(
-      '--action-highlight: color-mix(in srgb, var(--text-primary) 8%, transparent);',
+      '--action-highlight-idle: color-mix(in srgb, var(--text-primary) 8%, transparent);',
+    );
+    expect(darkBlock).toContain(
+      '--action-highlight-interactive: color-mix(in srgb, var(--text-primary) 12%, transparent);',
     );
     expect(darkBlock).toContain('--final-actions-edge: transparent;');
     expect(lightBlock).toContain(
-      '--action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);',
+      '--action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);',
+    );
+    expect(lightBlock).toContain(
+      '--action-highlight-interactive: color-mix(in srgb, var(--text-inverse) 12%, transparent);',
     );
     expect(lightBlock).toContain('--final-actions-edge: var(--line-default);');
   });
