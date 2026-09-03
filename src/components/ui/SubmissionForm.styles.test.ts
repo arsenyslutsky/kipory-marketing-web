@@ -8,6 +8,23 @@ const stylesheet = readFileSync(
 );
 
 describe('SubmissionForm success panel treatment', () => {
+  it('reserves fixed-header clearance when focus scrolls to the success panel', () => {
+    const style = document.createElement('style');
+    const panel = document.createElement('section');
+
+    style.textContent = stylesheet;
+    panel.className = 'panel';
+    document.head.append(style);
+    document.body.append(panel);
+
+    try {
+      expect(getComputedStyle(panel).scrollMarginTop).toBe('88px');
+    } finally {
+      panel.remove();
+      style.remove();
+    }
+  });
+
   it('flips the internal panel gradient across both axes', () => {
     const panelRule = stylesheet.match(/^\.panel \{([^}]*)\}/m)?.[1];
 

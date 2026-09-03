@@ -3,6 +3,7 @@
   isolation: isolate;
   min-width: 0;
   min-height: 320px;
+  scroll-margin-top: 88px;
   padding: clamp(34px, 4vw, 58px);
   display: grid;
   align-content: center;
