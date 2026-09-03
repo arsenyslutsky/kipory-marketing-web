@@ -7,13 +7,15 @@ import meta, * as stories from './BusinessFlow3D.stories';
 
 describe('BusinessFlow3D current-app stories', () => {
   it('offers explicit dark and light variants with independent app presets', () => {
-    expect(stories.CurrentNextjsApp).toMatchObject({
-      name: 'Current App (Dark)',
-      args: { ...businessFlow3DHomepageDarkProps, mode: 'dark' },
+    expect(stories.CurrentNextjsApp.name).toBe('Current App (Dark)');
+    expect(stories.CurrentNextjsApp.args).toEqual({
+      ...businessFlow3DHomepageDarkProps,
+      mode: 'dark',
     });
-    expect(stories.CurrentAppLight).toMatchObject({
-      name: 'Current App (Light)',
-      args: { ...businessFlow3DHomepageLightProps, mode: 'light' },
+    expect(stories.CurrentAppLight.name).toBe('Current App (Light)');
+    expect(stories.CurrentAppLight.args).toEqual({
+      ...businessFlow3DHomepageLightProps,
+      mode: 'light',
     });
   });
 

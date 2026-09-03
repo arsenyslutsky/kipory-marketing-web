@@ -99,10 +99,9 @@ function contrastRatio(foreground: number[], background: number[]) {
 }
 
 describe('homepage illustration preset contract', () => {
-  it('keeps every website flow preset structural so the active theme can supply colors', () => {
+  it('keeps shared website flow presets structural while the light 3D variant owns its tuned palette', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
       businessFlow3DHomepageDarkProps,
-      businessFlow3DHomepageLightProps,
       businessFlowHorizontalHomepageProps,
       businessFlowVerticalHomepageProps,
       businessCoreNodeFlowContactProps,
@@ -111,6 +110,18 @@ describe('homepage illustration preset contract', () => {
 
     presets.forEach((preset) => {
       themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
+    });
+
+    expect(businessFlow3DHomepageLightProps).toMatchObject({
+      nodeFrontGradientEndColor: '#449c40',
+      nodeFrontGradientMidColor: '#449c40',
+      nodeFrontGradientStartColor: '#449c40',
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
     });
   });
 
@@ -162,7 +173,25 @@ describe('homepage illustration preset contract', () => {
     };
 
     expect(businessFlow3DHomepageDarkProps).toEqual(expected);
-    expect(businessFlow3DHomepageLightProps).toEqual(expected);
+    expect(businessFlow3DHomepageLightProps).toEqual({
+      ...expected,
+      connectorStroke: 'solid',
+      emitterX: 1,
+      nodeFrontGradientEndColor: '#449c40',
+      nodeFrontGradientMidColor: '#449c40',
+      nodeFrontGradientStartColor: '#449c40',
+      nodeShadowLightX: 0,
+      nodeShadowLightZ: 16.5,
+      nodeShadowRadius: 8,
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
+      pathCurve: 100,
+      progressBarHeight: 10,
+    });
   });
 
   it('keeps the light hero grid perceptible at the homepage opacity', () => {
