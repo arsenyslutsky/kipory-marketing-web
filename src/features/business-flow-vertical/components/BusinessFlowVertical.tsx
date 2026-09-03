@@ -60,6 +60,7 @@ export type BusinessFlowVerticalProps = WorkflowRuntimeOptions & NodeShadowProps
   gridOpacity?: number;
   height?: CSSProperties['height'];
   iconSize?: number;
+  iconStrokeColor?: string;
   maxConcurrentBeams?: number;
   mode?: ResolvedTheme;
   numberOfNodesBottom?: number;
@@ -140,6 +141,7 @@ export function BusinessFlowVertical({
   gridOpacity = 0.2,
   height = '38rem',
   iconSize = 40,
+  iconStrokeColor: iconStrokeColorProp,
   loadStrategy,
   maxConcurrentBeams = 24,
   mode: explicitMode,
@@ -171,7 +173,7 @@ export function BusinessFlowVertical({
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
   const centralIconFillColor = centralIconFillColorProp ?? palette.centralIconFill;
-  const color = colorProp ?? palette.iconStroke;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.iconStroke;
   const connectorColor = connectorColorProp ?? palette.connector;
   const gradientEndColor = gradientEndColorProp ?? palette.frontGradient.end;
   const gradientMidColor = gradientMidColorProp ?? palette.frontGradient.mid;
@@ -205,7 +207,7 @@ export function BusinessFlowVertical({
     centralIconStrokeOpacity,
     gradient,
     iconSize,
-    iconStrokeColor: color,
+    iconStrokeColor,
     satellites,
     strokeWidth,
   }), [
@@ -213,7 +215,7 @@ export function BusinessFlowVertical({
     centralIconFillColor,
     centralIconFillMode,
     centralIconStrokeOpacity,
-    color,
+    iconStrokeColor,
     gradient,
     iconSize,
     satellites,
@@ -307,7 +309,7 @@ export function BusinessFlowVertical({
     .filter(Boolean)
     .join(' ');
   const style: IllustrationStyle = {
-    '--pillars-color': color,
+    '--pillars-color': iconStrokeColor,
     '--pillars-grid-color': gridColor,
     '--pillars-grid-density': `${gridDensity}px`,
     '--pillars-grid-opacity': String(gridOpacity),

@@ -242,7 +242,7 @@ it('renders the central hierarchy and satellite documents in one shared Node3D l
   ]);
 });
 
-it('maps its public color to every node stroke without changing central or satellite fills', () => {
+it('gives iconStrokeColor precedence for every node stroke without changing role fills', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -252,7 +252,8 @@ it('maps its public color to every node stroke without changing central or satel
     <BusinessFlowVertical
       auxiliaryIconFillColor="#111111"
       centralIconFillColor="#222222"
-      color="#abcdef"
+      color="#legacy"
+      iconStrokeColor="#abcdef"
       numberOfNodesBottom={1}
       numberOfNodesTop={1}
     />,

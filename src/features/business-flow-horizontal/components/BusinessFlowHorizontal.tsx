@@ -53,6 +53,7 @@ export type BusinessFlowHorizontalProps = WorkflowRuntimeOptions & NodeShadowPro
   gridOpacity?: number;
   height?: CSSProperties['height'];
   iconSize?: number;
+  iconStrokeColor?: string;
   maxConcurrentBeams?: number;
   mode?: ResolvedTheme;
   numberOfNodesLeft?: number;
@@ -130,6 +131,7 @@ export function BusinessFlowHorizontal({
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
+  iconStrokeColor: iconStrokeColorProp,
   loadStrategy,
   maxConcurrentBeams = 24,
   mode: explicitMode,
@@ -159,7 +161,7 @@ export function BusinessFlowHorizontal({
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
   const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
-  const color = colorProp ?? palette.horizontalIconStroke;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.horizontalIconStroke;
   const connectorColor = connectorColorProp ?? palette.connector;
   const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
@@ -217,14 +219,14 @@ export function BusinessFlowHorizontal({
     centralIconColor: centralIconFillColor,
     centralIconStrokeOpacity,
     iconSize,
-    iconStrokeColor: color,
+    iconStrokeColor,
     layoutNodes,
     strokeWidth,
   }), [
     auxiliaryIconFillColor,
     centralIconFillColor,
     centralIconStrokeOpacity,
-    color,
+    iconStrokeColor,
     iconSize,
     layoutNodes,
     strokeWidth,
@@ -260,7 +262,7 @@ export function BusinessFlowHorizontal({
     className,
   ].filter(Boolean).join(' ');
   const style: IllustrationStyle = {
-    '--camera-color': color,
+    '--camera-color': iconStrokeColor,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),

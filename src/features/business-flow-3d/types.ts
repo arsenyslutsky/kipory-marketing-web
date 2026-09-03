@@ -115,6 +115,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   nodeCornerRadius?: number;
   /** Opacity of the SVG artwork on the icon-bearing node face. */
   nodeIconOpacity?: number;
+  /** Color of the SVG icon linework without overriding its fill treatment. */
+  iconStrokeColor?: string;
   /** Gradient angle for the icon-bearing node face, in degrees. */
   nodeFrontGradientAngle?: number;
   /** Gradient angle for node sides aligned to the X axis, in degrees. */

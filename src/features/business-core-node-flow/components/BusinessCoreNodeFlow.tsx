@@ -61,6 +61,7 @@ export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & NodeShadowProps
   gridDensity?: number;
   gridOpacity?: number;
   iconSize?: number;
+  iconStrokeColor?: string;
   maxConcurrentBeams?: number;
   mode?: ResolvedTheme;
   nodeProgressMaxDelay?: number;
@@ -136,6 +137,7 @@ export function BusinessCoreNodeFlow({
   gridDensity = 30,
   gridOpacity = 0,
   iconSize = 44,
+  iconStrokeColor: iconStrokeColorProp,
   loadStrategy,
   maxConcurrentBeams = 6,
   mode: explicitMode,
@@ -165,7 +167,7 @@ export function BusinessCoreNodeFlow({
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
   const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
-  const color = colorProp ?? palette.horizontalIconStroke;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.horizontalIconStroke;
   const connectorColor = connectorColorProp ?? palette.connector;
   const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
@@ -190,14 +192,14 @@ export function BusinessCoreNodeFlow({
     centralIconColor: centralIconFillColor,
     centralIconStrokeOpacity,
     iconSize,
-    iconStrokeColor: color,
+    iconStrokeColor,
     layoutNodes,
     strokeWidth,
   }), [
     auxiliaryIconFillColor,
     centralIconFillColor,
     centralIconStrokeOpacity,
-    color,
+    iconStrokeColor,
     iconSize,
     layoutNodes,
     strokeWidth,
@@ -272,7 +274,7 @@ export function BusinessCoreNodeFlow({
 
   const rootClassName = [styles.root, className].filter(Boolean).join(' ');
   const style: IllustrationStyle = {
-    '--camera-color': color,
+    '--camera-color': iconStrokeColor,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),

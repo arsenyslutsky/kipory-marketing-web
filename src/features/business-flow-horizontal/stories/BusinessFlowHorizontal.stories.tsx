@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
+import { iconColorArgTypes } from '@/features/icon-color-story-controls';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
 import { businessFlowHorizontalHomepageProps } from '../presets';
 
@@ -19,6 +20,7 @@ const meta = {
   },
   argTypes: {
     ...nodeShadowArgTypes,
+    ...iconColorArgTypes,
     className: { table: { disable: true } },
     width: {
       control: 'text',
@@ -50,10 +52,7 @@ const meta = {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       table: { category: 'Nodes' },
     },
-    color: {
-      control: 'color',
-      table: { category: 'Nodes' },
-    },
+    color: { table: { disable: true } },
     iconSize: {
       control: { type: 'range', min: 24, max: 80, step: 1 },
       table: { category: 'Nodes' },

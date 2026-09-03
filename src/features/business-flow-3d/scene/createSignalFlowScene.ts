@@ -64,6 +64,7 @@ interface SceneOptions extends NodeShadowProps {
   nodeShape: NodeShape;
   nodeCornerRadius: number;
   nodeIconOpacity: number;
+  iconStrokeColor?: string;
   nodeFrontGradientAngle: number;
   nodeSideXGradientAngle: number;
   nodeSideZGradientAngle: number;
@@ -186,6 +187,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     nodeShape,
     nodeCornerRadius,
     nodeIconOpacity,
+    iconStrokeColor,
     nodeFrontGradientAngle,
     nodeSideXGradientAngle,
     nodeSideZGradientAngle,
@@ -642,6 +644,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       height: data.height,
       icon: data.svg,
       iconOpacity: nodeIconOpacity,
+      iconStrokeColor,
       id,
       isDark,
       isVariant2,

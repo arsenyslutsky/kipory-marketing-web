@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
+import { iconColorArgTypes } from '@/features/icon-color-story-controls';
 import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
 import {
@@ -44,6 +45,7 @@ const meta = {
   },
   argTypes: {
     ...nodeShadowArgTypes,
+    ...iconColorArgTypes,
     variant: { table: { disable: true } },
     className: { table: { disable: true } },
     onModeChange: { table: { disable: true } },

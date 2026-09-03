@@ -53,6 +53,7 @@ export function BusinessFlow3D({
   nodeShape = 'rectangle',
   nodeCornerRadius = 10,
   nodeIconOpacity: nodeIconOpacityProp,
+  iconStrokeColor,
   nodeFrontGradientAngle = 32,
   nodeSideXGradientAngle = 18,
   nodeSideZGradientAngle = 18,
@@ -178,6 +179,7 @@ export function BusinessFlow3D({
         nodeShape,
         nodeCornerRadius,
         nodeIconOpacity,
+        iconStrokeColor,
         nodeFrontGradientAngle,
         nodeSideXGradientAngle,
         nodeSideZGradientAngle,
@@ -232,7 +234,7 @@ export function BusinessFlow3D({
       if (controllerRef.current === controller) controllerRef.current = null;
       controller?.destroy();
     };
-  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShadowBias, nodeShadowBlurSamples, nodeShadowColor, nodeShadowLightX, nodeShadowLightY, nodeShadowLightZ, nodeShadowNormalBias, nodeShadowOpacity, nodeShadowRadius, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolutionScale, resolvedGridOpacity, runtime.shouldInitialize, showContinuationConnectors, speed, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, iconStrokeColor, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShadowBias, nodeShadowBlurSamples, nodeShadowColor, nodeShadowLightX, nodeShadowLightY, nodeShadowLightZ, nodeShadowNormalBias, nodeShadowOpacity, nodeShadowRadius, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolutionScale, resolvedGridOpacity, runtime.shouldInitialize, showContinuationConnectors, speed, theme, variant]);
 
   useEffect(() => {
     const element = containerRef.current;

@@ -219,12 +219,13 @@ it('uses singular node labels when either configurable side has one node', () =>
   })).toBeInTheDocument();
 });
 
-it('maps its public color to every node stroke without changing the role fill colors', () => {
+it('gives iconStrokeColor precedence for every node stroke without changing role fills', () => {
   render(
     <BusinessFlowHorizontal
       auxiliaryIconFillColor="#111111"
       centralIconFillColor="#222222"
-      color="#abcdef"
+      color="#legacy"
+      iconStrokeColor="#abcdef"
     />,
   );
 

@@ -111,6 +111,19 @@ it('falls back to the dark palette outside theme context', () => {
   expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
 });
 
+it('gives iconStrokeColor precedence for every core and auxiliary icon stroke', () => {
+  render(
+    <BusinessCoreNodeFlow
+      color="#legacy"
+      iconStrokeColor="#abcdef"
+      numberOfAuxiliaryConnections={3}
+    />,
+  );
+
+  expect(capturedNodes).toHaveLength(4);
+  expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
+});
+
 it('passes public node-shadow parameters to the shared renderer', () => {
   render(
     <BusinessCoreNodeFlow
