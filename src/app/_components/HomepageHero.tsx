@@ -20,11 +20,12 @@ export function HomepageHero() {
       <div className={styles.heroVisual} data-hero-workflow aria-hidden="true">
         <MobileWorkflowFallback
           alt=""
+          darkSrc="/images/workflows/mobile/hero-flow.png"
           fill
           fit="cover"
           height={780}
+          lightSrc="/images/workflows/mobile/hero-flow-light.png"
           name="hero"
-          src="/images/workflows/mobile/hero-flow.png"
           width={390}
         >
           <BusinessFlow3D {...businessFlow3DHomepageProps} />

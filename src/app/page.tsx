@@ -139,9 +139,10 @@ export default function HomePage() {
               <div className={styles.capabilityVisual}>
                 <MobileWorkflowFallback
                   alt="Vertical business flow"
+                  darkSrc="/images/workflows/mobile/pillars-flow.png"
                   height={360}
+                  lightSrc="/images/workflows/mobile/pillars-flow-light.png"
                   name="pillars"
-                  src="/images/workflows/mobile/pillars-flow.png"
                   width={360}
                 >
                   <BusinessFlowVertical
@@ -216,9 +217,10 @@ export default function HomePage() {
               <div className={styles.deliveryIllustration}>
                 <MobileWorkflowFallback
                   alt="Horizontal business flow"
+                  darkSrc="/images/workflows/mobile/delivery-flow.png"
                   height={608}
+                  lightSrc="/images/workflows/mobile/delivery-flow-light.png"
                   name="delivery"
-                  src="/images/workflows/mobile/delivery-flow.png"
                   width={360}
                 >
                   <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />

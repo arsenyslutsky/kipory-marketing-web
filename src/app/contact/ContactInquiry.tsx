@@ -61,9 +61,10 @@ export function ContactInquiry() {
           <MobileWorkflowFallback
             alt="Business core node flow"
             className={styles.contactCoreFlow}
+            darkSrc="/images/workflows/mobile/contact-core-flow.png"
             height={176}
+            lightSrc="/images/workflows/mobile/contact-core-flow-light.png"
             name="contact-core"
-            src="/images/workflows/mobile/contact-core-flow.png"
             width={176}
           >
             <BusinessCoreNodeFlow

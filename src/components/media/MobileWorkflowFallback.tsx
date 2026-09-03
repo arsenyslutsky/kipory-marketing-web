@@ -2,6 +2,8 @@
 
 import type { PropsWithChildren } from 'react';
 import { useSyncExternalStore } from 'react';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import styles from './MobileWorkflowFallback.module.css';
 
 const desktopMediaQuery = '(min-width: 621px)';
@@ -9,9 +11,11 @@ const desktopMediaQuery = '(min-width: 621px)';
 type MobileWorkflowFallbackProps = PropsWithChildren<{
   alt: string;
   className?: string;
+  darkSrc: string;
   height: number;
+  lightSrc: string;
+  mode?: ResolvedTheme;
   name: string;
-  src: string;
   width: number;
   fill?: boolean;
   fit?: 'contain' | 'cover';
@@ -45,14 +49,18 @@ export function MobileWorkflowFallback({
   alt,
   children,
   className,
+  darkSrc,
   fill = false,
   fit = 'contain',
   height,
+  lightSrc,
+  mode,
   name,
-  src,
   width,
 }: MobileWorkflowFallbackProps) {
   const desktop = useDesktopViewport();
+  const resolvedMode = useResolvedTheme(mode);
+  const src = resolvedMode === 'light' ? lightSrc : darkSrc;
 
   if (desktop) return children;
 

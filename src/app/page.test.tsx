@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import HomePage from './page';
 import styles from './marketing.module.css';
 
@@ -80,20 +81,48 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
     removeEventListener: vi.fn(),
   }) as unknown as MediaQueryList));
 
-  const { container } = render(<HomePage />);
-  const fallbacks = Array.from(
-    container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+  const darkFallbacks = Array.from(
+    darkView.container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
   );
 
-  expect(fallbacks.map((image) => image.getAttribute('src'))).toEqual([
+  expect(darkFallbacks.map((image) => image.parentElement?.dataset.mobileWorkflowFallback)).toEqual([
+    'hero',
+    'pillars',
+    'delivery',
+  ]);
+  expect(darkFallbacks.map((image) => image.getAttribute('src'))).toEqual([
     '/images/workflows/mobile/hero-flow.png',
     '/images/workflows/mobile/pillars-flow.png',
     '/images/workflows/mobile/delivery-flow.png',
   ]);
-  expect(fallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
+  expect(darkFallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
     '/images/workflows/mobile/hero-flow.png 1x, /images/workflows/mobile/hero-flow@2x.png 2x, /images/workflows/mobile/hero-flow@3x.png 3x',
     '/images/workflows/mobile/pillars-flow.png 1x, /images/workflows/mobile/pillars-flow@2x.png 2x, /images/workflows/mobile/pillars-flow@3x.png 3x',
     '/images/workflows/mobile/delivery-flow.png 1x, /images/workflows/mobile/delivery-flow@2x.png 2x, /images/workflows/mobile/delivery-flow@3x.png 3x',
+  ]);
+  expect(darkFallbacks.map((image) => [image.getAttribute('width'), image.getAttribute('height')])).toEqual([
+    ['390', '780'],
+    ['360', '360'],
+    ['360', '608'],
+  ]);
+
+  darkView.unmount();
+
+  const { container } = render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const lightFallbacks = Array.from(
+    container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
+  );
+
+  expect(lightFallbacks.map((image) => image.getAttribute('src'))).toEqual([
+    '/images/workflows/mobile/hero-flow-light.png',
+    '/images/workflows/mobile/pillars-flow-light.png',
+    '/images/workflows/mobile/delivery-flow-light.png',
+  ]);
+  expect(lightFallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
+    '/images/workflows/mobile/hero-flow-light.png 1x, /images/workflows/mobile/hero-flow-light@2x.png 2x, /images/workflows/mobile/hero-flow-light@3x.png 3x',
+    '/images/workflows/mobile/pillars-flow-light.png 1x, /images/workflows/mobile/pillars-flow-light@2x.png 2x, /images/workflows/mobile/pillars-flow-light@3x.png 3x',
+    '/images/workflows/mobile/delivery-flow-light.png 1x, /images/workflows/mobile/delivery-flow-light@2x.png 2x, /images/workflows/mobile/delivery-flow-light@3x.png 3x',
   ]);
   expect(threeDRender).not.toHaveBeenCalled();
   expect(verticalRender).not.toHaveBeenCalled();
