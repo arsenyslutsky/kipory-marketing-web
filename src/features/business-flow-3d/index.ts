@@ -5,6 +5,7 @@ export {
 } from './presets';
 export { BusinessFlow3DVariantTwo } from './components/BusinessFlow3DVariants';
 export { defaultColors, defaultFlow } from './config';
+export { homepageFlow } from './homepageFlow';
 export type {
   ConnectorStrokeType,
   FlowConfig,
