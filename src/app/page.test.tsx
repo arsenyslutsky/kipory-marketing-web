@@ -160,6 +160,7 @@ it('selects an independent hero 3D preset for each resolved theme', () => {
 
   expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDDarkHomepageProps,
+    emitterY: -3.5,
     mode: 'dark',
   }));
 
@@ -169,6 +170,7 @@ it('selects an independent hero 3D preset for each resolved theme', () => {
 
   expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDLightHomepageProps,
+    emitterY: -3.5,
     mode: 'light',
   }));
 });
@@ -197,6 +199,44 @@ it('omits the two protocol-overlapping terminal nodes from both homepage themes'
     'code',
     'metrics',
   ]);
+});
+
+it('extends every visible homepage terminal through two downstream tiers', () => {
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const flow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  expect(flow.nodes.filter((node: { tier: number }) => node.tier === 7).map((node: { id: string }) => node.id)).toEqual([
+    'publish',
+    'permissions',
+    'govern',
+    'stream',
+    'history',
+    'location',
+  ]);
+  expect(flow.nodes.filter((node: { tier: number }) => node.tier === 8).map((node: { id: string }) => node.id)).toEqual([
+    'endpoint',
+    'workspace',
+    'review',
+    'notify',
+    'archive',
+    'territory',
+  ]);
+  expect(flow.branches).toEqual(expect.objectContaining({
+    deploy: ['publish'],
+    publish: ['endpoint'],
+    identity: ['permissions'],
+    permissions: ['workspace'],
+    audit: ['govern'],
+    govern: ['review'],
+    signals: ['stream'],
+    stream: ['notify'],
+    timeline: ['history'],
+    history: ['archive'],
+    maps: ['location'],
+    location: ['territory'],
+  }));
+  expect(threeDDefaultFlow.nodes).toEqual([]);
+  expect(threeDDefaultFlow.branches).toEqual({});
 });
 
 it('routes homepage conversion actions to active destinations', () => {

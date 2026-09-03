@@ -56,7 +56,7 @@ describe('homepage preset contract', () => {
     expect(businessFlow3DHomepageLightProps).toMatchObject({
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
-      nodeFrontGradientStartColor: '#449c40',
+      nodeFrontGradientStartColor: '#98c496',
       nodeSideXGradientEndColor: '#449c40',
       nodeSideXGradientMidColor: '#449c40',
       nodeSideXGradientStartColor: '#449c40',

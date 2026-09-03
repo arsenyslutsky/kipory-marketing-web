@@ -115,7 +115,7 @@ describe('homepage illustration preset contract', () => {
     expect(businessFlow3DHomepageLightProps).toMatchObject({
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
-      nodeFrontGradientStartColor: '#449c40',
+      nodeFrontGradientStartColor: '#98c496',
       nodeSideXGradientEndColor: '#449c40',
       nodeSideXGradientMidColor: '#449c40',
       nodeSideXGradientStartColor: '#449c40',
@@ -176,14 +176,17 @@ describe('homepage illustration preset contract', () => {
     expect(businessFlow3DHomepageDarkProps).toEqual(expected);
     expect(businessFlow3DHomepageLightProps).toEqual({
       ...expected,
-      connectorElevation: 0.55,
+      cameraTargetOffsetY: -3,
+      connectorElevation: 2,
       connectorStroke: 'solid',
       emitterX: 1,
       iconStrokeColor: '#ffffff',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
-      nodeFrontGradientStartColor: '#449c40',
-      nodeCornerRadius: 50,
+      nodeFrontGradientStartColor: '#98c496',
+      nodeCornerRadius: 0,
+      nodeDepthRandom: 0,
+      nodeIconOpacity: 0.9,
       nodeShadowLightX: 0,
       nodeShadowLightZ: 16.5,
       nodeShadowRadius: 8,
@@ -193,6 +196,8 @@ describe('homepage illustration preset contract', () => {
       nodeSideZGradientEndColor: '#449c40',
       nodeSideZGradientMidColor: '#449c40',
       nodeSideZGradientStartColor: '#449c40',
+      outlineOpacity: 0.3,
+      outlineWidth: 1.25,
       pathCurve: 100,
       progressBarHeight: 10,
     });
@@ -377,14 +382,14 @@ describe('homepage illustration preset contract', () => {
       .toBeGreaterThan(countClassAndAttributeSelectors(rootRule[0]));
   });
 
-  it('keeps Storybook framing while positioning the desktop hero workflow clear of the copy', () => {
+  it('keeps Storybook framing while bottom-aligning the desktop hero workflow clear of the copy', () => {
     const marketingCss = source('../app/marketing.module.css');
     const heroVisualRule = marketingCss.match(/\.heroVisual\s*\{([^}]*)\}/)?.[1] ?? '';
 
-    expect(heroVisualRule).toMatch(/inset:\s*0/);
-    expect(heroVisualRule).toMatch(/height:\s*100dvh/);
+    expect(heroVisualRule).toMatch(/inset:\s*auto\s+0\s+0/);
+    expect(heroVisualRule).toMatch(/height:\s*840px/);
     expect(heroVisualRule).toMatch(
-      /transform:\s*translate3d\(clamp\(264px,\s*13vw,\s*284px\),\s*-64px,\s*0\)/,
+      /transform:\s*translateX\(clamp\(264px,\s*13vw,\s*284px\)\)/,
     );
     expect(heroVisualRule).not.toMatch(/scale\(/);
   });

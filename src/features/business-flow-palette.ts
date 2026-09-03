@@ -14,6 +14,7 @@ export interface BusinessFlowPalette {
   flareStops: FlareStops;
   frontGradient: NodeGradient;
   grid: string;
+  homepageNodeFrontStart: string;
   horizontalAuxiliaryIconFill: string;
   horizontalCentralIconFill: string;
   horizontalIconStroke: string;
@@ -37,6 +38,7 @@ interface PaletteOverrides {
   centralIconFill: string;
   connector: string;
   frontGradient: NodeGradient;
+  homepageNodeFrontStart: string;
   horizontalAuxiliaryIconFill: string;
   horizontalCentralIconFill: string;
   horizontalIconStroke: string;
@@ -63,6 +65,7 @@ function createBusinessFlowPalette(theme: ColorTheme, overrides: PaletteOverride
     flareStops: copyFlareStops(theme.effects.flareStops),
     frontGradient: { ...overrides.frontGradient },
     grid: theme.scene.gridMinor,
+    homepageNodeFrontStart: overrides.homepageNodeFrontStart,
     horizontalAuxiliaryIconFill: overrides.horizontalAuxiliaryIconFill,
     horizontalCentralIconFill: overrides.horizontalCentralIconFill,
     horizontalIconStroke: overrides.horizontalIconStroke,
@@ -82,6 +85,7 @@ export const businessFlowPalettes: Record<ResolvedTheme, BusinessFlowPalette> = 
     centralIconFill: '#1d281d',
     connector: colors.dark.effects.nodeStroke,
     frontGradient: { end: '#052f24', mid: '#03492b', start: '#066b43' },
+    homepageNodeFrontStart: '#066b43',
     horizontalAuxiliaryIconFill: '#0b270e',
     horizontalCentralIconFill: '#1b4e13',
     horizontalIconStroke: '#9fb996',
@@ -94,6 +98,7 @@ export const businessFlowPalettes: Record<ResolvedTheme, BusinessFlowPalette> = 
     centralIconFill: '#b7cfb8',
     connector: colors.light.scene.connector,
     frontGradient: { end: colors.light.scene.cardShadow, mid: colors.light.scene.card, start: colors.light.scene.cardHighlight },
+    homepageNodeFrontStart: '#98c496',
     horizontalAuxiliaryIconFill: '#d9e7da',
     horizontalCentralIconFill: colors.light.scene.cardSide,
     horizontalIconStroke: colors.light.scene.edge,

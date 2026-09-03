@@ -89,6 +89,12 @@ const meta = {
       control: { type: 'range', min: 0.25, max: 2, step: 0.05 },
       table: { category: 'Placement & Camera' },
     },
+    cameraTargetOffsetY: {
+      control: { type: 'range', min: -10, max: 10, step: 0.1 },
+      description: 'Shift the camera target vertically without changing scene scale or depth.',
+      name: 'Camera target Y offset',
+      table: { category: 'Placement & Camera' },
+    },
     scrollTilt: {
       control: { type: 'range', min: -90, max: 90, step: 1 },
       table: { category: 'Placement & Camera' },
@@ -375,6 +381,13 @@ export const CurrentNextjsApp: Story = {
 
 export const CurrentAppLight: Story = {
   name: 'Current App (Light)',
+  decorators: [
+    (Story) => (
+      <div style={{ height: 500, overflow: 'hidden' }}>
+        <Story />
+      </div>
+    ),
+  ],
   args: {
     ...businessFlow3DHomepageLightProps,
     mode: 'light',

@@ -22,6 +22,7 @@ const cssRenderer = vi.hoisted(() => ({
 const flowPathCaptures = vi.hoisted(() => ({
   beam: [] as number[][],
   connector: [] as number[][],
+  connectorPoints: [] as Array<Array<{ x: number; y: number; z: number }>>,
 }));
 
 vi.mock('three', async (importOriginal) => {
@@ -50,10 +51,20 @@ vi.mock('@/components/elements/Connector3D/createConnector3DObject', async (impo
     ...actual,
     createConnector3DObject: (options: Parameters<typeof actual.createConnector3DObject>[0]) => {
       flowPathCaptures.connector.push(options.path.points.map((point) => point.y));
+      flowPathCaptures.connectorPoints.push(options.path.points.map((point) => ({
+        x: point.x,
+        y: point.y,
+        z: point.z,
+      })));
       return actual.createConnector3DObject(options);
     },
     createFadingConnector3DObject: (options: Parameters<typeof actual.createFadingConnector3DObject>[0]) => {
       flowPathCaptures.connector.push(options.path.points.map((point) => point.y));
+      flowPathCaptures.connectorPoints.push(options.path.points.map((point) => ({
+        x: point.x,
+        y: point.y,
+        z: point.z,
+      })));
       return actual.createFadingConnector3DObject(options);
     },
   };
@@ -83,6 +94,7 @@ import { getNode3DGradientTexture } from '@/components/elements/Node3D/node3DGra
 afterEach(() => {
   flowPathCaptures.beam.length = 0;
   flowPathCaptures.connector.length = 0;
+  flowPathCaptures.connectorPoints.length = 0;
   renderer.shadowMap.autoUpdate = true;
   renderer.shadowMap.needsUpdate = false;
   vi.restoreAllMocks();
@@ -134,6 +146,62 @@ it.each([
   expect(flowPathCaptures.beam.flat().every(
     (height) => Math.abs(height - safeConnectorHeight) < 0.000001,
   )).toBe(true);
+  controller.destroy();
+});
+
+it('terminates connectors at the scaled node perimeter instead of beneath node centers', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    nodeScale: 0.5,
+  });
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(1);
+  expect(flowPathCaptures.connectorPoints[0]?.map(({ x, z }) => [x, z])).toEqual([
+    [0, 0.25],
+    [0, 1.5],
+    [0, 1.5],
+    [0, 2.75],
+  ]);
+  controller.destroy();
+});
+
+it('joins incoming and terminal continuations at scaled node perimeter edges', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    nodeScale: 0.5,
+    showContinuationConnectors: true,
+  });
+  const continuations = flowPathCaptures.connectorPoints.filter((points) => points.length === 2);
+
+  expect(continuations).toHaveLength(2);
+  expect(continuations[0]?.at(-1)?.z).toBe(-0.25);
+  expect(continuations[1]?.at(0)?.z).toBe(3.25);
   controller.destroy();
 });
 
@@ -289,6 +357,49 @@ function createSceneOptions() {
     },
   };
 }
+
+it('shifts the camera target vertically without changing scene scale or depth', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const baseController = createSignalFlowScene({
+    ...createSceneOptions(),
+    cameraYaw: 0,
+    cameraTargetOffsetY: 0,
+    perspectiveEffect: 75,
+  });
+  animationFrames.shift()?.(1000);
+  const baseCamera = (renderer.render.mock.calls.at(-1)?.[1] as THREE.Camera).clone();
+  baseController.destroy();
+  animationFrames.length = 0;
+
+  const shiftedController = createSignalFlowScene({
+    ...createSceneOptions(),
+    cameraYaw: 0,
+    cameraTargetOffsetY: 2,
+    perspectiveEffect: 75,
+  });
+  animationFrames.shift()?.(1000);
+  const shiftedCamera = (renderer.render.mock.calls.at(-1)?.[1] as THREE.Camera).clone();
+  shiftedController.destroy();
+
+  expect(shiftedCamera.position.x - baseCamera.position.x).toBeCloseTo(0, 6);
+  expect(shiftedCamera.position.y - baseCamera.position.y).toBeCloseTo(2, 6);
+  expect(shiftedCamera.position.z - baseCamera.position.z).toBeCloseTo(0, 6);
+  expect(shiftedCamera.projectionMatrix.toArray()).toEqual(baseCamera.projectionMatrix.toArray());
+});
 
 it('applies configurable node-shadow parameters to the light and catcher', () => {
   const animationFrames: FrameRequestCallback[] = [];

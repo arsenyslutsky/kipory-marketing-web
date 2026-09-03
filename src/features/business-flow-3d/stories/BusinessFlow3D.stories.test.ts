@@ -1,3 +1,4 @@
+import { createElement, isValidElement, type CSSProperties, type ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import {
   businessFlow3DHomepageDarkProps,
@@ -32,6 +33,24 @@ describe('BusinessFlow3D current-app stories', () => {
     expect(stories.CurrentNextjsApp.args).toMatchObject({ progressBarOpacity: 1 });
     expect(stories.CurrentAppLight.args).toMatchObject({ progressBarOpacity: 1 });
   });
+
+  it('uses the tightened vertical framing only for the light app preset', () => {
+    expect(stories.CurrentNextjsApp.args).not.toHaveProperty('cameraTargetOffsetY');
+    expect(stories.CurrentAppLight.args).toMatchObject({ cameraTargetOffsetY: -3 });
+  });
+
+  it('crops the light app preview at 500px without resizing the flow scene', () => {
+    const decorators = stories.CurrentAppLight.decorators;
+    expect(Array.isArray(decorators)).toBe(true);
+    if (!Array.isArray(decorators)) throw new Error('Expected story-local decorators.');
+    const decorator = decorators[0];
+    expect(decorator).toBeTypeOf('function');
+
+    const frame = decorator?.(() => createElement('div'), {} as never);
+    expect(isValidElement(frame)).toBe(true);
+    const props = (frame as ReactElement<{ style: CSSProperties }>).props;
+    expect(props.style).toEqual({ height: 500, overflow: 'hidden' });
+  });
 });
 
 it('exposes the active progress fill as a color control', () => {
@@ -64,5 +83,14 @@ it('exposes independent node and connector elevation controls', () => {
     description: 'Requested world-space elevation shared by connectors, junctions, and travelling beams, capped below node bodies.',
     name: 'Connector elevation',
     table: { category: 'Connectors' },
+  });
+});
+
+it('exposes vertical camera framing independently from zoom', () => {
+  expect(meta.argTypes.cameraTargetOffsetY).toMatchObject({
+    control: { max: 10, min: -10, step: 0.1, type: 'range' },
+    description: 'Shift the camera target vertically without changing scene scale or depth.',
+    name: 'Camera target Y offset',
+    table: { category: 'Placement & Camera' },
   });
 });

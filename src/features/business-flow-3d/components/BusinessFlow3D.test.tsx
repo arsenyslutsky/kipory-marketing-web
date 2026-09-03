@@ -142,6 +142,18 @@ it('passes independent node and connector elevations to the renderer', async () 
   });
 });
 
+it('passes the public camera target offset to the renderer', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
+  vi.mocked(createSignalFlowScene).mockImplementation(createController);
+
+  render(<BusinessFlow3D cameraTargetOffsetY={2.25} showInterface={false} />);
+
+  await waitFor(() => expect(createSignalFlowScene).toHaveBeenCalledOnce());
+  expect(vi.mocked(createSignalFlowScene).mock.calls[0]?.[0]).toMatchObject({
+    cameraTargetOffsetY: 2.25,
+  });
+});
+
 it('honors an explicit dark mode over light theme context', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
   vi.mocked(createSignalFlowScene).mockImplementation(createController);

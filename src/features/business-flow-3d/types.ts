@@ -140,6 +140,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   cameraPitch?: number;
   cameraYaw?: number;
   cameraZoom?: number;
+  /** Additive world-space vertical offset for the camera target. */
+  cameraTargetOffsetY?: number;
   /** World-space X coordinate of the root emitter center. */
   emitterX?: number;
   /** World-space Y coordinate of the root emitter center on the flow plane. */

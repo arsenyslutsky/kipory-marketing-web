@@ -83,6 +83,7 @@ interface SceneOptions extends NodeShadowProps {
   cameraPitch: number;
   cameraYaw?: number;
   cameraZoom: number;
+  cameraTargetOffsetY?: number;
   emitterX: number;
   emitterY: number;
   minDelay: number;
@@ -213,6 +214,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     cameraPitch,
     cameraYaw,
     cameraZoom,
+    cameraTargetOffsetY = 0,
     emitterX,
     emitterY,
     minDelay,
@@ -444,7 +446,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
 
   const cameraTarget = new THREE.Vector3(
     (flowLeft + flowRight) * 0.5 + 0.3,
-    0,
+    cameraTargetOffsetY,
     (flowNear + flowFar) * 0.5 + 1.2,
   );
   const cameraHeading = cameraYaw === undefined
@@ -697,15 +699,25 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     lowestNodeBodyY - NODE_FLOAT_AMPLITUDE - CONNECTOR_NODE_CLEARANCE,
   );
 
+  function nodeEdgeZ(node: RuntimeNode, direction: -1 | 1) {
+    return node.p[1] + direction * nodeFootprint(node)[1] * resolvedNodeScale * 0.5;
+  }
+
   function edgePoints(a: string, b: string) {
-    const pointA = nodes[a].p;
-    const pointB = nodes[b].p;
-    const midZ = (pointA[1] + pointB[1]) * 0.5;
+    const source = nodes[a];
+    const target = nodes[b];
+    const pointA = source.p;
+    const pointB = target.p;
+    const direction = (Math.sign(pointB[1] - pointA[1]) || 1) as -1 | 1;
+    const targetDirection = direction === 1 ? -1 : 1;
+    const sourceEdgeZ = nodeEdgeZ(source, direction);
+    const targetEdgeZ = nodeEdgeZ(target, targetDirection);
+    const midZ = (sourceEdgeZ + targetEdgeZ) * 0.5;
     return [
-      new THREE.Vector3(pointA[0], connectorY, pointA[1]),
+      new THREE.Vector3(pointA[0], connectorY, sourceEdgeZ),
       new THREE.Vector3(pointA[0], connectorY, midZ),
       new THREE.Vector3(pointB[0], connectorY, midZ),
-      new THREE.Vector3(pointB[0], connectorY, pointB[1]),
+      new THREE.Vector3(pointB[0], connectorY, targetEdgeZ),
     ];
   }
 
@@ -769,12 +781,12 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const continuationY = connectorY;
   const continuationDistance = Math.max(initialCameraBase * 2.2, 16);
   const incomingFadeDistance = 100 / initialPixelsPerWorldUnit;
-  const [, rootDepth] = nodeFootprint(nodes[rootNodeId]);
   const incomingOriginX = nodes[rootNodeId].p[0];
-  const incomingOriginZ = nodes[rootNodeId].p[1] - rootDepth * 0.5 - incomingFadeDistance;
+  const incomingEdgeZ = nodeEdgeZ(nodes[rootNodeId], -1);
+  const incomingOriginZ = incomingEdgeZ - incomingFadeDistance;
   const incomingPoints = [
     new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ),
-    new THREE.Vector3(nodes[rootNodeId].p[0], continuationY, incomingOriginZ),
+    new THREE.Vector3(nodes[rootNodeId].p[0], continuationY, incomingEdgeZ),
   ];
   if (showContinuationConnectors) {
     network.add(createFadingConnectorObject(incomingPoints));
@@ -787,7 +799,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       .filter(([, node]) => node.tier === terminalTier)
       .forEach(([, node]) => {
         const points = [
-          new THREE.Vector3(node.p[0], continuationY, node.p[1]),
+          new THREE.Vector3(node.p[0], continuationY, nodeEdgeZ(node, 1)),
           new THREE.Vector3(node.p[0], continuationY, terminalEndZ),
         ];
         const curve = makeCurve(points);

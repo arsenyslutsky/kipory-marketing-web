@@ -5,9 +5,9 @@
 }
 .hero { position: relative; min-height: 840px; overflow: hidden; background: var(--surface-base); }
 .hero::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse 60% 39% at 92% -2%, color-mix(in srgb, var(--surface-base) 96%, transparent) 0%, color-mix(in srgb, var(--surface-base) 68%, transparent) 34%, color-mix(in srgb, var(--surface-base) 28%, transparent) 56%, color-mix(in srgb, var(--surface-base) 8%, transparent) 68%, transparent 80%); }
-.heroVisual { position: absolute; inset: 0 0 auto; height: 100dvh; opacity: 1; transform: translate3d(clamp(264px, 13vw, 284px), -64px, 0); transform-origin: center top; -webkit-mask-image: linear-gradient(90deg, transparent 0, var(--surface-base) 140px, var(--surface-base) 100%); mask-image: linear-gradient(90deg, transparent 0, var(--surface-base) 140px, var(--surface-base) 100%); }
+.heroVisual { position: absolute; inset: auto 0 0; height: 840px; opacity: 1; transform: translateX(clamp(264px, 13vw, 284px)); transform-origin: center top; -webkit-mask-image: linear-gradient(90deg, transparent 0, var(--surface-base) 140px, var(--surface-base) 100%); mask-image: linear-gradient(90deg, transparent 0, var(--surface-base) 140px, var(--surface-base) 100%); }
 .heroVisual > [data-flow-state] { min-height: 0; height: 100%; }
-.heroShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--surface-base) 98%, transparent) 0%, color-mix(in srgb, var(--surface-base) 80%, transparent) 35%, color-mix(in srgb, var(--surface-base) 8%, transparent) 72%), linear-gradient(0deg, color-mix(in srgb, var(--surface-base) 68%, transparent), transparent 38%); }
+.heroShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--surface-base) 0%, transparent) 10%, color-mix(in srgb, var(--surface-base) 0%, transparent) 0%, color-mix(in srgb, var(--surface-base) 0%, transparent) 0%), linear-gradient(0deg, color-mix(in srgb, var(--surface-base) 10%, transparent), transparent 0%); }
 .heroInner { position: relative; z-index: 2; min-height: inherit; display: flex; align-items: flex-start; }
 .heroCopy { width: min(660px, 62vw); min-height: inherit; padding: 130px 0 10px; display: flex; flex-direction: column; transform: perspective(1300px) translate3d(calc(-5rem * var(--hero-scroll-progress, 0)), calc(-7rem * var(--hero-scroll-progress, 0)), calc(5rem * var(--hero-scroll-progress, 0))); transform-origin: left center; }
 .heroTitle { margin: 0; max-width: 700px; display: flex; flex-direction: column; gap: 20px; font-family: var(--type-display-family); font-size: var(--type-display-size-hero); font-weight: var(--type-display-weight); line-height: var(--type-display-leading-hero); letter-spacing: var(--type-display-tracking); text-wrap: balance; }
@@ -142,7 +142,7 @@
 }
 @media (max-width: 900px) {
   .main .movementSection { padding-bottom: 35px; }
-  .heroVisual { left: 0; height: max(1014px, 133.333svh); transform: translateX(4vw) scale(.75); -webkit-mask-image: none; mask-image: none; }
+  .heroVisual { inset: 0 0 auto; height: 1014px; transform: translateX(4vw) scale(.75); -webkit-mask-image: none; mask-image: none; }
   .heroCopy { width: min(700px, 86vw); padding: 12.5svh 0 32px; }
   .heroProtocols { width: 100%; }
   .heroProtocolsList { padding: 0; }
@@ -153,7 +153,7 @@
 }
 @media (max-width: 620px) {
   .hero { min-height: 780px; height: 780px; }
-  .heroVisual { left: -48%; height: max(760px, 100svh); opacity: .55; transform: none; }
+  .heroVisual { left: -48%; height: 780px; opacity: .55; transform: none; }
   .heroCopy { width: 100%; padding: 104px 0 32px; transform: none; }
   .heroTitle { font-size: var(--type-display-size-hero-mobile); }
   .heroLead { max-width: 90%; font-size: var(--type-body-size-sm); }
