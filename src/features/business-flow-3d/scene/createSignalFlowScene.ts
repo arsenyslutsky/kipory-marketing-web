@@ -126,6 +126,9 @@ type ResolvedNodeGradient = Node3DResolvedGradient;
 
 const NODE_FLOAT_AMPLITUDE = 0.012;
 const CONNECTOR_NODE_CLEARANCE = 0.02;
+const CONNECTOR_NODE_TUCK_RATIO = 0.08;
+const MINIMUM_RENDERED_NODE_GAP = 0.6;
+const ALIGNED_CONNECTOR_EPSILON = 0.000001;
 
 interface RouteStop {
   id: string;
@@ -378,18 +381,22 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   rows.forEach((row) => {
     if (row.length < 2) return;
     row.sort(([, left], [, right]) => left.p[0] - right.p[0]);
-    const originalLeft = Math.min(...row.map(([, node]) => node.p[0] - nodeFootprint(node)[0] * 0.5));
-    const originalRight = Math.max(...row.map(([, node]) => node.p[0] + nodeFootprint(node)[0] * 0.5));
-    const rowCenter = (originalLeft + originalRight) * 0.5;
-    const occupiedWidth = row.reduce((total, [, node]) => total + nodeFootprint(node)[0], 0);
-    const minimumGap = 0.65;
-    const rowWidth = Math.max(originalRight - originalLeft, occupiedWidth + minimumGap * (row.length - 1));
-    const gap = (rowWidth - occupiedWidth) / (row.length - 1);
-    let cursor = rowCenter - rowWidth * 0.5;
+    const authoredCenter = (row[0][1].p[0] + row.at(-1)![1].p[0]) * 0.5;
+    for (let index = 1; index < row.length; index++) {
+      const previous = row[index - 1][1];
+      const current = row[index][1];
+      const previousWidth = nodeFootprint(previous)[0] * resolvedNodeScale;
+      const currentWidth = nodeFootprint(current)[0] * resolvedNodeScale;
+      const minimumX = previous.p[0]
+        + previousWidth * 0.5
+        + currentWidth * 0.5
+        + MINIMUM_RENDERED_NODE_GAP;
+      current.p[0] = Math.max(current.p[0], minimumX);
+    }
+    const resolvedCenter = (row[0][1].p[0] + row.at(-1)![1].p[0]) * 0.5;
+    const centerCorrection = authoredCenter - resolvedCenter;
     row.forEach(([, node]) => {
-      const [nodeWidth] = nodeFootprint(node);
-      node.p[0] = cursor + nodeWidth * 0.5;
-      cursor += nodeWidth + gap;
+      node.p[0] += centerCorrection;
     });
   });
 
@@ -688,19 +695,38 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     if (!hiddenNodeIds.has(id)) createCard(id, data);
   });
 
-  const lowestNodeBodyY = Math.min(...Object.values(cardObjects).map((card) => {
-    card.updateWorldMatrix(true, true);
+  const nodeBodyBounds = Object.fromEntries(Object.entries(cardObjects).map(([id, card]) => {
     const body = card.userData.body as THREE.Object3D;
-    return new THREE.Box3().setFromObject(body).min.y;
+    body.updateWorldMatrix(true, false);
+    return [id, new THREE.Box3().setFromObject(body, true)];
   }));
+  const nodeConnectorY = (id: string) => (
+    nodeBodyBounds[id].min.y
+    - network.position.y
+    - NODE_FLOAT_AMPLITUDE
+    - CONNECTOR_NODE_CLEARANCE
+  );
   const requestedConnectorY = 0.11 + (Number.isFinite(connectorElevation) ? connectorElevation : 0);
   const connectorY = Math.min(
     requestedConnectorY,
-    lowestNodeBodyY - NODE_FLOAT_AMPLITUDE - CONNECTOR_NODE_CLEARANCE,
+    ...Object.keys(cardObjects).map(nodeConnectorY),
   );
 
-  function nodeEdgeZ(node: RuntimeNode, direction: -1 | 1) {
-    return node.p[1] + direction * nodeFootprint(node)[1] * resolvedNodeScale * 0.5;
+  function nodeEdgeZ(id: string, direction: -1 | 1) {
+    const node = nodes[id];
+    const bounds = nodeBodyBounds[id];
+    const boundaryZ = (direction === 1 ? bounds.max.z : bounds.min.z) - network.position.z;
+    return THREE.MathUtils.lerp(boundaryZ, node.p[1], CONNECTOR_NODE_TUCK_RATIO);
+  }
+
+  function nodeCenterPoint(id: string) {
+    const node = nodes[id];
+    return new THREE.Vector3(node.p[0], nodeConnectorY(id), node.p[1]);
+  }
+
+  function nodeEdgePoint(id: string, direction: -1 | 1) {
+    const node = nodes[id];
+    return new THREE.Vector3(node.p[0], nodeConnectorY(id), nodeEdgeZ(id, direction));
   }
 
   function edgePoints(a: string, b: string) {
@@ -710,14 +736,18 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     const pointB = target.p;
     const direction = (Math.sign(pointB[1] - pointA[1]) || 1) as -1 | 1;
     const targetDirection = direction === 1 ? -1 : 1;
-    const sourceEdgeZ = nodeEdgeZ(source, direction);
-    const targetEdgeZ = nodeEdgeZ(target, targetDirection);
-    const midZ = (sourceEdgeZ + targetEdgeZ) * 0.5;
+    const sourcePoint = nodeEdgePoint(a, direction);
+    const targetPoint = nodeEdgePoint(b, targetDirection);
+    const lateralRun = Math.abs(targetPoint.x - sourcePoint.x);
+    if (lateralRun < ALIGNED_CONNECTOR_EPSILON) {
+      return [sourcePoint, targetPoint];
+    }
+    const midZ = (sourcePoint.z + targetPoint.z) * 0.5;
     return [
-      new THREE.Vector3(pointA[0], connectorY, sourceEdgeZ),
+      sourcePoint,
       new THREE.Vector3(pointA[0], connectorY, midZ),
       new THREE.Vector3(pointB[0], connectorY, midZ),
-      new THREE.Vector3(pointB[0], connectorY, targetEdgeZ),
+      targetPoint,
     ];
   }
 
@@ -782,11 +812,11 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const continuationDistance = Math.max(initialCameraBase * 2.2, 16);
   const incomingFadeDistance = 100 / initialPixelsPerWorldUnit;
   const incomingOriginX = nodes[rootNodeId].p[0];
-  const incomingEdgeZ = nodeEdgeZ(nodes[rootNodeId], -1);
+  const incomingEdgeZ = nodeEdgeZ(rootNodeId, -1);
   const incomingOriginZ = incomingEdgeZ - incomingFadeDistance;
   const incomingPoints = [
     new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ),
-    new THREE.Vector3(nodes[rootNodeId].p[0], continuationY, incomingEdgeZ),
+    nodeEdgePoint(rootNodeId, -1),
   ];
   if (showContinuationConnectors) {
     network.add(createFadingConnectorObject(incomingPoints));
@@ -797,9 +827,9 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   if (showContinuationConnectors) {
     visibleNodes
       .filter(([, node]) => node.tier === terminalTier)
-      .forEach(([, node]) => {
+      .forEach(([id, node]) => {
         const points = [
-          new THREE.Vector3(node.p[0], continuationY, nodeEdgeZ(node, 1)),
+          nodeEdgePoint(id, 1),
           new THREE.Vector3(node.p[0], continuationY, terminalEndZ),
         ];
         const curve = makeCurve(points);
@@ -861,18 +891,23 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   }
 
   function routePoints(route: string[]) {
-    const root = nodes[route[0]];
-    const rootPoint = new THREE.Vector3(root.p[0], continuationY, root.p[1]);
+    const rootId = route[0];
+    const terminalId = route.at(-1) || rootId;
     const all: THREE.Vector3[] = showContinuationConnectors
-      ? [new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ), rootPoint]
-      : [rootPoint];
+      ? [
+          new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ),
+          nodeEdgePoint(rootId, -1),
+          nodeCenterPoint(rootId),
+        ]
+      : [nodeCenterPoint(rootId)];
     for (let i = 0; i < route.length - 1; i++) {
       const points = edgePoints(route[i], route[i + 1]);
-      points.shift();
       all.push(...points);
+      all.push(nodeCenterPoint(route[i + 1]));
     }
-    if (showContinuationConnectors) {
-      const terminal = nodes[route.at(-1) || route[0]];
+    if (showContinuationConnectors && nodes[terminalId].tier === terminalTier) {
+      const terminal = nodes[terminalId];
+      all.push(nodeEdgePoint(terminalId, 1));
       all.push(new THREE.Vector3(terminal.p[0], continuationY, terminalEndZ));
     }
     return all;

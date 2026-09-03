@@ -21,6 +21,7 @@ const cssRenderer = vi.hoisted(() => ({
 
 const flowPathCaptures = vi.hoisted(() => ({
   beam: [] as number[][],
+  beamPoints: [] as Array<Array<{ x: number; y: number; z: number }>>,
   connector: [] as number[][],
   connectorPoints: [] as Array<Array<{ x: number; y: number; z: number }>>,
 }));
@@ -79,6 +80,11 @@ vi.mock('@/components/elements/Beam3D/createBeam3DObject', async (importOriginal
       const setPath = beam.setPath;
       beam.setPath = (path) => {
         flowPathCaptures.beam.push(path.points.map((point) => point.y));
+        flowPathCaptures.beamPoints.push(path.points.map((point) => ({
+          x: point.x,
+          y: point.y,
+          z: point.z,
+        })));
         setPath(path);
       };
       return beam;
@@ -93,6 +99,7 @@ import { getNode3DGradientTexture } from '@/components/elements/Node3D/node3DGra
 
 afterEach(() => {
   flowPathCaptures.beam.length = 0;
+  flowPathCaptures.beamPoints.length = 0;
   flowPathCaptures.connector.length = 0;
   flowPathCaptures.connectorPoints.length = 0;
   renderer.shadowMap.autoUpdate = true;
@@ -103,13 +110,13 @@ afterEach(() => {
 });
 
 it.each([
-  { connectorElevation: 0, nodeScale: 1, safeConnectorHeight: 0.11 },
-  { connectorElevation: 1.5, nodeScale: 1, safeConnectorHeight: 0.258 },
-  { connectorElevation: 1.5, nodeScale: 3, safeConnectorHeight: 0.038 },
+  { connectorElevation: 0, nodeScale: 1, safeConnectorHeights: [0.11, 0.258, 0.288] },
+  { connectorElevation: 1.5, nodeScale: 1, safeConnectorHeights: [0.258, 0.288] },
+  { connectorElevation: 1.5, nodeScale: 3, safeConnectorHeights: [0.038, 0.068] },
 ])('keeps connector paths and travelling beams below $nodeScale× node bodies', ({
   connectorElevation,
   nodeScale,
-  safeConnectorHeight,
+  safeConnectorHeights,
 }) => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
@@ -139,17 +146,58 @@ it.each([
 
   expect(flowPathCaptures.connector.length).toBeGreaterThan(0);
   expect(flowPathCaptures.beam.length).toBeGreaterThan(0);
-  // Reserve 0.012 for floating motion and 0.02 for depth separation.
-  expect(flowPathCaptures.connector.flat().every(
-    (height) => Math.abs(height - safeConnectorHeight) < 0.000001,
-  )).toBe(true);
-  expect(flowPathCaptures.beam.flat().every(
-    (height) => Math.abs(height - safeConnectorHeight) < 0.000001,
-  )).toBe(true);
+  // Each allowed height reserves 0.012 for floating motion and 0.02 for depth separation.
+  [...flowPathCaptures.connector.flat(), ...flowPathCaptures.beam.flat()].forEach((height) => {
+    expect(safeConnectorHeights.some((safeHeight) => (
+      Math.abs(height - safeHeight) < 0.000001
+    ))).toBe(true);
+  });
+  safeConnectorHeights.forEach((safeHeight) => {
+    expect(flowPathCaptures.beam.flat().some((height) => (
+      Math.abs(height - safeHeight) < 0.000001
+    ))).toBe(true);
+  });
   controller.destroy();
 });
 
-it('terminates connectors at the scaled node perimeter instead of beneath node centers', () => {
+it('attaches connector endpoints to each node underside while the middle span stays below every node', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const options = createSceneOptions();
+  const flow = {
+    ...options.flow,
+    nodes: options.flow.nodes.map((node) => (
+      node.id === 'leaf' ? { ...node, position: [1.2, 3] as [number, number] } : node
+    )),
+  };
+  const controller = createSignalFlowScene({
+    ...options,
+    flow,
+    connectorElevation: 0,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    nodeScale: 1,
+  });
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(1);
+  const connector = flowPathCaptures.connectorPoints[0]!;
+  expect(connector[0]!.y).toBeCloseTo(0.258, 6);
+  expect(connector[1]!.y).toBeCloseTo(0.11, 6);
+  expect(connector[2]!.y).toBeCloseTo(0.11, 6);
+  expect(connector[3]!.y).toBeCloseTo(0.288, 6);
+  controller.destroy();
+});
+
+it('tucks connector endpoints beneath scaled node faces instead of stopping at the silhouette edge', () => {
   vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
   vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
@@ -169,12 +217,111 @@ it('terminates connectors at the scaled node perimeter instead of beneath node c
   });
 
   expect(flowPathCaptures.connectorPoints).toHaveLength(1);
-  expect(flowPathCaptures.connectorPoints[0]?.map(({ x, z }) => [x, z])).toEqual([
-    [0, 0.25],
-    [0, 1.5],
-    [0, 1.5],
-    [0, 2.75],
-  ]);
+  const connector = flowPathCaptures.connectorPoints[0]!;
+  expect(connector.map(({ x }) => x)).toEqual([0, 0]);
+  expect(connector[0]!.z).toBeCloseTo(0.23, 6);
+  expect(connector[1]!.z).toBeCloseTo(2.77, 6);
+  controller.destroy();
+});
+
+it('keeps offset connectors orthogonal instead of drawing a diagonal shortcut', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const options = createSceneOptions();
+  const flow = {
+    ...options.flow,
+    nodes: options.flow.nodes.map((node) => (
+      node.id === 'leaf' ? { ...node, position: [0.6, 3] as [number, number] } : node
+    )),
+  };
+  const controller = createSignalFlowScene({
+    ...options,
+    flow,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+  });
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(1);
+  expect(flowPathCaptures.connectorPoints[0]?.map(({ x }) => x)).toEqual([0, 0, 0.6, 0.6]);
+  controller.destroy();
+});
+
+it('preserves authored parent-child columns when scaled nodes already fit without overlap', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const options = createSceneOptions();
+  const flow = {
+    root: 'source',
+    nodes: [
+      { ...options.flow.nodes[0], id: 'left-source', position: [0, 0] as [number, number] },
+      { ...options.flow.nodes[0], id: 'source', position: [3, 0] as [number, number] },
+      { ...options.flow.nodes[0], id: 'right-source', position: [6, 0] as [number, number] },
+      { ...options.flow.nodes[1], id: 'left-target', position: [0, 3] as [number, number], shape: 'triangle' as const },
+      { ...options.flow.nodes[1], id: 'target', position: [3, 3] as [number, number] },
+      { ...options.flow.nodes[1], id: 'right-target', position: [6, 3] as [number, number] },
+    ],
+    branches: { source: ['target'] },
+  };
+  const controller = createSignalFlowScene({
+    ...options,
+    flow,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    nodeScale: 0.7,
+    nodeShape: 'custom',
+  });
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(1);
+  expect(flowPathCaptures.connectorPoints[0]?.map(({ x }) => x)).toEqual([3, 3]);
+  controller.destroy();
+});
+
+it('keeps the orthogonal midpoint for meaningful branch offsets', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const options = createSceneOptions();
+  const flow = {
+    ...options.flow,
+    nodes: options.flow.nodes.map((node) => (
+      node.id === 'leaf' ? { ...node, position: [1.2, 3] as [number, number] } : node
+    )),
+  };
+  const controller = createSignalFlowScene({
+    ...options,
+    flow,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+  });
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(1);
+  expect(flowPathCaptures.connectorPoints[0]?.map(({ x }) => x)).toEqual([0, 0, 1.2, 1.2]);
   controller.destroy();
 });
 
@@ -197,11 +344,59 @@ it('joins incoming and terminal continuations at scaled node perimeter edges', (
     nodeScale: 0.5,
     showContinuationConnectors: true,
   });
-  const continuations = flowPathCaptures.connectorPoints.filter((points) => points.length === 2);
+  const continuations = flowPathCaptures.connectorPoints.filter((points) => (
+    points.some(({ z }) => z < 0 || z > 3)
+  ));
 
   expect(continuations).toHaveLength(2);
-  expect(continuations[0]?.at(-1)?.z).toBe(-0.25);
-  expect(continuations[1]?.at(0)?.z).toBe(3.25);
+  expect(continuations[0]?.at(-1)?.z).toBeCloseTo(-0.23, 6);
+  expect(continuations[1]?.at(0)?.z).toBeCloseTo(3.23, 6);
+  controller.destroy();
+});
+
+it('ends a beam inside an early leaf that has no outgoing continuation', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  vi.spyOn(Math, 'random').mockReturnValue(0);
+
+  const options = createSceneOptions();
+  const flow = {
+    root: 'root',
+    nodes: [
+      { ...options.flow.nodes[0], id: 'root', position: [0, 0] as [number, number], tier: 0 },
+      { ...options.flow.nodes[1], id: 'early-leaf', position: [-1.5, 3] as [number, number], tier: 1 },
+      { ...options.flow.nodes[1], id: 'branch', position: [1.5, 3] as [number, number], tier: 1 },
+      { ...options.flow.nodes[1], id: 'terminal', position: [1.5, 6] as [number, number], tier: 2 },
+    ],
+    branches: {
+      root: ['early-leaf', 'branch'],
+      branch: ['terminal'],
+    },
+  };
+  const controller = createSignalFlowScene({
+    ...options,
+    flow,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    showContinuationConnectors: true,
+  });
+
+  animationFrames.shift()?.(1000);
+
+  expect(flowPathCaptures.beamPoints).toHaveLength(1);
+  expect(flowPathCaptures.beamPoints[0]?.at(-1)?.z).toBe(3);
   controller.destroy();
 });
 
