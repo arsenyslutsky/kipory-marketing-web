@@ -1,4 +1,5 @@
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
+import type { NodeShadowProps } from '@/components/elements/FlowLayer3D';
 import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
 import type { ResolvedTheme } from '@/theme/theme';
 
@@ -78,7 +79,7 @@ export interface SignalFlowTheme {
 
 export type SignalFlowColors = Record<SignalFlowMode, SignalFlowTheme>;
 
-export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
+export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowProps {
   variant?: SignalFlowVariant;
   mode?: SignalFlowMode;
   flow?: FlowConfig;

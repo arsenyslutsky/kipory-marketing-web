@@ -12,6 +12,18 @@ import type { WorkflowRuntimeOptions } from '../workflow-runtime';
 
 export type FlowLayer3DPoint = readonly [x: number, y: number];
 
+export type NodeShadowProps = {
+  nodeShadowBias?: number;
+  nodeShadowBlurSamples?: number;
+  nodeShadowColor?: string;
+  nodeShadowLightX?: number;
+  nodeShadowLightY?: number;
+  nodeShadowLightZ?: number;
+  nodeShadowNormalBias?: number;
+  nodeShadowOpacity?: number;
+  nodeShadowRadius?: number;
+};
+
 export type FlowLayer3DNode = {
   cardDepth: number;
   glowIntensity?: number;
@@ -140,7 +152,7 @@ export type FlowLayer3DBeamSource = {
   next: (slot: number, generation: number) => FlowLayer3DBeamRun | null;
 };
 
-export type FlowLayer3DProps = WorkflowRuntimeOptions & {
+export type FlowLayer3DProps = WorkflowRuntimeOptions & NodeShadowProps & {
   beam: FlowLayer3DBeamStyle;
   beamSource: FlowLayer3DBeamSource;
   className?: string;

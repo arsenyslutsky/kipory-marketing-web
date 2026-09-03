@@ -203,6 +203,57 @@ function createSceneOptions() {
   };
 }
 
+it('applies configurable node-shadow parameters to the light and catcher', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: 3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
+  });
+
+  animationFrames.shift()?.(1000);
+  const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
+  const light = scene?.children.find((object): object is THREE.DirectionalLight => (
+    object instanceof THREE.DirectionalLight
+  ));
+  const catcher = scene?.children.find((object): object is THREE.Mesh => (
+    object instanceof THREE.Mesh && object.material instanceof THREE.ShadowMaterial
+  ));
+  if (!light || !catcher || !(catcher.material instanceof THREE.ShadowMaterial)) {
+    throw new Error('Expected a configurable node-shadow light and catcher.');
+  }
+
+  expect(light.position.toArray()).toEqual([-4, 9, 3]);
+  expect(light.shadow.bias).toBe(-0.001);
+  expect(light.shadow.normalBias).toBe(0.04);
+  expect(light.shadow.radius).toBe(6);
+  expect(light.shadow.blurSamples).toBe(11);
+  expect(catcher.material.color.getHexString()).toBe('123456');
+  expect(catcher.material.opacity).toBe(0.37);
+  controller.destroy();
+});
+
 it('finalizes managed gradient textures through BusinessFlow renderer teardown', () => {
   vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());

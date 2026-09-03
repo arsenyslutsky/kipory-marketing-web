@@ -18,6 +18,7 @@ let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 let capturedBeam: FlowLayer3DBeamStyle | undefined;
 let capturedConnector: FlowLayer3DConnectorStyle | undefined;
 let capturedMode: ResolvedTheme | undefined;
+let capturedNodeShadow: Record<string, unknown> | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
@@ -27,6 +28,15 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     paths,
     beamSource,
     nodes,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     nodeStyle,
     onActivityChange,
     onArrival,
@@ -41,6 +51,15 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
       next: (slot: number, generation: number) => { trailLength?: number } | null;
     };
     nodes?: readonly FlowLayer3DNode[];
+    nodeShadowBias?: number;
+    nodeShadowBlurSamples?: number;
+    nodeShadowColor?: string;
+    nodeShadowLightX?: number;
+    nodeShadowLightY?: number;
+    nodeShadowLightZ?: number;
+    nodeShadowNormalBias?: number;
+    nodeShadowOpacity?: number;
+    nodeShadowRadius?: number;
     nodeStyle?: FlowLayer3DNodeStyle;
     onActivityChange?: (active: boolean) => void;
     onArrival?: (event: {
@@ -60,6 +79,17 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     capturedBeam = beam;
     capturedConnector = connector;
     capturedMode = mode;
+    capturedNodeShadow = {
+      nodeShadowBias,
+      nodeShadowBlurSamples,
+      nodeShadowColor,
+      nodeShadowLightX,
+      nodeShadowLightY,
+      nodeShadowLightZ,
+      nodeShadowNormalBias,
+      nodeShadowOpacity,
+      nodeShadowRadius,
+    };
     return (
       <button
         type="button"
@@ -90,6 +120,7 @@ afterEach(() => {
   capturedBeam = undefined;
   capturedConnector = undefined;
   capturedMode = undefined;
+  capturedNodeShadow = undefined;
   vi.unstubAllGlobals();
 });
 
@@ -116,6 +147,34 @@ it('falls back to the dark palette outside theme context', () => {
   expect(capturedMode).toBe('dark');
   expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
   expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+});
+
+it('passes public node-shadow parameters to the shared renderer', () => {
+  render(
+    <BusinessFlowHorizontal
+      nodeShadowBias={-0.001}
+      nodeShadowBlurSamples={11}
+      nodeShadowColor="#123456"
+      nodeShadowLightX={-4}
+      nodeShadowLightY={9}
+      nodeShadowLightZ={-3}
+      nodeShadowNormalBias={0.04}
+      nodeShadowOpacity={0.37}
+      nodeShadowRadius={6}
+    />,
+  );
+
+  expect(capturedNodeShadow).toEqual({
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: -3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
+  });
 });
 
 it('honors an explicit dark mode over light theme context', () => {

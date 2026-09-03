@@ -18,13 +18,39 @@ let capturedNodes: readonly FlowLayer3DNode[] | undefined;
 let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 let capturedPaths: readonly FlowLayer3DPath[] | undefined;
 let capturedMode: ResolvedTheme | undefined;
+let capturedNodeShadow: Record<string, unknown> | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
-  FlowLayer3D: ({ beam, connector, mode, nodes, nodeStyle, paths }: {
+  FlowLayer3D: ({
+    beam,
+    connector,
+    mode,
+    nodes,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
+    nodeStyle,
+    paths,
+  }: {
     beam: FlowLayer3DBeamStyle;
     connector: FlowLayer3DConnectorStyle;
     mode?: ResolvedTheme;
     nodes: readonly FlowLayer3DNode[];
+    nodeShadowBias?: number;
+    nodeShadowBlurSamples?: number;
+    nodeShadowColor?: string;
+    nodeShadowLightX?: number;
+    nodeShadowLightY?: number;
+    nodeShadowLightZ?: number;
+    nodeShadowNormalBias?: number;
+    nodeShadowOpacity?: number;
+    nodeShadowRadius?: number;
     nodeStyle?: FlowLayer3DNodeStyle;
     paths: readonly FlowLayer3DPath[];
   }) => {
@@ -34,6 +60,17 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     capturedNodeStyle = nodeStyle;
     capturedPaths = paths;
     capturedMode = mode;
+    capturedNodeShadow = {
+      nodeShadowBias,
+      nodeShadowBlurSamples,
+      nodeShadowColor,
+      nodeShadowLightX,
+      nodeShadowLightY,
+      nodeShadowLightZ,
+      nodeShadowNormalBias,
+      nodeShadowOpacity,
+      nodeShadowRadius,
+    };
     return <div data-testid="flow-layer" />;
   },
 }));
@@ -45,6 +82,7 @@ afterEach(() => {
   capturedNodeStyle = undefined;
   capturedPaths = undefined;
   capturedMode = undefined;
+  capturedNodeShadow = undefined;
   vi.unstubAllGlobals();
 });
 
@@ -71,6 +109,34 @@ it('falls back to the dark palette outside theme context', () => {
   expect(capturedMode).toBe('dark');
   expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
   expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+});
+
+it('passes public node-shadow parameters to the shared renderer', () => {
+  render(
+    <BusinessCoreNodeFlow
+      nodeShadowBias={-0.001}
+      nodeShadowBlurSamples={11}
+      nodeShadowColor="#123456"
+      nodeShadowLightX={-4}
+      nodeShadowLightY={9}
+      nodeShadowLightZ={-3}
+      nodeShadowNormalBias={0.04}
+      nodeShadowOpacity={0.37}
+      nodeShadowRadius={6}
+    />,
+  );
+
+  expect(capturedNodeShadow).toEqual({
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: -3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
+  });
 });
 
 it('honors an explicit dark mode over light theme context', () => {

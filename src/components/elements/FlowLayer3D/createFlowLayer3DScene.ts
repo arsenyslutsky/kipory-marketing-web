@@ -16,6 +16,7 @@ import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowL
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import { resolveFlowLayer3DBeamStyle } from './resolveFlowLayer3DBeamStyle';
+import { resolveNodeShadowProps } from './resolveNodeShadowProps';
 import { projectFlowLayer3DArrivals } from './projectFlowLayer3DArrivals';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
 import type {
@@ -80,6 +81,15 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     mode = 'dark',
     nodes = [],
     nodeStyle,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     onArrival,
     onError,
     onReady,
@@ -89,7 +99,29 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     worldHeight = 20,
   } = options;
   const resolvedMode = nodeStyle?.mode ?? mode;
-  const flareStops = getBusinessFlowPalette(resolvedMode).flareStops;
+  const palette = getBusinessFlowPalette(resolvedMode);
+  const nodeShadow = resolveNodeShadowProps({
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
+  }, {
+    nodeShadowBias: -0.0003,
+    nodeShadowBlurSamples: 16,
+    nodeShadowColor: palette.nodeShadow,
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowNormalBias: 0.025,
+    nodeShadowOpacity: 0.5,
+    nodeShadowRadius: 8,
+  });
+  const flareStops = palette.flareStops;
   const renderer = createRenderer(canvas);
   let cssRenderer: CSS3DRenderer;
   try {
@@ -106,19 +138,23 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   camera.up.set(0, 0, -1);
   camera.lookAt(0, 0, 0);
   const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
-  shadowLight.position.set(-6, 14, -5);
+  shadowLight.position.set(
+    nodeShadow.nodeShadowLightX,
+    nodeShadow.nodeShadowLightY,
+    nodeShadow.nodeShadowLightZ,
+  );
   const shadowDirection = shadowLight.position.clone().normalize();
   shadowLight.castShadow = true;
   shadowLight.shadow.mapSize.set(1024, 1024);
-  shadowLight.shadow.bias = -0.0003;
-  shadowLight.shadow.normalBias = 0.025;
-  shadowLight.shadow.radius = 8;
-  shadowLight.shadow.blurSamples = 16;
+  shadowLight.shadow.bias = nodeShadow.nodeShadowBias;
+  shadowLight.shadow.normalBias = nodeShadow.nodeShadowNormalBias;
+  shadowLight.shadow.radius = nodeShadow.nodeShadowRadius;
+  shadowLight.shadow.blurSamples = nodeShadow.nodeShadowBlurSamples;
 
   const shadowCatcherGeometry = new THREE.PlaneGeometry(80, 80);
   const shadowCatcherMaterial = new THREE.ShadowMaterial({
-    color: 0x000000,
-    opacity: 0.5,
+    color: nodeShadow.nodeShadowColor,
+    opacity: nodeShadow.nodeShadowOpacity,
     transparent: true,
     depthWrite: false,
     toneMapped: false,

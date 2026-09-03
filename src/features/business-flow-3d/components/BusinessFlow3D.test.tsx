@@ -59,6 +59,39 @@ it('falls back to dark scene colors outside theme context', async () => {
   });
 });
 
+it('passes public node-shadow parameters to the renderer', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
+  vi.mocked(createSignalFlowScene).mockImplementation(createController);
+
+  render(
+    <BusinessFlow3D
+      nodeShadowBias={-0.001}
+      nodeShadowBlurSamples={11}
+      nodeShadowColor="#123456"
+      nodeShadowLightX={-4}
+      nodeShadowLightY={9}
+      nodeShadowLightZ={3}
+      nodeShadowNormalBias={0.04}
+      nodeShadowOpacity={0.37}
+      nodeShadowRadius={6}
+      showInterface={false}
+    />,
+  );
+
+  await waitFor(() => expect(createSignalFlowScene).toHaveBeenCalledOnce());
+  expect(vi.mocked(createSignalFlowScene).mock.calls[0]?.[0]).toMatchObject({
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: 3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
+  });
+});
+
 it('honors an explicit dark mode over light theme context', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
   vi.mocked(createSignalFlowScene).mockImplementation(createController);

@@ -10,6 +10,9 @@ import {
   createFadingConnector3DObject,
 } from '@/components/elements/Connector3D/createConnector3DObject';
 import { createRoundedFlowPath3DPoints } from '@/components/elements/FlowPath3D/resolveFlowPath3D';
+import { resolveNodeShadowProps } from '@/components/elements/FlowLayer3D/resolveNodeShadowProps';
+import type { NodeShadowProps } from '@/components/elements/FlowLayer3D';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import {
   createNode3DObject,
   type Node3DGlowState,
@@ -35,7 +38,7 @@ interface SceneElements {
   cssLayer: HTMLElement;
 }
 
-interface SceneOptions {
+interface SceneOptions extends NodeShadowProps {
   active?: boolean;
   variant: SignalFlowVariant;
   mode: SignalFlowMode;
@@ -205,6 +208,15 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     maxDelay,
     speed,
     nodeProgressMode,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     progressPadding,
     progressBarHeight,
     concurrentBeams,
@@ -218,6 +230,28 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const { container, canvas, cssLayer } = elements;
   const isVariant2 = variant === 'variant-2';
   const isDark = mode === 'dark';
+  const businessFlowPalette = getBusinessFlowPalette(mode);
+  const nodeShadow = resolveNodeShadowProps({
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
+  }, {
+    nodeShadowBias: -0.0003,
+    nodeShadowBlurSamples: isVariant2 ? 24 : 8,
+    nodeShadowColor: businessFlowPalette.nodeShadow,
+    nodeShadowLightX: -7,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: 7,
+    nodeShadowNormalBias: isVariant2 ? 0.025 : 0,
+    nodeShadowOpacity: isDark ? 0.42 : 0.24,
+    nodeShadowRadius: isVariant2 ? 9 : 1,
+  });
   const palette = theme.scene;
   const effects = theme.effects;
   const normalizeGradientAngle = (angle: number, fallback: number) => (
@@ -448,17 +482,21 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
 
   scene.add(new THREE.HemisphereLight(palette.sky, palette.bounce, isDark ? 1.25 : 2.2));
   const key = new THREE.DirectionalLight(palette.key, isDark ? 2.15 : 3.5);
-  key.position.set(-7, 14, 7);
+  key.position.set(
+    nodeShadow.nodeShadowLightX,
+    nodeShadow.nodeShadowLightY,
+    nodeShadow.nodeShadowLightZ,
+  );
   key.castShadow = true;
   key.shadow.mapSize.set(isVariant2 ? 1024 : 2048, isVariant2 ? 1024 : 2048);
   key.shadow.camera.left = -14;
   key.shadow.camera.right = 14;
   key.shadow.camera.top = 14;
   key.shadow.camera.bottom = -14;
-  key.shadow.bias = -0.0003;
-  key.shadow.normalBias = isVariant2 ? 0.025 : 0;
-  key.shadow.radius = isVariant2 ? 9 : 1;
-  key.shadow.blurSamples = isVariant2 ? 24 : 8;
+  key.shadow.bias = nodeShadow.nodeShadowBias;
+  key.shadow.normalBias = nodeShadow.nodeShadowNormalBias;
+  key.shadow.radius = nodeShadow.nodeShadowRadius;
+  key.shadow.blurSamples = nodeShadow.nodeShadowBlurSamples;
   scene.add(key);
 
   const greenLight = new THREE.PointLight(effects.greenLight, isVariant2 ? 0 : 1.6, isVariant2 ? 10 : 7, 2);
@@ -479,8 +517,8 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   scene.add(ground);
 
   const shadowCatcherMaterial = new THREE.ShadowMaterial({
-    color: 0x000000,
-    opacity: isDark ? 0.42 : 0.24,
+    color: nodeShadow.nodeShadowColor,
+    opacity: nodeShadow.nodeShadowOpacity,
     transparent: true,
     depthWrite: false,
     toneMapped: false,

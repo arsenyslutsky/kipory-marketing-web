@@ -18,6 +18,7 @@ export interface BusinessFlowPalette {
   horizontalCentralIconFill: string;
   horizontalIconStroke: string;
   iconStroke: string;
+  nodeShadow: string;
   packetCore: string;
   packetHalo: string;
   sideXGradient: NodeGradient;
@@ -65,6 +66,7 @@ function createBusinessFlowPalette(theme: ColorTheme, overrides: PaletteOverride
     horizontalCentralIconFill: overrides.horizontalCentralIconFill,
     horizontalIconStroke: overrides.horizontalIconStroke,
     iconStroke: overrides.iconStroke,
+    nodeShadow: '#000000',
     packetCore: theme.effects.packetCore,
     packetHalo: theme.effects.packetHalo,
     sideXGradient: { ...overrides.sideXGradient },

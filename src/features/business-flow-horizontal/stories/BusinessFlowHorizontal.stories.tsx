@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
 import { businessFlowHorizontalHomepageProps } from '../presets';
 
@@ -17,6 +18,7 @@ const meta = {
     controls: { sort: 'none' },
   },
   argTypes: {
+    ...nodeShadowArgTypes,
     className: { table: { disable: true } },
     width: {
       control: 'text',

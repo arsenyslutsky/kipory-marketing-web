@@ -23,6 +23,7 @@ export type {
   FlowLayer3DProps,
   FlowLayer3DSceneController,
   FlowLayer3DSceneOptions,
+  NodeShadowProps,
   ResolvedFlowLayer3DNode,
   ResolvedFlowLayer3DPath,
 } from './types';

@@ -4,6 +4,7 @@ import {
   FlowLayer3D,
   type FlowLayer3DArrivalEvent,
   type FlowLayer3DNodeStyle,
+  type NodeShadowProps,
 } from '@/components/elements/FlowLayer3D';
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
@@ -30,7 +31,7 @@ import {
 } from '../routes';
 import styles from './BusinessCoreNodeFlow.module.css';
 
-export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & {
+export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & NodeShadowProps & {
   auxiliaryIcon?: BusinessCoreNodeFlowAuxiliaryIcon;
   auxiliaryIconFillColor?: string;
   beamColor?: string;
@@ -142,6 +143,15 @@ export function BusinessCoreNodeFlow({
   nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
   nodeProgressSize = 15,
+  nodeShadowBias,
+  nodeShadowBlurSamples,
+  nodeShadowColor,
+  nodeShadowLightX,
+  nodeShadowLightY,
+  nodeShadowLightZ,
+  nodeShadowNormalBias,
+  nodeShadowOpacity,
+  nodeShadowRadius,
   numberOfAuxiliaryConnections = 12,
   preloadMargin,
   resolutionScale,
@@ -286,6 +296,15 @@ export function BusinessCoreNodeFlow({
         mode={mode}
         nodes={nodes}
         nodeStyle={nodeStyle}
+        nodeShadowBias={nodeShadowBias}
+        nodeShadowBlurSamples={nodeShadowBlurSamples}
+        nodeShadowColor={nodeShadowColor}
+        nodeShadowLightX={nodeShadowLightX}
+        nodeShadowLightY={nodeShadowLightY}
+        nodeShadowLightZ={nodeShadowLightZ}
+        nodeShadowNormalBias={nodeShadowNormalBias}
+        nodeShadowOpacity={nodeShadowOpacity}
+        nodeShadowRadius={nodeShadowRadius}
         onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}

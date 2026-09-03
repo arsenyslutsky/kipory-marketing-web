@@ -551,6 +551,15 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
       sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
       sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
     },
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: -3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
     paths: [],
   });
 
@@ -575,13 +584,19 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
   expect(renderer.shadowMap.needsUpdate).toBe(false);
   expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
   expect(light.castShadow).toBe(true);
-  expect(light.position.x).toBeLessThan(0);
-  expect(light.position.y).toBeGreaterThan(0);
-  expect(light.position.z).toBeLessThan(0);
+  const expectedLightDirection = new THREE.Vector3(-4, 9, -3).normalize();
+  expect(light.position.clone().normalize().x).toBeCloseTo(expectedLightDirection.x);
+  expect(light.position.clone().normalize().y).toBeCloseTo(expectedLightDirection.y);
+  expect(light.position.clone().normalize().z).toBeCloseTo(expectedLightDirection.z);
+  expect(light.shadow.bias).toBe(-0.001);
+  expect(light.shadow.normalBias).toBe(0.04);
+  expect(light.shadow.radius).toBe(6);
+  expect(light.shadow.blurSamples).toBe(11);
   expect(catcher.receiveShadow).toBe(true);
   expect(catcher.position.y).toBeLessThan(0.29);
   expect(catcher.material.transparent).toBe(true);
-  expect(catcher.material.opacity).toBeGreaterThan(0);
+  expect(catcher.material.color.getHexString()).toBe('123456');
+  expect(catcher.material.opacity).toBe(0.37);
 
   const flowNodes = vi.mocked(createFlowLayer3DNodes).mock.results[0]?.value?.nodes as FlowLayer3DNodes['nodes'] | undefined;
   if (!flowNodes) throw new Error('Expected the representative flow nodes to render.');
