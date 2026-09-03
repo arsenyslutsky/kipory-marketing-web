@@ -8,6 +8,11 @@ vi.mock('@/features/business-flow-3d', () => ({
   BusinessFlow3D: () => <figure aria-label="Business workflow" />,
   businessFlow3DHomepageDarkProps: {},
   businessFlow3DHomepageLightProps: {},
+  homepageFlow: {
+    root: 'core',
+    nodes: [],
+    branches: {},
+  },
   defaultFlow: {
     root: 'core',
     nodes: [],
