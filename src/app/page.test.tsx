@@ -221,7 +221,7 @@ it('keeps the pillars content close to its separator', () => {
     });
 });
 
-it('gives only the pillars section title medium emphasis', () => {
+it('uses shared typography for every homepage section title', () => {
   render(<HomePage />);
 
   const pillarsHeader = screen.getByRole('heading', { level: 2, name: 'Our Pillars' }).closest('header');
@@ -229,7 +229,7 @@ it('gives only the pillars section title medium emphasis', () => {
     .getByRole('heading', { level: 2, name: 'Everything your team needs to move faster - without compromise.' })
     .closest('header');
 
-  expect(pillarsHeader).toHaveStyle({ '--section-header-title-weight': '400' });
+  expect(pillarsHeader).not.toHaveStyle({ '--section-header-title-weight': '400' });
   expect(deliveryHeader).not.toHaveStyle({ '--section-header-title-weight': '400' });
 });
 
