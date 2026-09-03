@@ -9,7 +9,7 @@ const expectedBranches = {
   metrics: ['records'],
   stack: ['graph'],
   secure: ['profile', 'labels'],
-  graph: ['pipeline'],
+  graph: ['pipeline', 'profile'],
   profile: ['policy'],
   labels: ['schedule'],
   pipeline: ['build', 'release'],
@@ -49,7 +49,7 @@ describe('homepageFlow', () => {
     expect(homepageFlow.nodes).toHaveLength(24);
     expect(new Set(ids).size).toBe(24);
     expect(Object.keys(homepageFlow.branches).every((id) => ids.includes(id))).toBe(true);
-    expect(edges).toHaveLength(25);
+    expect(edges).toHaveLength(26);
     expect(edges.every((id) => ids.includes(id))).toBe(true);
     expect(homepageFlow.branches).toEqual(expectedBranches);
     expect((homepageFlow as FlowConfig).variants).toBeUndefined();
@@ -81,7 +81,7 @@ describe('homepageFlow', () => {
       .forEach((node) => expect(node.size).toEqual([2.15, 1.25]));
   });
 
-  it('keeps one early leaf, two rejoins, and three final outputs', () => {
+  it('keeps one early leaf, three rejoins, and three final outputs', () => {
     const ids = homepageFlow.nodes.map(({ id }) => id);
     const branches: Record<string, string[]> = homepageFlow.branches;
     const inbound = Object.values(homepageFlow.branches).flat().reduce<Record<string, number>>(
@@ -98,9 +98,11 @@ describe('homepageFlow', () => {
 
     expect(earlyLeaves).toEqual(['records']);
     expect(finalOutputs).toEqual(['publish', 'govern', 'stream']);
+    expect(inbound.profile).toBe(2);
     expect(inbound.identity).toBe(2);
     expect(inbound.govern).toBe(2);
     expect(Object.entries(inbound).filter(([, count]) => count > 1).map(([id]) => id)).toEqual([
+      'profile',
       'identity',
       'govern',
     ]);

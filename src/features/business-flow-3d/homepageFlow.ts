@@ -37,7 +37,7 @@ export const homepageFlow = {
     metrics: ['records'],
     stack: ['graph'],
     secure: ['profile', 'labels'],
-    graph: ['pipeline'],
+    graph: ['pipeline', 'profile'],
     profile: ['policy'],
     labels: ['schedule'],
     pipeline: ['build', 'release'],
