@@ -3,7 +3,7 @@ import {
   businessFlow3DHomepageDarkProps,
   businessFlow3DHomepageLightProps,
 } from '../presets';
-import * as stories from './BusinessFlow3D.stories';
+import meta, * as stories from './BusinessFlow3D.stories';
 
 describe('BusinessFlow3D current-app stories', () => {
   it('offers explicit dark and light variants with independent app presets', () => {
@@ -24,5 +24,14 @@ describe('BusinessFlow3D current-app stories', () => {
     expect(stories.CurrentAppLight.parameters).toEqual({
       homepagePreset: { keys: Object.keys(businessFlow3DHomepageLightProps) },
     });
+  });
+});
+
+it('exposes the active progress fill as a color control', () => {
+  expect(meta.argTypes.progressBarColor).toMatchObject({
+    control: 'color',
+    description: 'Color of the active progress fill. The inactive track remains theme-derived.',
+    name: 'Progress color',
+    table: { category: 'Progress' },
   });
 });

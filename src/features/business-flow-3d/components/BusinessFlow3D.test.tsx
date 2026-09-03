@@ -104,6 +104,18 @@ it('passes the public icon stroke color to the renderer', async () => {
   });
 });
 
+it('passes the public progress bar color to the renderer', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
+  vi.mocked(createSignalFlowScene).mockImplementation(createController);
+
+  render(<BusinessFlow3D progressBarColor="#123456" showInterface={false} />);
+
+  await waitFor(() => expect(createSignalFlowScene).toHaveBeenCalledOnce());
+  expect(vi.mocked(createSignalFlowScene).mock.calls[0]?.[0]).toMatchObject({
+    progressBarColor: '#123456',
+  });
+});
+
 it('honors an explicit dark mode over light theme context', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
   vi.mocked(createSignalFlowScene).mockImplementation(createController);

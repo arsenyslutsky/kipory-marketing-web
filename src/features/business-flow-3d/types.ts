@@ -152,6 +152,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   progressPadding?: number;
   /** Thickness used by both bar and outline node progress modes. */
   progressBarHeight?: number;
+  /** Color of the active progress fill; the inactive track remains theme-derived. */
+  progressBarColor?: string;
   concurrentBeams?: number;
   minEmitDelay?: number;
   maxEmitDelay?: number;

@@ -61,6 +61,7 @@ export type CreateNode3DObjectOptions = {
   outlineOpacity: number;
   outlineWidth: number;
   position: readonly [number, number];
+  progressBarColor?: string;
   progressBarHeight: number;
   progressMode: Node3DProgressMode;
   progressPadding: number;
@@ -97,6 +98,7 @@ export function createNode3DObject({
   outlineOpacity,
   outlineWidth,
   position,
+  progressBarColor,
   progressBarHeight,
   progressMode,
   progressPadding,
@@ -114,6 +116,7 @@ export function createNode3DObject({
   const resolvedOutlineOpacity = THREE.MathUtils.clamp(outlineOpacity, 0, 1);
   const resolvedOutlineWidth = THREE.MathUtils.clamp(outlineWidth, 0, 5);
   const resolvedProgressMode: Node3DProgressMode = progressMode === 'outline' ? 'outline' : 'bar';
+  const resolvedProgressBarColor = progressBarColor ?? effects.nodeProgressFill;
   const resolvedProgressPadding = THREE.MathUtils.clamp(progressPadding, 0, 3);
   const resolvedProgressBarHeight = THREE.MathUtils.clamp(Math.round(progressBarHeight), 0, 100);
   const nodeCornerRadiusPixels = THREE.MathUtils.clamp(nodeCornerRadius, 0, 50);
@@ -497,7 +500,7 @@ export function createNode3DObject({
         width: '100%',
         height: '100%',
         borderRadius: 'inherit',
-        backgroundColor: effects.nodeProgressFill,
+        backgroundColor: resolvedProgressBarColor,
         transform: 'scaleX(0)',
         transformOrigin: 'left center',
         willChange: 'transform',
@@ -573,7 +576,7 @@ export function createNode3DObject({
       path.setAttribute('stroke-linejoin', 'round');
     });
     track.setAttribute('stroke', effects.nodeProgressTrack);
-    fill.setAttribute('stroke', effects.nodeProgressFill);
+    fill.setAttribute('stroke', resolvedProgressBarColor);
     fill.style.strokeDasharray = '1';
     fill.style.strokeDashoffset = '1';
     fill.style.willChange = 'stroke-dashoffset';

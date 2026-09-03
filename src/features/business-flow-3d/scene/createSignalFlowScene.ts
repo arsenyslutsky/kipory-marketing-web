@@ -89,6 +89,7 @@ interface SceneOptions extends NodeShadowProps {
   nodeProgressMode: NodeProgressMode;
   progressPadding: number;
   progressBarHeight: number;
+  progressBarColor?: string;
   concurrentBeams: number;
   minEmitDelay: number;
   maxEmitDelay: number;
@@ -221,6 +222,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     nodeShadowRadius,
     progressPadding,
     progressBarHeight,
+    progressBarColor,
     concurrentBeams,
     minEmitDelay,
     maxEmitDelay,
@@ -653,6 +655,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       outlineWidth,
       position: data.p,
       progressBarHeight: resolvedProgressBarHeight,
+      progressBarColor,
       progressMode: resolvedNodeProgressMode,
       progressPadding: resolvedProgressPadding,
       renderer,

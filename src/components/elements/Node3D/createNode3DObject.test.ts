@@ -69,3 +69,65 @@ it('uses the solid fill fallback when the node icon fill mode is omitted', async
 
   disposeNode3DGradientTextures(renderer);
 });
+
+it.each(['bar', 'outline'] as const)(
+  'overrides the active %s progress fill without changing its theme track',
+  (progressMode) => {
+    const renderer = {
+      capabilities: { getMaxAnisotropy: () => 1 },
+    } as THREE.WebGLRenderer;
+    const context = {
+      createLinearGradient: () => ({ addColorStop: vi.fn() }),
+      fillRect: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000"/></svg>',
+    }));
+
+    const node = createNode3DObject({
+      assetBasePath: '/assets/nodes',
+      cardDepth: 40,
+      fogEnabled: false,
+      frontGradient: gradient,
+      height: 10,
+      icon: `progress-color-${progressMode}.svg`,
+      iconOpacity: 1,
+      id: `progress-color-${progressMode}`,
+      initialProgress: 0.5,
+      isDark: false,
+      isVariant2: true,
+      nodeCornerRadius: 10,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      position: [0, 0],
+      progressBarColor: '#123456',
+      progressBarHeight: 15,
+      progressMode,
+      progressPadding: 1,
+      renderer,
+      scale: 1,
+      shape: 'square',
+      sideXGradient: gradient,
+      sideZGradient: gradient,
+      theme: defaultColors.light,
+      tier: 1,
+      width: 48,
+    });
+
+    const progressContainer = node.userData.nodeProgressControl.object.element as HTMLDivElement;
+    if (progressMode === 'bar') {
+      const track = progressContainer.firstElementChild as HTMLDivElement;
+      const fill = track.firstElementChild as HTMLDivElement;
+      expect(fill.style.backgroundColor).toBe('rgb(18, 52, 86)');
+      expect(track.style.backgroundColor).toBe('rgba(24, 24, 24, 0.18)');
+    } else {
+      const [track, fill] = progressContainer.querySelectorAll('svg > *');
+      expect(fill?.getAttribute('stroke')).toBe('#123456');
+      expect(track?.getAttribute('stroke')).toBe(defaultColors.light.effects.nodeProgressTrack);
+    }
+
+    disposeNode3DGradientTextures(renderer);
+  },
+);

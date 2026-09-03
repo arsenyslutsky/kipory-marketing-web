@@ -243,6 +243,12 @@ const meta = {
       description: 'Thickness used by both bar and outline node progress modes.',
       table: { category: 'Progress' },
     },
+    progressBarColor: {
+      control: 'color',
+      description: 'Color of the active progress fill. The inactive track remains theme-derived.',
+      name: 'Progress color',
+      table: { category: 'Progress' },
+    },
     minDelay: {
       control: { type: 'number', min: 0, step: 100 },
       table: { category: 'Progress' },
