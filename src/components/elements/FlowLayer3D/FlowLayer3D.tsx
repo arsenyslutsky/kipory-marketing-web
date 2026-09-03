@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { useWorkflowRuntime } from '../workflow-runtime';
 import styles from './FlowLayer3D.module.css';
 import type { FlowLayer3DNode, FlowLayer3DProps, FlowLayer3DSceneController } from './types';
@@ -16,6 +17,7 @@ export function FlowLayer3D({
   className,
   connector,
   loadStrategy,
+  mode: explicitMode,
   nodes,
   nodeStyle,
   onActivityChange,
@@ -26,6 +28,12 @@ export function FlowLayer3D({
   resolutionScale,
   worldHeight,
 }: FlowLayer3DProps) {
+  const mode = useResolvedTheme(nodeStyle?.mode ?? explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const resolvedNodeStyle = useMemo(() => nodeStyle ? {
+    ...nodeStyle,
+    mode,
+  } : undefined, [mode, nodeStyle]);
   const flowNodes = nodes ?? emptyNodes;
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -79,8 +87,9 @@ export function FlowLayer3D({
           connector,
           container,
           cssLayer,
+          mode,
           nodes: flowNodes,
-          nodeStyle,
+          nodeStyle: resolvedNodeStyle,
           onArrival,
           onError: reportError,
           onReady: () => {
@@ -107,12 +116,13 @@ export function FlowLayer3D({
     beamSource,
     connector,
     flowNodes,
-    nodeStyle,
+    mode,
     onArrival,
     paths,
     reducedMotion,
     resolutionScale,
     runtime.shouldInitialize,
+    resolvedNodeStyle,
     worldHeight,
   ]);
 
@@ -130,6 +140,7 @@ export function FlowLayer3D({
       aria-hidden="true"
       className={rootClassName}
       data-flow-state={flowState}
+      data-mode={mode}
     >
       {runtime.shouldInitialize && (
         <>
@@ -148,14 +159,14 @@ export function FlowLayer3D({
               key={node.id}
               style={{
                 '--flow-node-aspect': String(node.width / node.cardDepth),
-                '--flow-node-body-end': nodeStyle?.frontGradient.end ?? businessFlowPalette.frontGradient.end,
-                '--flow-node-body-mid': nodeStyle?.frontGradient.mid ?? businessFlowPalette.frontGradient.mid,
-                '--flow-node-body-start': nodeStyle?.frontGradient.start ?? businessFlowPalette.frontGradient.start,
+                '--flow-node-body-end': resolvedNodeStyle?.frontGradient.end ?? palette.frontGradient.end,
+                '--flow-node-body-mid': resolvedNodeStyle?.frontGradient.mid ?? palette.frontGradient.mid,
+                '--flow-node-body-start': resolvedNodeStyle?.frontGradient.start ?? palette.frontGradient.start,
                 '--flow-node-height': `${node.cardDepth}px`,
-                '--flow-node-icon-color': node.iconStrokeColor ?? businessFlowPalette.iconStroke,
+                '--flow-node-icon-color': node.iconStrokeColor ?? palette.iconStroke,
                 '--flow-node-icon-opacity': String(Math.min(1, Math.max(0, node.iconOpacity))),
                 '--flow-node-radius': `${Math.max(2, Math.min(
-                  nodeStyle?.nodeCornerRadius ?? 8,
+                  resolvedNodeStyle?.nodeCornerRadius ?? 8,
                   node.width / 2,
                   node.cardDepth / 2,
                 ))}px`,
@@ -168,7 +179,7 @@ export function FlowLayer3D({
                 className={styles.fallbackIcon}
                 data-flow-node-fallback-icon
                 style={{
-                  '--flow-node-icon': `url("${(nodeStyle?.assetBasePath ?? '/assets/nodes').replace(/\/$/, '')}/${node.icon}")`,
+                  '--flow-node-icon': `url("${(resolvedNodeStyle?.assetBasePath ?? '/assets/nodes').replace(/\/$/, '')}/${node.icon}")`,
                 } as CSSProperties}
               />
             </span>

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import {
   createActiveFrameLoop,
   resolveWorkflowRenderScale,
@@ -23,8 +23,6 @@ import type {
   FlowLayer3DSceneController,
   FlowLayer3DSceneOptions,
 } from './types';
-
-const flareStops = businessFlowPalette.flareStops;
 
 type BeamSlot = {
   beam: Beam3DObject;
@@ -79,6 +77,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     connector,
     container,
     cssLayer,
+    mode = 'dark',
     nodes = [],
     nodeStyle,
     onArrival,
@@ -89,6 +88,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     resolutionScale = 'display',
     worldHeight = 20,
   } = options;
+  const resolvedMode = nodeStyle?.mode ?? mode;
+  const flareStops = getBusinessFlowPalette(resolvedMode).flareStops;
   const renderer = createRenderer(canvas);
   let cssRenderer: CSS3DRenderer;
   try {
@@ -258,7 +259,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         },
         flareTexture,
         fogEnabled: false,
-        mode: 'dark',
+        mode: resolvedMode,
         path: fallbackPath,
         style: 'ribbon',
       });

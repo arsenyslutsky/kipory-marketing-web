@@ -1,4 +1,13 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import {
+  businessFlowPalettes,
+  getBusinessFlowPalette,
+} from '@/features/business-flow-palette';
+
+vi.mock('@/features/business-flow-palette', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/features/business-flow-palette')>();
+  return { ...actual, getBusinessFlowPalette: vi.fn(actual.getBusinessFlowPalette) };
+});
 
 const renderer = vi.hoisted(() => ({
   capabilities: { getMaxAnisotropy: vi.fn(() => 1) },
@@ -88,6 +97,66 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('uses the resolved node mode and matching flare stops for light beams', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40', beamHighlightColor: '#c9ebc7', beamWidth: 1,
+      enabled: true, glowIntensity: 1, trailLength: 0.38,
+    },
+    beamSource: {
+      slots: 1,
+      next: (_slot, generation) => generation === 0 ? {
+        delayMs: 0,
+        durationMs: 1000,
+        id: 'light-run',
+        path: { id: 'light-path', points: [[0, 0.5], [1, 0.5]] },
+      } : null,
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#33453a', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'light',
+      nodeCornerRadius: 12,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      progressBarHeight: 8,
+      progressMode: 'outline',
+      progressPadding: 2,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    paths: [{ id: 'light-path', points: [[0, 0.5], [1, 0.5]] }],
+  });
+
+  expect(getBusinessFlowPalette).toHaveBeenCalledWith('light');
+  expect(createBeam3DFlareTexture).toHaveBeenCalledWith(businessFlowPalettes.light.flareStops);
+  expect(createBeam3DObject).toHaveBeenCalledWith(expect.objectContaining({
+    colors: expect.objectContaining({ flareStops: businessFlowPalettes.light.flareStops }),
+    mode: 'light',
+  }));
+  controller.destroy();
 });
 
 it('does not schedule frames until activated and cancels them when paused', () => {

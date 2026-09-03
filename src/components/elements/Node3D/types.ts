@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
+import type { ResolvedTheme } from '@/theme/theme';
 
-export type Node3DMode = 'light' | 'dark';
+export type Node3DMode = ResolvedTheme;
 export type Node3DShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type Node3DProgressMode = 'bar' | 'outline';
 export type Node3DIconFillMode = 'solid' | 'gradient';

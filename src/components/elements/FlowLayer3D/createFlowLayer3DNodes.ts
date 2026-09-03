@@ -4,7 +4,7 @@ import { createNode3DObject } from '../Node3D/createNode3DObject';
 import type { Node3DProgressControl } from '../Node3D/createNode3DObject';
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DNode } from './resolveFlowLayer3DNode';
-import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from './types';
+import type { FlowLayer3DNode, ResolvedFlowLayer3DNodeStyle } from './types';
 
 export type FlowLayer3DNodes = {
   destroy: () => void;
@@ -22,7 +22,7 @@ export function createFlowLayer3DNodes({
   worldHeight,
 }: {
   aspectRatio: number;
-  nodeStyle: FlowLayer3DNodeStyle;
+  nodeStyle: ResolvedFlowLayer3DNodeStyle;
   nodes: readonly FlowLayer3DNode[];
   renderer: THREE.WebGLRenderer;
   viewportHeight: number;

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { createConnector3DScene } from './createConnector3DScene';
 import styles from './Connector3D.module.css';
 import type { Connector3DProps, Connector3DSceneOptions } from './types';
@@ -31,12 +32,13 @@ export function Connector3D({
   cameraYaw = 0,
   cameraZoom = 1,
   className,
-  color = businessFlowPalette.connector,
+  color: explicitColor,
   connectorWidth = 1,
   direction = 'forward',
   fading = false,
   height = '28rem',
   interactive = true,
+  mode: explicitMode,
   opacity = 0.32,
   path = defaultPath,
   pathCurve = 38,
@@ -44,6 +46,9 @@ export function Connector3D({
   stroke = 'dashed',
   width = 'min(100%, 48rem)',
 }: Connector3DProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const color = explicitColor ?? palette.connector;
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState('');
@@ -70,6 +75,7 @@ export function Connector3D({
         },
         fading,
         interactive,
+        mode,
         opacity,
         path,
         pathCurve,
@@ -97,6 +103,7 @@ export function Connector3D({
     direction,
     fading,
     interactive,
+    mode,
     opacity,
     path,
     pathCurve,
@@ -114,6 +121,7 @@ export function Connector3D({
     <figure
       ref={containerRef}
       className={rootClassName}
+      data-mode={mode}
       style={style}
       role="img"
       aria-label={`Three-dimensional ${stroke} business-flow connector`}
