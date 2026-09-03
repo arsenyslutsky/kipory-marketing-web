@@ -114,7 +114,7 @@ html[data-theme='light'] {
   --focus-ring: #2f702c;
   --selection-background: #b7d9b3;
   --selection-text: var(--text-primary);
-  --grid-color: rgb(45 70 47 / 10%);
+  --grid-color: rgb(45 70 47 / 38%);
   --glow-color: rgb(68 156 64 / 18%);
   --beam-highlight: var(--surface-soft);
   --action-surface: var(--signal-strong);
@@ -207,7 +207,7 @@ html[data-theme='light'] {
     --focus-ring: #2f702c;
     --selection-background: #b7d9b3;
     --selection-text: var(--text-primary);
-    --grid-color: rgb(45 70 47 / 10%);
+    --grid-color: rgb(45 70 47 / 38%);
     --glow-color: rgb(68 156 64 / 18%);
     --beam-highlight: var(--surface-soft);
     --action-surface: var(--signal-strong);

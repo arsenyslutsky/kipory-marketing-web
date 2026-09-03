@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { marketingSectionHomepageProps } from '@/components/marketing/presets';
+
 const projectRoot = process.cwd();
 const globalsPath = resolve(projectRoot, 'src/app/globals.css');
 const globals = readFileSync(globalsPath, 'utf8');
@@ -82,6 +84,52 @@ function getSystemLightBlock() {
   )?.[1] ?? '';
 }
 
+function getColorToken(block: string, token: string) {
+  const value = block.match(new RegExp(`${token}:\\s*([^;]+);`))?.[1]?.trim();
+
+  if (!value) throw new Error(`Missing ${token}`);
+
+  const hex = value.match(/^#([\da-f]{6})$/i)?.[1];
+  if (hex) {
+    return {
+      rgb: [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16)),
+      alpha: 1,
+    };
+  }
+
+  const rgb = value.match(/^rgb\((\d+)\s+(\d+)\s+(\d+)\s*\/\s*(\d+)%\)$/);
+  if (rgb) {
+    return {
+      rgb: rgb.slice(1, 4).map(Number),
+      alpha: Number(rgb[4]) / 100,
+    };
+  }
+
+  throw new Error(`Unsupported color value for ${token}: ${value}`);
+}
+
+function relativeLuminance(rgb: number[]) {
+  const [red, green, blue] = rgb.map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045
+      ? value / 12.92
+      : ((value + 0.055) / 1.055) ** 2.4;
+  });
+
+  return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+}
+
+function contrastRatio(foreground: number[], background: number[], alpha: number) {
+  const composite = foreground.map(
+    (channel, index) => (channel * alpha) + (background[index] * (1 - alpha)),
+  );
+  const foregroundLuminance = relativeLuminance(composite);
+  const backgroundLuminance = relativeLuminance(background);
+
+  return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05)
+    / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
+}
+
 describe('system-aware stylesheet contract', () => {
   it('defines the complete semantic palette for both resolved themes', () => {
     const required = [
@@ -126,13 +174,37 @@ describe('system-aware stylesheet contract', () => {
       '--header-edge': 'rgb(25 40 27 / 18%)',
       '--focus-ring': '#2f702c',
       '--selection-background': '#b7d9b3',
-      '--grid-color': 'rgb(45 70 47 / 10%)',
+      '--grid-color': 'rgb(45 70 47 / 38%)',
       '--glow-color': 'rgb(68 156 64 / 18%)',
     } as const;
 
     for (const [token, value] of Object.entries(approvedAnchors)) {
       expect(lightBlock, `${token} must retain its approved value`)
         .toContain(`${token}: ${value};`);
+    }
+  });
+
+  it('keeps Light and System-light blueprint grids as perceptible as the dark grid', () => {
+    const darkBlock = getThemeBlock('dark');
+    const darkGrid = getColorToken(darkBlock, '--grid-color');
+    const darkSurface = getColorToken(darkBlock, '--surface-alternate');
+    const darkContrast = contrastRatio(
+      darkGrid.rgb,
+      darkSurface.rgb,
+      darkGrid.alpha * marketingSectionHomepageProps.gridOpacity,
+    );
+
+    for (const block of [getThemeBlock('light'), getSystemLightBlock()]) {
+      const grid = getColorToken(block, '--grid-color');
+      const surface = getColorToken(block, '--surface-alternate');
+      const lightContrast = contrastRatio(
+        grid.rgb,
+        surface.rgb,
+        grid.alpha * marketingSectionHomepageProps.gridOpacity,
+      );
+
+      expect(lightContrast).toBeGreaterThanOrEqual(darkContrast);
+      expect(lightContrast).toBeLessThan(darkContrast + 0.02);
     }
   });
 
