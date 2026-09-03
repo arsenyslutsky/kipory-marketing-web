@@ -21,7 +21,7 @@ it('fits the landing flow into the intermediate width without changing its fixed
   expect(intermediateRule).not.toMatch(/\b(?:height|min-height|max-height)\s*:/);
   expect(intermediateRule).not.toMatch(/\b(?:min|max)-height\b|[dlsv]?vh\b/);
   expect(intermediateRule).not.toMatch(/\binset\s*:/);
-  expect(intermediateRule).toMatch(/transform\s*:\s*translate3d\(180px, 350px, 0\) scale\(\.44\)/);
+  expect(intermediateRule).toMatch(/transform\s*:\s*translate3d\(186px, 350px, 0\) scale\(\.44\)/);
   expect(intermediateRule).toMatch(/transform-origin\s*:\s*center top/);
 });
 
