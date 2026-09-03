@@ -93,9 +93,9 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   fogEnabled?: boolean;
   /** Target grid-cell spacing in CSS pixels at the initial camera framing. */
   gridDensity?: number;
-  /** Radius of the white grid highlight in CSS pixels at the initial camera framing. */
+  /** Radius of the theme-aware major-grid emphasis in CSS pixels at the initial camera framing. */
   gridMaskRadius?: number;
-  /** Soft falloff beyond the white grid-highlight radius, in CSS pixels. */
+  /** Soft falloff beyond the theme-aware major-grid emphasis, in CSS pixels. */
   gridMaskBlur?: number;
   connectorOpacity?: number;
   connectorStroke?: ConnectorStrokeType;

@@ -106,12 +106,12 @@ const meta = {
     },
     gridMaskRadius: {
       control: { type: 'range', min: 0, max: 1200, step: 10 },
-      description: 'Radius of the white grid highlight in CSS pixels.',
+      description: 'Radius of the theme-aware major-grid emphasis in CSS pixels.',
       table: { category: 'Grid & Fog' },
     },
     gridMaskBlur: {
       control: { type: 'range', min: 0, max: 1200, step: 10 },
-      description: 'Soft falloff beyond the white grid-highlight radius, in CSS pixels.',
+      description: 'Soft falloff beyond the theme-aware major-grid emphasis, in CSS pixels.',
       table: { category: 'Grid & Fog' },
     },
     fogEnabled: {

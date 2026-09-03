@@ -4,6 +4,7 @@ import {
   businessCoreNodeFlowContactProps,
   businessCoreNodeFlowWaitlistProps,
 } from './business-core-node-flow/presets';
+import { defaultColors } from './business-flow-3d/config';
 import { businessFlow3DHomepageProps } from './business-flow-3d/presets';
 import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
 import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
@@ -51,6 +52,28 @@ const themeDerivedKeys = [
 
 function source(path: string) {
   return readFileSync(new URL(path, import.meta.url), 'utf8');
+}
+
+function compositeHex(foreground: string, background: string, alpha: number) {
+  const channels = (hex: string) => [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
+  const foregroundChannels = channels(foreground);
+  const backgroundChannels = channels(background);
+  return foregroundChannels.map((channel, index) => (
+    Math.round(channel * alpha + backgroundChannels[index]! * (1 - alpha))
+  ));
+}
+
+function contrastRatio(foreground: number[], background: number[]) {
+  const luminance = (channels: number[]) => channels
+    .map((channel) => channel / 255)
+    .map((channel) => (channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index]!, 0);
+  const foregroundLuminance = luminance(foreground);
+  const backgroundLuminance = luminance(background);
+  return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05)
+    / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
 }
 
 describe('homepage illustration preset contract', () => {
@@ -114,6 +137,21 @@ describe('homepage illustration preset contract', () => {
       showInterface: false,
       speed: 0.8,
     });
+  });
+
+  it('keeps the light hero grid perceptible at the homepage opacity', () => {
+    const ground = compositeHex(
+      defaultColors.light.scene.ground,
+      defaultColors.light.scene.ground,
+      1,
+    );
+    const compositedGrid = compositeHex(
+      defaultColors.light.scene.gridMajor,
+      defaultColors.light.scene.ground,
+      businessFlow3DHomepageProps.gridOpacity,
+    );
+
+    expect(contrastRatio(compositedGrid, ground)).toBeGreaterThanOrEqual(1.3);
   });
 
   it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values', () => {

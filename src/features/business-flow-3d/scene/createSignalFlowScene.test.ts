@@ -90,6 +90,52 @@ it('waits for activation and uses a scaled WebGL target with layout-sized CSS3D'
   controller.destroy();
 });
 
+it('uses the light theme major-grid color for the central grid emphasis', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    gridOpacity: 0.2,
+    gridMaskRadius: 800,
+    theme: {
+      ...defaultColors.light,
+      scene: {
+        ...defaultColors.light.scene,
+        gridMajor: '#123456',
+      },
+    },
+  });
+
+  animationFrames.shift()?.(1000);
+  const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
+  let gridMaterial: THREE.ShaderMaterial | undefined;
+  scene?.traverse((object) => {
+    if (
+      object instanceof THREE.LineSegments
+      && object.material instanceof THREE.ShaderMaterial
+      && object.material.uniforms.uMaskColor
+    ) {
+      gridMaterial = object.material;
+    }
+  });
+
+  expect(gridMaterial?.uniforms.uMaskColor.value.getHexString()).toBe('123456');
+  controller.destroy();
+});
+
 function createSceneOptions() {
   const flow = {
     root: 'root',

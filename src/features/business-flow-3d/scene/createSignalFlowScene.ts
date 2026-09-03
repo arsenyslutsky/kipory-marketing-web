@@ -531,7 +531,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       uniforms: {
         ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
         uGridColor: { value: new THREE.Color(palette.gridMinor) },
-        uMaskColor: { value: new THREE.Color(0xffffff) },
+        uMaskColor: { value: new THREE.Color(isDark ? 0xffffff : palette.gridMajor) },
         uMaskCenter: { value: gridMaskCenter },
         uMaskRadius: { value: resolvedGridMaskRadius },
         uMaskBlur: { value: resolvedGridMaskBlur },
