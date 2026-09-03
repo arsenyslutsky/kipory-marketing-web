@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ThemeProvider, useResolvedTheme, useTheme } from './ThemeProvider';
@@ -85,6 +86,23 @@ it('does not subscribe to operating system changes for an explicit preference', 
 
   expect(screen.getByRole('button')).toHaveTextContent('light:light');
   expect(colorScheme.listenerCount()).toBe(0);
+});
+
+it.each([
+  ['light', 'light:light'],
+  ['dark', 'dark:dark'],
+  ['system', 'system:light'],
+] as const)('restores the saved %s preference after a layout-shaped Strict Mode remount', (savedPreference, expectedTheme) => {
+  const colorScheme = createColorSchemeQuery(false);
+  document.documentElement.setAttribute('data-theme', 'dark');
+  document.documentElement.setAttribute('data-theme-preference', 'system');
+  localStorage.setItem(THEME_STORAGE_KEY, savedPreference);
+  vi.stubGlobal('matchMedia', vi.fn(() => colorScheme));
+
+  render(<StrictMode><ThemeProvider><Probe /></ThemeProvider></StrictMode>);
+
+  expect(screen.getByRole('button')).toHaveTextContent(expectedTheme);
+  expect(document.documentElement).toHaveAttribute('data-theme-preference', savedPreference);
 });
 
 it('accepts valid cross-tab storage changes without writing them back', () => {

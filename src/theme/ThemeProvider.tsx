@@ -39,14 +39,9 @@ function getStoredPreference() {
   }
 }
 
-function getPrepaintedTheme() {
+function getPrepaintedPreference() {
   const preference = document.documentElement.getAttribute('data-theme-preference');
-  const resolvedTheme = document.documentElement.getAttribute('data-theme');
-
-  return {
-    preference: isThemePreference(preference) ? preference : undefined,
-    resolvedTheme: resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme as ResolvedTheme : undefined,
-  };
+  return isThemePreference(preference) ? preference : undefined;
 }
 
 export function ThemeProvider({
@@ -62,12 +57,8 @@ export function ThemeProvider({
   const preference = controlledPreference ?? uncontrolledPreference;
 
   useLayoutEffect(() => {
-    const prepainted = getPrepaintedTheme();
-    const nextPreference = controlledPreference ?? prepainted.preference ?? getStoredPreference() ?? 'system';
-    const nextResolvedTheme =
-      controlledPreference === undefined && prepainted.preference === nextPreference && prepainted.resolvedTheme
-        ? prepainted.resolvedTheme
-        : resolveTheme(nextPreference, getSystemDark());
+    const nextPreference = controlledPreference ?? getStoredPreference() ?? getPrepaintedPreference() ?? 'system';
+    const nextResolvedTheme = resolveTheme(nextPreference, getSystemDark());
 
     if (controlledPreference === undefined) setUncontrolledPreference(nextPreference);
     setResolvedTheme(nextResolvedTheme);
