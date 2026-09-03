@@ -175,11 +175,14 @@ describe('homepage illustration preset contract', () => {
     expect(businessFlow3DHomepageDarkProps).toEqual(expected);
     expect(businessFlow3DHomepageLightProps).toEqual({
       ...expected,
+      connectorElevation: 0.55,
       connectorStroke: 'solid',
       emitterX: 1,
+      iconStrokeColor: '#ffffff',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
       nodeFrontGradientStartColor: '#449c40',
+      nodeCornerRadius: 50,
       nodeShadowLightX: 0,
       nodeShadowLightZ: 16.5,
       nodeShadowRadius: 8,
@@ -373,22 +376,13 @@ describe('homepage illustration preset contract', () => {
       .toBeGreaterThan(countClassAndAttributeSelectors(rootRule[0]));
   });
 
-  it('keeps the hero workflow close to the copy on ultra-wide screens', () => {
+  it('uses the standalone Storybook viewport framing for the desktop hero workflow', () => {
     const marketingCss = source('../app/marketing.module.css');
     const heroVisualRule = marketingCss.match(/\.heroVisual\s*\{([^}]*)\}/)?.[1] ?? '';
-    const responsiveShift = heroVisualRule.match(
-      /translateX\(clamp\((\d+)px,\s*calc\((\d+)px\s*-\s*(\d+(?:\.\d+)?)vw\),\s*(\d+)px\)\)/,
-    );
-    expect(responsiveShift).toBeTruthy();
 
-    const [, minimum, base, viewportRate, maximum] = responsiveShift ?? [];
-    const shiftAt = (viewportWidth: number) => Math.min(
-      Number(maximum),
-      Math.max(Number(minimum), Number(base) - (Number(viewportRate) / 100) * viewportWidth),
-    );
-
-    expect(shiftAt(1440)).toBe(650);
-    expect(shiftAt(2696)).toBe(630);
+    expect(heroVisualRule).toMatch(/inset:\s*0/);
+    expect(heroVisualRule).toMatch(/height:\s*100dvh/);
+    expect(heroVisualRule).toMatch(/transform:\s*none/);
   });
 
   it('releases the CTA reveal mask after the entrance animation', () => {

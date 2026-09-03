@@ -34,6 +34,7 @@ it('returns independent exact palettes for light and dark workflow scenes', () =
     packetHalo: '#449c40',
     sideXGradient: { end: '#5c899b', mid: '#10402e', start: '#31775a' },
     sideZGradient: { end: '#0e4b81', mid: '#366480', start: '#427298' },
+    white: '#ffffff',
   });
 
   expect(getBusinessFlowPalette('light')).toMatchObject({
@@ -44,6 +45,7 @@ it('returns independent exact palettes for light and dark workflow scenes', () =
     grid: '#a7b5a8',
     iconStroke: '#182019',
     nodeShadow: '#000000',
+    white: '#ffffff',
   });
   expect(businessFlowPalettes.light).not.toBe(businessFlowPalettes.dark);
   expect(getBusinessFlowPalette('light')).toBe(businessFlowPalettes.light);

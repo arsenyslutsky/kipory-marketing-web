@@ -23,6 +23,7 @@ export interface BusinessFlowPalette {
   packetHalo: string;
   sideXGradient: NodeGradient;
   sideZGradient: NodeGradient;
+  white: string;
 }
 
 interface NodeGradient {
@@ -71,6 +72,7 @@ function createBusinessFlowPalette(theme: ColorTheme, overrides: PaletteOverride
     packetHalo: theme.effects.packetHalo,
     sideXGradient: { ...overrides.sideXGradient },
     sideZGradient: { ...overrides.sideZGradient },
+    white: theme.scene.sky,
   };
 }
 
