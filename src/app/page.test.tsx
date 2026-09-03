@@ -11,7 +11,8 @@ const {
   glowLinkRender,
   horizontalHomepageProps,
   horizontalRender,
-  threeDHomepageProps,
+  threeDDarkHomepageProps,
+  threeDLightHomepageProps,
   threeDRender,
   verticalHomepageProps,
   verticalRender,
@@ -23,7 +24,8 @@ const {
     width: '20rem',
   },
   horizontalRender: vi.fn(),
-  threeDHomepageProps: { cameraZoom: 0.91, mode: 'dark' },
+  threeDDarkHomepageProps: { cameraZoom: 1.1, presetVariant: 'dark' },
+  threeDLightHomepageProps: { cameraZoom: 1.1, presetVariant: 'light' },
   threeDRender: vi.fn(),
   verticalHomepageProps: { height: '45rem', width: '20rem' },
   verticalRender: vi.fn(),
@@ -46,7 +48,8 @@ vi.mock('@/features/business-flow-3d', () => ({
     threeDRender(props);
     return <div />;
   },
-  businessFlow3DHomepageProps: threeDHomepageProps,
+  businessFlow3DHomepageDarkProps: threeDDarkHomepageProps,
+  businessFlow3DHomepageLightProps: threeDLightHomepageProps,
 }));
 vi.mock('@/features/business-flow-vertical', () => ({
   BusinessFlowVertical: (props: Record<string, unknown>) => {
@@ -138,10 +141,28 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   const horizontalFlow = screen.getByRole('figure', { name: 'Horizontal business flow' });
   expect(horizontalFlow).toBeInTheDocument();
   expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
-  expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDHomepageProps));
+  expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDDarkHomepageProps));
   expect(verticalRender.mock.calls[0][0]).toEqual(expect.objectContaining(verticalHomepageProps));
   expect(horizontalRender).toHaveBeenCalledWith(expect.objectContaining(horizontalHomepageProps));
   expect(glowLinkRender).toHaveBeenCalledWith(expect.objectContaining(glowLinkHomepageProps));
+});
+
+it('selects an independent hero 3D preset for each resolved theme', () => {
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+
+  expect(threeDRender).toHaveBeenLastCalledWith({
+    ...threeDDarkHomepageProps,
+    mode: 'dark',
+  });
+
+  darkView.unmount();
+  threeDRender.mockClear();
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+
+  expect(threeDRender).toHaveBeenLastCalledWith({
+    ...threeDLightHomepageProps,
+    mode: 'light',
+  });
 });
 
 it('routes homepage conversion actions to active destinations', () => {

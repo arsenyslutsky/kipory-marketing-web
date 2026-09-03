@@ -7,11 +7,8 @@ import { SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
 import { GlowLink } from '@/components/ui/GlowLink';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
-import {
-  BusinessFlow3D,
-  businessFlow3DHomepageProps,
-} from '@/features/business-flow-3d';
 import styles from '../marketing.module.css';
+import { HomepageBusinessFlow3D } from './HomepageBusinessFlow3D';
 import { LearnMoreLink } from './LearnMoreLink';
 
 export function HomepageHero() {
@@ -28,7 +25,7 @@ export function HomepageHero() {
           name="hero"
           width={390}
         >
-          <BusinessFlow3D {...businessFlow3DHomepageProps} />
+          <HomepageBusinessFlow3D />
         </MobileWorkflowFallback>
       </div>
       <div className={styles.heroShade} />

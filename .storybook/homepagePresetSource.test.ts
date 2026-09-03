@@ -119,7 +119,12 @@ it.each([
   [
     'animated-illustrations-businessflow3d--current-nextjs-app' as const,
     'src/features/business-flow-3d/presets.ts',
-    'businessFlow3DHomepageProps',
+    'businessFlow3DHomepageDarkProps',
+  ],
+  [
+    'animated-illustrations-businessflow3d--current-app-light' as Parameters<typeof getHomepagePresetTarget>[0],
+    'src/features/business-flow-3d/presets.ts',
+    'businessFlow3DHomepageLightProps',
   ],
   [
     'animated-illustrations-businessflowvertical--current-nextjs-app' as const,
@@ -283,6 +288,47 @@ export const pageHeroHomepageProps = {
   paddingBottom: 96,
 } satisfies Props;
 `);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it('saves dark and light 3D homepage controls to independent exports', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-themed-3d-presets-'));
+  const darkStoryId = 'animated-illustrations-businessflow3d--current-nextjs-app' as const;
+  const lightStoryId = 'animated-illustrations-businessflow3d--current-app-light' as const;
+  const target = getHomepagePresetTarget(darkStoryId);
+  const targetPath = join(projectRoot, target.relativePath);
+  const initialSource = `export const businessFlow3DHomepageDarkProps = {
+  gridOpacity: 0.1,
+  cameraZoom: 1.1,
+} satisfies Props;
+
+export const businessFlow3DHomepageLightProps = {
+  gridOpacity: 0.1,
+  cameraZoom: 1.1,
+} satisfies Props;
+`;
+
+  try {
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, initialSource, 'utf8');
+
+    await saveHomepagePreset(projectRoot, darkStoryId, { cameraZoom: 0.9 });
+    await saveHomepagePreset(projectRoot, lightStoryId, { gridOpacity: 0.25 });
+
+    expect(await readFile(targetPath, 'utf8')).toBe(
+      `export const businessFlow3DHomepageDarkProps = {
+  gridOpacity: 0.1,
+  cameraZoom: 0.9,
+} satisfies Props;
+
+export const businessFlow3DHomepageLightProps = {
+  gridOpacity: 0.25,
+  cameraZoom: 1.1,
+} satisfies Props;
+`,
+    );
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }

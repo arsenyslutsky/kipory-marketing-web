@@ -3,7 +3,10 @@ import { useArgs } from 'storybook/preview-api';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
-import { businessFlow3DHomepageProps } from '../presets';
+import {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from '../presets';
 
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
@@ -321,7 +324,7 @@ export const Workflow1: Story = {
   name: 'Workflow 1',
   args: {
     ...darkNodeGradientArgs,
-    ...businessFlow3DHomepageProps,
+    ...businessFlow3DHomepageDarkProps,
     interactive: true,
     showInterface: true,
     cameraPitch: 45,
@@ -334,21 +337,21 @@ export const Workflow1: Story = {
 export const CurrentNextjsApp: Story = {
   name: 'Current App (Dark)',
   args: {
-    ...businessFlow3DHomepageProps,
+    ...businessFlow3DHomepageDarkProps,
     mode: 'dark',
   },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageDarkProps) },
   },
 };
 
 export const CurrentAppLight: Story = {
   name: 'Current App (Light)',
   args: {
-    ...businessFlow3DHomepageProps,
+    ...businessFlow3DHomepageLightProps,
     mode: 'light',
   },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageLightProps) },
   },
 };

@@ -21,7 +21,11 @@ const presetSaveQueues = new Map<string, Promise<void>>();
 const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarget> = {
   'animated-illustrations-businessflow3d--current-nextjs-app': {
     relativePath: 'src/features/business-flow-3d/presets.ts',
-    exportName: 'businessFlow3DHomepageProps',
+    exportName: 'businessFlow3DHomepageDarkProps',
+  },
+  'animated-illustrations-businessflow3d--current-app-light': {
+    relativePath: 'src/features/business-flow-3d/presets.ts',
+    exportName: 'businessFlow3DHomepageLightProps',
   },
   'animated-illustrations-businessflowvertical--current-nextjs-app': {
     relativePath: 'src/features/business-flow-vertical/presets.ts',

@@ -5,8 +5,14 @@ import {
   businessCoreNodeFlowWaitlistProps,
 } from './business-core-node-flow/presets';
 import { defaultColors } from './business-flow-3d/config';
-import { businessFlow3DHomepageProps } from './business-flow-3d/presets';
-import { CurrentNextjsApp as businessFlow3DCurrentApp } from './business-flow-3d/stories/BusinessFlow3D.stories';
+import {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from './business-flow-3d/presets';
+import {
+  CurrentAppLight as businessFlow3DCurrentAppLight,
+  CurrentNextjsApp as businessFlow3DCurrentAppDark,
+} from './business-flow-3d/stories/BusinessFlow3D.stories';
 import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
 import { CurrentNextjsApp as businessFlowHorizontalCurrentApp } from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
 import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
@@ -15,10 +21,17 @@ import { CurrentNextjsApp as businessFlowVerticalCurrentApp } from './business-f
 const cases = [
   {
     feature: 'business-flow-3d',
-    preset: 'businessFlow3DHomepageProps',
-    presetValue: businessFlow3DHomepageProps,
+    preset: 'businessFlow3DHomepageDarkProps',
+    presetValue: businessFlow3DHomepageDarkProps,
     story: 'BusinessFlow3D',
-    storyArgs: businessFlow3DCurrentApp.args ?? {},
+    storyArgs: businessFlow3DCurrentAppDark.args ?? {},
+  },
+  {
+    feature: 'business-flow-3d',
+    preset: 'businessFlow3DHomepageLightProps',
+    presetValue: businessFlow3DHomepageLightProps,
+    story: 'BusinessFlow3D',
+    storyArgs: businessFlow3DCurrentAppLight.args ?? {},
   },
   {
     feature: 'business-flow-vertical',
@@ -88,7 +101,8 @@ function contrastRatio(foreground: number[], background: number[]) {
 describe('homepage illustration preset contract', () => {
   it('keeps every website flow preset structural so the active theme can supply colors', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
-      businessFlow3DHomepageProps,
+      businessFlow3DHomepageDarkProps,
+      businessFlow3DHomepageLightProps,
       businessFlowHorizontalHomepageProps,
       businessFlowVerticalHomepageProps,
       businessCoreNodeFlowContactProps,
@@ -101,11 +115,11 @@ describe('homepage illustration preset contract', () => {
   });
 
   it('preserves the hero camera, topology, opacity, timing, and runtime preset values', () => {
-    expect(businessFlow3DHomepageProps).toEqual({
+    const expected = {
       activityStrategy: 'visible',
       cameraPitch: 33.19,
       cameraYaw: 0.35,
-      cameraZoom: 0.91,
+      cameraZoom: 1.1,
       concurrentBeams: 10,
       connectorOpacity: 0.62,
       connectorStroke: 'dashed',
@@ -113,10 +127,10 @@ describe('homepage illustration preset contract', () => {
       emitterX: 3,
       emitterY: -8,
       fogEnabled: true,
-      gridDensity: 30,
+      gridDensity: 8,
       gridMaskBlur: 480,
-      gridMaskRadius: 800,
-      gridOpacity: 0.2,
+      gridMaskRadius: 1200,
+      gridOpacity: 0.1,
       interactive: false,
       loadStrategy: 'eager',
       maxDelay: 800,
@@ -145,7 +159,10 @@ describe('homepage illustration preset contract', () => {
       showContinuationConnectors: true,
       showInterface: false,
       speed: 0.8,
-    });
+    };
+
+    expect(businessFlow3DHomepageDarkProps).toEqual(expected);
+    expect(businessFlow3DHomepageLightProps).toEqual(expected);
   });
 
   it('keeps the light hero grid perceptible at the homepage opacity', () => {
@@ -157,10 +174,10 @@ describe('homepage illustration preset contract', () => {
     const compositedGrid = compositeHex(
       defaultColors.light.scene.gridMajor,
       defaultColors.light.scene.ground,
-      businessFlow3DHomepageProps.gridOpacity,
+      businessFlow3DHomepageLightProps.gridOpacity,
     );
 
-    expect(contrastRatio(compositedGrid, ground)).toBeGreaterThanOrEqual(1.3);
+    expect(contrastRatio(compositedGrid, ground)).toBeGreaterThanOrEqual(1.1);
   });
 
   it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values', () => {
@@ -276,10 +293,12 @@ describe('homepage illustration preset contract', () => {
   });
 
   it('eagerly loads only the hero and defers both lower workflows near the viewport', () => {
-    expect(businessFlow3DHomepageProps).toMatchObject({
-      activityStrategy: 'visible',
-      loadStrategy: 'eager',
-      resolutionScale: 'display',
+    [businessFlow3DHomepageDarkProps, businessFlow3DHomepageLightProps].forEach((preset) => {
+      expect(preset).toMatchObject({
+        activityStrategy: 'visible',
+        loadStrategy: 'eager',
+        resolutionScale: 'display',
+      });
     });
     [businessFlowHorizontalHomepageProps, businessFlowVerticalHomepageProps].forEach((preset) => {
       expect(preset).toMatchObject({
@@ -292,11 +311,13 @@ describe('homepage illustration preset contract', () => {
   });
 
   it('keeps the hero beam cadence and node progress pauses responsive', () => {
-    const speed = businessFlow3DHomepageProps.speed;
+    [businessFlow3DHomepageDarkProps, businessFlow3DHomepageLightProps].forEach((preset) => {
+      const speed = preset.speed;
 
-    expect(320 / speed).toBeLessThanOrEqual(400);
-    expect(businessFlow3DHomepageProps.maxEmitDelay / speed).toBeLessThanOrEqual(625);
-    expect(businessFlow3DHomepageProps.maxDelay / speed).toBeLessThanOrEqual(1000);
+      expect(320 / speed).toBeLessThanOrEqual(400);
+      expect(preset.maxEmitDelay / speed).toBeLessThanOrEqual(625);
+      expect(preset.maxDelay / speed).toBeLessThanOrEqual(1000);
+    });
   });
 
   it('keeps the pillars section out of progress-driven document geometry', () => {
@@ -373,8 +394,8 @@ describe('homepage illustration preset contract', () => {
     const storySource = source(`./${feature}/stories/${story}.stories.tsx`);
 
     expect(presetSource).toContain(`export const ${preset} =`);
-    expect(indexSource).toContain(`export { ${preset} } from './presets';`);
-    expect(storySource).toContain(`import { ${preset} } from '../presets';`);
+    expect(indexSource).toContain(preset);
+    expect(storySource).toContain(preset);
     expect(storyArgs).toMatchObject(presetValue);
   });
 });

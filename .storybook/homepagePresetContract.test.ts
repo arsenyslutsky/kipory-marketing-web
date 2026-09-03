@@ -3,7 +3,10 @@ import {
   businessCoreNodeFlowContactProps,
   businessCoreNodeFlowWaitlistProps,
 } from '../src/features/business-core-node-flow/presets';
-import { businessFlow3DHomepageProps } from '../src/features/business-flow-3d/presets';
+import {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from '../src/features/business-flow-3d/presets';
 import { businessFlowHorizontalHomepageProps } from '../src/features/business-flow-horizontal/presets';
 import { businessFlowVerticalHomepageProps } from '../src/features/business-flow-vertical/presets';
 
@@ -17,7 +20,8 @@ import {
 describe('homepage preset contract', () => {
   it('registers structural illustration args without any theme-derived controls', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
-      businessFlow3DHomepageProps,
+      businessFlow3DHomepageDarkProps,
+      businessFlow3DHomepageLightProps,
       businessFlowHorizontalHomepageProps,
       businessFlowVerticalHomepageProps,
       businessCoreNodeFlowContactProps,
@@ -52,18 +56,20 @@ describe('homepage preset contract', () => {
   });
 
   it('keeps structural homepage controls registered after removing theme-derived args', () => {
-    expect(Object.keys(businessFlow3DHomepageProps)).toEqual(expect.arrayContaining([
-      'cameraPitch',
-      'cameraYaw',
-      'cameraZoom',
-      'connectorOpacity',
-      'gridOpacity',
-      'maxEmitDelay',
-      'nodeDepth',
-      'pathCurve',
-      'resolutionScale',
-      'speed',
-    ]));
+    [businessFlow3DHomepageDarkProps, businessFlow3DHomepageLightProps].forEach((preset) => {
+      expect(Object.keys(preset)).toEqual(expect.arrayContaining([
+        'cameraPitch',
+        'cameraYaw',
+        'cameraZoom',
+        'connectorOpacity',
+        'gridOpacity',
+        'maxEmitDelay',
+        'nodeDepth',
+        'pathCurve',
+        'resolutionScale',
+        'speed',
+      ]));
+    });
     expect(Object.keys(businessFlowHorizontalHomepageProps)).toEqual(expect.arrayContaining([
       'beamSpeed',
       'connectorOpacity',
@@ -97,6 +103,7 @@ describe('homepage preset contract', () => {
 
   it.each([
     'animated-illustrations-businessflow3d--current-nextjs-app',
+    'animated-illustrations-businessflow3d--current-app-light',
     'animated-illustrations-businessflowvertical--current-nextjs-app',
     'animated-illustrations-businessflowhorizontal--current-nextjs-app',
     'animated-illustrations-businesscorenodeflow--current-nextjs-app',

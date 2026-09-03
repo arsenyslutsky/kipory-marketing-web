@@ -3,6 +3,7 @@ export const HOMEPAGE_PRESET_SAVE_HEADER = 'X-Kipory-Storybook-Save';
 
 export const HOMEPAGE_PRESET_STORY_IDS = [
   'animated-illustrations-businessflow3d--current-nextjs-app',
+  'animated-illustrations-businessflow3d--current-app-light',
   'animated-illustrations-businessflowvertical--current-nextjs-app',
   'animated-illustrations-businessflowhorizontal--current-nextjs-app',
   'animated-illustrations-businesscorenodeflow--current-nextjs-app',
