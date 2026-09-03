@@ -1,7 +1,6 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { businessFlowPalettes } from '@/features/business-flow-palette';
-import { businessFlowHorizontalHomepageProps } from '@/features/business-flow-horizontal/presets';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FlowLayer3D } from './FlowLayer3D';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
@@ -72,9 +71,9 @@ const productionFallbackNodes = [{
   ...nodes[0],
   cardDepth: 34,
   icon: 'download.svg',
-  iconColor: businessFlowHorizontalHomepageProps.auxiliaryIconFillColor,
+  iconColor: businessFlowPalettes.dark.horizontalAuxiliaryIconFill,
   iconOpacity: 0.72,
-  iconStrokeColor: businessFlowHorizontalHomepageProps.color,
+  iconStrokeColor: businessFlowPalettes.dark.horizontalIconStroke,
   id: 'terminal-1',
   shape: 'rectangle' as const,
   width: 30,
@@ -457,7 +456,7 @@ it('renders a visible fallback body and a separate contrasting icon with product
     '--flow-node-body-end': '#111',
     '--flow-node-body-mid': '#222',
     '--flow-node-body-start': '#333',
-    '--flow-node-icon-color': businessFlowHorizontalHomepageProps.color,
+    '--flow-node-icon-color': businessFlowPalettes.dark.horizontalIconStroke,
   });
   expect(icon).toBeInTheDocument();
   expect(icon).toHaveStyle({

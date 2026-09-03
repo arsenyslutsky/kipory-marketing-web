@@ -11,7 +11,9 @@ import {
   WorkflowArrivalBursts,
   type WorkflowArrivalBurstsHandle,
 } from '@/components/elements/WorkflowArrivalBursts';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   businessFlowVerticalCentralNodes,
@@ -58,6 +60,7 @@ export type BusinessFlowVerticalProps = WorkflowRuntimeOptions & {
   height?: CSSProperties['height'];
   iconSize?: number;
   maxConcurrentBeams?: number;
+  mode?: ResolvedTheme;
   numberOfNodesBottom?: number;
   numberOfNodesTop?: number;
   nodeProgressMaxDelay?: number;
@@ -106,38 +109,39 @@ function useReducedMotionPreference() {
 
 export function BusinessFlowVertical({
   activityStrategy,
-  auxiliaryIconFillColor = businessFlowPalette.black,
-  beamColor = businessFlowPalette.beam,
+  auxiliaryIconFillColor: auxiliaryIconFillColorProp,
+  beamColor: beamColorProp,
   beamEmissionRandomness = 100,
   beamEnabled = true,
   beamHeadGlowBlur = 0,
   beamHeadGlowOpacity = 1,
   beamHeadGlowRadius = 0,
-  beamHighlightColor = businessFlowPalette.beamHighlight,
+  beamHighlightColor: beamHighlightColorProp,
   beamSpeed = 1,
   beamTrailLength = 0,
   burstFadeTime = 920,
   burstRadius = 32,
   burstStrength = 1,
   className,
-  color = businessFlowPalette.iconStroke,
-  centralIconFillColor = businessFlowPalette.black,
+  color: colorProp,
+  centralIconFillColor: centralIconFillColorProp,
   centralIconFillMode = 'gradient',
   centralIconStrokeOpacity = 1,
-  connectorColor = businessFlowPalette.connector,
+  connectorColor: connectorColorProp,
   connectorOpacity = 0.62,
   connectorRadius = 1.75,
   connectorWidth = 1.25,
-  gradientEndColor = businessFlowPalette.frontGradient.end,
-  gradientMidColor = businessFlowPalette.frontGradient.mid,
-  gradientStartColor = businessFlowPalette.frontGradient.start,
-  gridColor = businessFlowPalette.grid,
+  gradientEndColor: gradientEndColorProp,
+  gradientMidColor: gradientMidColorProp,
+  gradientStartColor: gradientStartColorProp,
+  gridColor: gridColorProp,
   gridDensity = 30,
   gridOpacity = 0.2,
   height = '38rem',
   iconSize = 40,
   loadStrategy,
   maxConcurrentBeams = 24,
+  mode: explicitMode,
   numberOfNodesBottom = 10,
   numberOfNodesTop = 10,
   nodeProgressMaxDelay = 1800,
@@ -151,6 +155,18 @@ export function BusinessFlowVertical({
   strokeWidth = 5,
   width = '20rem',
 }: BusinessFlowVerticalProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.auxiliaryIconFill;
+  const beamColor = beamColorProp ?? palette.beam;
+  const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
+  const centralIconFillColor = centralIconFillColorProp ?? palette.centralIconFill;
+  const color = colorProp ?? palette.iconStroke;
+  const connectorColor = connectorColorProp ?? palette.connector;
+  const gradientEndColor = gradientEndColorProp ?? palette.frontGradient.end;
+  const gradientMidColor = gradientMidColorProp ?? palette.frontGradient.mid;
+  const gradientStartColor = gradientStartColorProp ?? palette.frontGradient.start;
+  const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
   const [flowActive, setFlowActive] = useState(false);
@@ -194,9 +210,11 @@ export function BusinessFlowVertical({
     strokeWidth,
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    mode,
+    frontGradient: { angle: 117, ...palette.frontGradient },
+    sideXGradient: { angle: 360, ...palette.sideXGradient },
+    sideZGradient: { angle: 177, ...palette.sideZGradient },
     assetBasePath: '/assets/nodes',
-    frontGradient: gradient,
-    mode: 'dark',
     nodeCornerRadius: 10,
     outlineOpacity: 0,
     outlineWidth: 1,
@@ -205,14 +223,13 @@ export function BusinessFlowVertical({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
-    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
   }), [
-    gradient,
+    mode,
     nodeProgressMaxDelay,
     nodeProgressMinDelay,
     nodeProgressMode,
     nodeProgressSize,
+    palette,
   ]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
   const paths = useMemo(
@@ -295,6 +312,7 @@ export function BusinessFlowVertical({
         className={styles.flowLayer}
         connector={connector}
         loadStrategy={loadStrategy}
+        mode={mode}
         nodes={nodes}
         nodeStyle={nodeStyle}
         onActivityChange={onActivityChange}

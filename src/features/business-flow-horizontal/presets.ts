@@ -1,28 +1,20 @@
 import type { BusinessFlowHorizontalProps } from './components/BusinessFlowHorizontal';
-import { businessFlowPalette } from '../business-flow-palette';
 
 export const businessFlowHorizontalHomepageProps = {
   activityStrategy: 'visible',
-  auxiliaryIconFillColor: businessFlowPalette.horizontalAuxiliaryIconFill,
-  beamColor: businessFlowPalette.beam,
   beamEmissionRandomness: 100,
   beamEnabled: true,
   beamHeadGlowBlur: 2,
   beamHeadGlowOpacity: 1,
   beamHeadGlowRadius: 11,
-  beamHighlightColor: businessFlowPalette.beamHighlight,
   beamSpeed: 1.4,
   beamTrailLength: 135,
   burstFadeTime: 900,
   burstRadius: 24,
   burstStrength: 0.5,
-  centralIconFillColor: businessFlowPalette.horizontalCentralIconFill,
   centralIconStrokeOpacity: 1,
-  color: businessFlowPalette.horizontalIconStroke,
-  connectorColor: businessFlowPalette.connector,
   connectorOpacity: 0.8,
   connectorWidth: 1,
-  gridColor: businessFlowPalette.grid,
   gridDensity: 30,
   gridOpacity: 0,
   height: '50rem',

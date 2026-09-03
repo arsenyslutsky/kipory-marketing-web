@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
 import { useWorkflowRuntime } from '@/components/elements/workflow-runtime';
 import { useScrollMotion } from '@/components/motion/ScrollMotionContext';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { cssVariablesForTheme, defaultColors, defaultFlow } from '../config';
 import type { SignalFlowSceneController } from '../scene/createSignalFlowScene';
+import { loadSignalFlowSceneFactory } from '../scene/loadSignalFlowScene';
 import type { BusinessFlow3DProps, SignalFlowMode } from '../types';
 import styles from './BusinessFlow3D.module.css';
 
@@ -25,7 +27,7 @@ function joinClasses(...classes: Array<string | false | undefined>) {
 export function BusinessFlow3D({
   activityStrategy,
   variant = 'variant-2',
-  mode = 'light',
+  mode: explicitMode,
   flow = defaultFlow,
   colors = defaultColors,
   assetBasePath = '/assets/nodes',
@@ -38,7 +40,7 @@ export function BusinessFlow3D({
   gridDensity = 30,
   gridMaskRadius = 320,
   gridMaskBlur = 240,
-  connectorOpacity = mode === 'dark' ? 0.92 : 0.82,
+  connectorOpacity: connectorOpacityProp,
   connectorStroke = 'solid',
   connectorWidth = 2,
   showContinuationConnectors = true,
@@ -50,7 +52,7 @@ export function BusinessFlow3D({
   nodeDepthRandom = 0,
   nodeShape = 'rectangle',
   nodeCornerRadius = 10,
-  nodeIconOpacity = mode === 'dark' ? 0.94 : 0.9,
+  nodeIconOpacity: nodeIconOpacityProp,
   nodeFrontGradientAngle = 32,
   nodeSideXGradientAngle = 18,
   nodeSideZGradientAngle = 18,
@@ -86,6 +88,9 @@ export function BusinessFlow3D({
   resolutionScale,
   onModeChange,
 }: BusinessFlow3DProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const connectorOpacity = connectorOpacityProp ?? (mode === 'dark' ? 0.92 : 0.82);
+  const nodeIconOpacity = nodeIconOpacityProp ?? (mode === 'dark' ? 0.94 : 0.9);
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
@@ -135,8 +140,7 @@ export function BusinessFlow3D({
       const message = sceneError instanceof Error ? sceneError.message : 'WebGL is unavailable.';
       queueMicrotask(() => { if (mounted) setError(message); });
     };
-    void import('../scene/createSignalFlowScene').then(({ createSignalFlowScene }) => {
-      if (!mounted) return;
+    void loadSignalFlowSceneFactory().then((createSignalFlowScene) => {
       try {
         controller = createSignalFlowScene({
         active: false,
@@ -198,6 +202,10 @@ export function BusinessFlow3D({
         },
         elements,
       });
+        if (!mounted) {
+          controller.destroy();
+          return;
+        }
         controllerRef.current = controller;
         controller.setActive(runtimeActiveRef.current);
       } catch (sceneError) {

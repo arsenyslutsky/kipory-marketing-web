@@ -3,27 +3,37 @@ import type {
   FlowLayer3DBeamStyle,
   FlowLayer3DConnectorStyle,
   FlowLayer3DNode,
+  FlowLayer3DNodeStyle,
   FlowLayer3DPath,
 } from '@/components/elements/FlowLayer3D';
+import { businessFlowPalettes } from '@/features/business-flow-palette';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import { afterEach, expect, it, vi } from 'vitest';
 import { BusinessCoreNodeFlow } from './BusinessCoreNodeFlow';
 
 let capturedBeam: FlowLayer3DBeamStyle | undefined;
 let capturedConnector: FlowLayer3DConnectorStyle | undefined;
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
+let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
 let capturedPaths: readonly FlowLayer3DPath[] | undefined;
+let capturedMode: ResolvedTheme | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
-  FlowLayer3D: ({ beam, connector, nodes, paths }: {
+  FlowLayer3D: ({ beam, connector, mode, nodes, nodeStyle, paths }: {
     beam: FlowLayer3DBeamStyle;
     connector: FlowLayer3DConnectorStyle;
+    mode?: ResolvedTheme;
     nodes: readonly FlowLayer3DNode[];
+    nodeStyle?: FlowLayer3DNodeStyle;
     paths: readonly FlowLayer3DPath[];
   }) => {
     capturedBeam = beam;
     capturedConnector = connector;
     capturedNodes = nodes;
+    capturedNodeStyle = nodeStyle;
     capturedPaths = paths;
+    capturedMode = mode;
     return <div data-testid="flow-layer" />;
   },
 }));
@@ -32,8 +42,46 @@ afterEach(() => {
   capturedBeam = undefined;
   capturedConnector = undefined;
   capturedNodes = undefined;
+  capturedNodeStyle = undefined;
   capturedPaths = undefined;
+  capturedMode = undefined;
   vi.unstubAllGlobals();
+});
+
+it('inherits the light palette from theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessCoreNodeFlow />
+    </ThemeProvider>,
+  );
+
+  expect(capturedMode).toBe('light');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'light' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.light.connector);
+  expect(capturedBeam?.beamColor).toBe(businessFlowPalettes.light.beam);
+  expect(capturedNodes?.find((node) => node.id === 'core')).toMatchObject({
+    iconColor: businessFlowPalettes.light.horizontalCentralIconFill,
+    iconStrokeColor: businessFlowPalettes.light.horizontalIconStroke,
+  });
+});
+
+it('falls back to the dark palette outside theme context', () => {
+  render(<BusinessCoreNodeFlow />);
+
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+});
+
+it('honors an explicit dark mode over light theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessCoreNodeFlow mode="dark" />
+    </ThemeProvider>,
+  );
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
 });
 
 it('renders a square radial flow with one core and the configured auxiliaries', () => {

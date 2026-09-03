@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import {
+  businessCoreNodeFlowContactProps,
+  businessCoreNodeFlowWaitlistProps,
+} from './business-core-node-flow/presets';
 import { businessFlow3DHomepageProps } from './business-flow-3d/presets';
 import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
 import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
@@ -22,11 +26,208 @@ const cases = [
   },
 ] as const;
 
+const themeDerivedKeys = [
+  'auxiliaryIconFillColor',
+  'beamColor',
+  'beamHighlightColor',
+  'centralIconFillColor',
+  'color',
+  'connectorColor',
+  'gradientEndColor',
+  'gradientMidColor',
+  'gradientStartColor',
+  'gridColor',
+  'mode',
+  'nodeFrontGradientEndColor',
+  'nodeFrontGradientMidColor',
+  'nodeFrontGradientStartColor',
+  'nodeSideXGradientEndColor',
+  'nodeSideXGradientMidColor',
+  'nodeSideXGradientStartColor',
+  'nodeSideZGradientEndColor',
+  'nodeSideZGradientMidColor',
+  'nodeSideZGradientStartColor',
+] as const;
+
 function source(path: string) {
   return readFileSync(new URL(path, import.meta.url), 'utf8');
 }
 
 describe('homepage illustration preset contract', () => {
+  it('keeps every website flow preset structural so the active theme can supply colors', () => {
+    const presets: ReadonlyArray<Record<string, unknown>> = [
+      businessFlow3DHomepageProps,
+      businessFlowHorizontalHomepageProps,
+      businessFlowVerticalHomepageProps,
+      businessCoreNodeFlowContactProps,
+      businessCoreNodeFlowWaitlistProps,
+    ];
+
+    presets.forEach((preset) => {
+      themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
+    });
+  });
+
+  it('preserves the hero camera, topology, opacity, timing, and runtime preset values', () => {
+    expect(businessFlow3DHomepageProps).toEqual({
+      activityStrategy: 'visible',
+      cameraPitch: 33.19,
+      cameraYaw: 0.35,
+      cameraZoom: 0.91,
+      concurrentBeams: 10,
+      connectorOpacity: 0.62,
+      connectorStroke: 'dashed',
+      connectorWidth: 1.25,
+      emitterX: 3,
+      emitterY: -8,
+      fogEnabled: true,
+      gridDensity: 30,
+      gridMaskBlur: 480,
+      gridMaskRadius: 800,
+      gridOpacity: 0.2,
+      interactive: false,
+      loadStrategy: 'eager',
+      maxDelay: 800,
+      maxEmitDelay: 500,
+      minDelay: 200,
+      minEmitDelay: 150,
+      nodeCornerRadius: 10,
+      nodeDepth: 20,
+      nodeDepthRandom: 42,
+      nodeFrontGradientAngle: 117,
+      nodeIconOpacity: 0.5,
+      nodeProgressMode: 'outline',
+      nodeScale: 0.7,
+      nodeShape: 'custom',
+      nodeSideXGradientAngle: 360,
+      nodeSideZGradientAngle: 177,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      pathCurve: 86,
+      perspectiveEffect: 75,
+      progressBarHeight: 15,
+      progressPadding: 1,
+      resolutionScale: 'display',
+      scrollRange: 700,
+      scrollTilt: 41.81,
+      showContinuationConnectors: true,
+      showInterface: false,
+      speed: 0.8,
+    });
+  });
+
+  it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values', () => {
+    expect(businessFlowHorizontalHomepageProps).toEqual({
+      activityStrategy: 'visible',
+      beamEmissionRandomness: 100,
+      beamEnabled: true,
+      beamHeadGlowBlur: 2,
+      beamHeadGlowOpacity: 1,
+      beamHeadGlowRadius: 11,
+      beamSpeed: 1.4,
+      beamTrailLength: 135,
+      burstFadeTime: 900,
+      burstRadius: 24,
+      burstStrength: 0.5,
+      centralIconStrokeOpacity: 1,
+      connectorOpacity: 0.8,
+      connectorWidth: 1,
+      gridDensity: 30,
+      gridOpacity: 0,
+      height: '50rem',
+      iconSize: 44,
+      loadStrategy: 'near-viewport',
+      maxConcurrentBeams: 5,
+      nodeProgressMaxDelay: 1800,
+      nodeProgressMinDelay: 500,
+      nodeProgressMode: 'outline',
+      nodeProgressSize: 15,
+      numberOfNodesLeft: 8,
+      numberOfNodesRight: 8,
+      preloadMargin: '600px 0px',
+      resolutionScale: 'display',
+      strokeWidth: 2.25,
+      width: 'min(28.8rem, 100%)',
+    });
+    expect(businessFlowVerticalHomepageProps).toEqual({
+      activityStrategy: 'visible',
+      auxiliaryNodeSpacing: 0.6,
+      beamEmissionRandomness: 100,
+      beamEnabled: true,
+      beamHeadGlowBlur: 32,
+      beamHeadGlowOpacity: 0,
+      beamHeadGlowRadius: 0,
+      beamSpeed: 1.4,
+      beamTrailLength: 0,
+      burstFadeTime: 1700,
+      burstRadius: 25,
+      burstStrength: 0.5,
+      centralIconFillMode: 'black',
+      centralIconStrokeOpacity: 0.91,
+      connectorOpacity: 0.6,
+      connectorRadius: 10,
+      connectorWidth: 1,
+      gridDensity: 30,
+      gridOpacity: 0,
+      height: '45rem',
+      iconSize: 40,
+      loadStrategy: 'near-viewport',
+      maxConcurrentBeams: 5,
+      nodeProgressMaxDelay: 1800,
+      nodeProgressMinDelay: 500,
+      nodeProgressMode: 'outline',
+      nodeProgressSize: 15,
+      numberOfNodesBottom: 5,
+      numberOfNodesTop: 4,
+      preloadMargin: '600px 0px',
+      resolutionScale: 'display',
+      showContinuationConnectors: true,
+      strokeWidth: 1.5,
+      width: '20rem',
+    });
+  });
+
+  it('preserves contact and waitlist flow structure without freezing their colors', () => {
+    const expected = {
+      activityStrategy: 'visible',
+      auxiliaryIcon: 'mixed',
+      beamEmissionRandomness: 100,
+      beamEnabled: true,
+      beamGlowIntensity: 1,
+      beamHeadGlowBlur: 2,
+      beamHeadGlowOpacity: 1,
+      beamHeadGlowRadius: 11,
+      beamSpeed: 1.4,
+      beamTrailLength: 135,
+      beamWidth: 1.4,
+      burstFadeTime: 900,
+      burstRadius: 24,
+      burstStrength: 0.5,
+      centralIcon: 'profile',
+      centralIconStrokeOpacity: 1,
+      connectorOpacity: 0.8,
+      connectorStroke: 'dashed',
+      connectorWidth: 1,
+      gridDensity: 30,
+      gridOpacity: 0,
+      iconSize: 44,
+      loadStrategy: 'near-viewport',
+      maxConcurrentBeams: 6,
+      nodeProgressMaxDelay: 1800,
+      nodeProgressMinDelay: 500,
+      nodeProgressMode: 'outline',
+      nodeProgressSize: 15,
+      numberOfAuxiliaryConnections: 12,
+      resolutionScale: 'display',
+      showAuxiliaryNodes: false,
+      size: 'min(22rem, 100%)',
+      strokeWidth: 0.5,
+    };
+
+    expect(businessCoreNodeFlowContactProps).toEqual(expected);
+    expect(businessCoreNodeFlowWaitlistProps).toEqual(expected);
+  });
+
   it('eagerly loads only the hero and defers both lower workflows near the viewport', () => {
     expect(businessFlow3DHomepageProps).toMatchObject({
       activityStrategy: 'visible',

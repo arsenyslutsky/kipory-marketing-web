@@ -1,4 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import {
+  businessCoreNodeFlowContactProps,
+  businessCoreNodeFlowWaitlistProps,
+} from '../src/features/business-core-node-flow/presets';
+import { businessFlow3DHomepageProps } from '../src/features/business-flow-3d/presets';
+import { businessFlowHorizontalHomepageProps } from '../src/features/business-flow-horizontal/presets';
+import { businessFlowVerticalHomepageProps } from '../src/features/business-flow-vertical/presets';
 
 import {
   createHomepagePresetCapabilityRequest,
@@ -8,6 +15,86 @@ import {
 } from './homepagePresetContract';
 
 describe('homepage preset contract', () => {
+  it('registers structural illustration args without any theme-derived controls', () => {
+    const presets: ReadonlyArray<Record<string, unknown>> = [
+      businessFlow3DHomepageProps,
+      businessFlowHorizontalHomepageProps,
+      businessFlowVerticalHomepageProps,
+      businessCoreNodeFlowContactProps,
+      businessCoreNodeFlowWaitlistProps,
+    ];
+    const themeDerivedKeys = [
+      'auxiliaryIconFillColor',
+      'beamColor',
+      'beamHighlightColor',
+      'centralIconFillColor',
+      'color',
+      'connectorColor',
+      'gradientEndColor',
+      'gradientMidColor',
+      'gradientStartColor',
+      'gridColor',
+      'mode',
+      'nodeFrontGradientEndColor',
+      'nodeFrontGradientMidColor',
+      'nodeFrontGradientStartColor',
+      'nodeSideXGradientEndColor',
+      'nodeSideXGradientMidColor',
+      'nodeSideXGradientStartColor',
+      'nodeSideZGradientEndColor',
+      'nodeSideZGradientMidColor',
+      'nodeSideZGradientStartColor',
+    ];
+
+    presets.forEach((preset) => {
+      themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
+    });
+  });
+
+  it('keeps structural homepage controls registered after removing theme-derived args', () => {
+    expect(Object.keys(businessFlow3DHomepageProps)).toEqual(expect.arrayContaining([
+      'cameraPitch',
+      'cameraYaw',
+      'cameraZoom',
+      'connectorOpacity',
+      'gridOpacity',
+      'maxEmitDelay',
+      'nodeDepth',
+      'pathCurve',
+      'resolutionScale',
+      'speed',
+    ]));
+    expect(Object.keys(businessFlowHorizontalHomepageProps)).toEqual(expect.arrayContaining([
+      'beamSpeed',
+      'connectorOpacity',
+      'height',
+      'numberOfNodesLeft',
+      'numberOfNodesRight',
+      'resolutionScale',
+      'width',
+    ]));
+    expect(Object.keys(businessFlowVerticalHomepageProps)).toEqual(expect.arrayContaining([
+      'auxiliaryNodeSpacing',
+      'beamSpeed',
+      'connectorOpacity',
+      'height',
+      'numberOfNodesBottom',
+      'numberOfNodesTop',
+      'resolutionScale',
+      'width',
+    ]));
+    [businessCoreNodeFlowContactProps, businessCoreNodeFlowWaitlistProps].forEach((preset) => {
+      expect(Object.keys(preset)).toEqual(expect.arrayContaining([
+        'beamSpeed',
+        'connectorOpacity',
+        'numberOfAuxiliaryConnections',
+        'resolutionScale',
+        'showAuxiliaryNodes',
+        'size',
+      ]));
+    });
+  });
+
   it.each([
     'animated-illustrations-businessflow3d--current-nextjs-app',
     'animated-illustrations-businessflowvertical--current-nextjs-app',

@@ -11,7 +11,9 @@ import {
   WorkflowArrivalBursts,
   type WorkflowArrivalBurstsHandle,
 } from '@/components/elements/WorkflowArrivalBursts';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -51,6 +53,7 @@ export type BusinessFlowHorizontalProps = WorkflowRuntimeOptions & {
   height?: CSSProperties['height'];
   iconSize?: number;
   maxConcurrentBeams?: number;
+  mode?: ResolvedTheme;
   numberOfNodesLeft?: number;
   numberOfNodesRight?: number;
   nodeProgressMaxDelay?: number;
@@ -101,33 +104,34 @@ function useReducedMotionPreference() {
 
 export function BusinessFlowHorizontal({
   activityStrategy,
-  auxiliaryIconFillColor = businessFlowPalette.auxiliaryIconFill,
-  beamColor = businessFlowPalette.beam,
+  auxiliaryIconFillColor: auxiliaryIconFillColorProp,
+  beamColor: beamColorProp,
   beamEmissionRandomness = 100,
   beamEnabled = true,
   beamHeadGlowBlur = 0,
   beamHeadGlowOpacity = 1,
   beamHeadGlowRadius = 0,
-  beamHighlightColor = businessFlowPalette.beamHighlight,
+  beamHighlightColor: beamHighlightColorProp,
   beamSpeed = 1.4,
   beamTrailLength = 0,
   burstFadeTime = 920,
   burstRadius = 32,
   burstStrength = 1,
-  centralIconFillColor = businessFlowPalette.centralIconFill,
+  centralIconFillColor: centralIconFillColorProp,
   centralIconStrokeOpacity = 0.52,
   className,
-  color = businessFlowPalette.iconStroke,
-  connectorColor = businessFlowPalette.connector,
+  color: colorProp,
+  connectorColor: connectorColorProp,
   connectorOpacity = 0.22,
   connectorWidth = 1.25,
-  gridColor = businessFlowPalette.grid,
+  gridColor: gridColorProp,
   gridDensity = 30,
   gridOpacity = 0,
   height = '38rem',
   iconSize = 40,
   loadStrategy,
   maxConcurrentBeams = 24,
+  mode: explicitMode,
   numberOfNodesLeft = 6,
   numberOfNodesRight = 3,
   nodeProgressMaxDelay = 1800,
@@ -139,6 +143,15 @@ export function BusinessFlowHorizontal({
   strokeWidth = 1.5,
   width = '20rem',
 }: BusinessFlowHorizontalProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.horizontalAuxiliaryIconFill;
+  const beamColor = beamColorProp ?? palette.beam;
+  const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
+  const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
+  const color = colorProp ?? palette.horizontalIconStroke;
+  const connectorColor = connectorColorProp ?? palette.connector;
+  const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
   const [flowActive, setFlowActive] = useState(false);
@@ -207,9 +220,11 @@ export function BusinessFlowHorizontal({
     strokeWidth,
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    mode,
+    frontGradient: { angle: 117, ...palette.frontGradient },
+    sideXGradient: { angle: 360, ...palette.sideXGradient },
+    sideZGradient: { angle: 177, ...palette.sideZGradient },
     assetBasePath: '/assets/nodes',
-    frontGradient: { angle: 117, ...businessFlowPalette.frontGradient },
-    mode: 'dark',
     nodeCornerRadius: 10,
     outlineOpacity: 0,
     outlineWidth: 1,
@@ -218,9 +233,7 @@ export function BusinessFlowHorizontal({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
-    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
-  }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
+  }), [mode, nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize, palette]);
   const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
     burstRef.current?.add(event);
   }, []);
@@ -258,6 +271,7 @@ export function BusinessFlowHorizontal({
         className={styles.flowLayer}
         connector={connector}
         loadStrategy={loadStrategy}
+        mode={mode}
         nodes={nodes}
         nodeStyle={nodeStyle}
         onActivityChange={onActivityChange}

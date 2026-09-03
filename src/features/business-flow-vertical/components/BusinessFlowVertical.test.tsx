@@ -1,16 +1,29 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
+import type {
+  FlowLayer3DBeamStyle,
+  FlowLayer3DConnectorStyle,
+  FlowLayer3DNode,
+  FlowLayer3DNodeStyle,
+} from '@/components/elements/FlowLayer3D';
+import { businessFlowPalettes } from '@/features/business-flow-palette';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import { businessFlowVerticalHomepageProps } from '../presets';
 import { BusinessFlowVertical } from './BusinessFlowVertical';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
 let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
+let capturedBeam: FlowLayer3DBeamStyle | undefined;
+let capturedConnector: FlowLayer3DConnectorStyle | undefined;
+let capturedMode: ResolvedTheme | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
     beam,
+    connector,
+    mode,
     paths,
     beamSource,
     nodes,
@@ -19,13 +32,9 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     onArrival,
     reducedMotion,
   }: {
-    beam: {
-      beamWidth: number;
-      headGlowBlur?: number;
-      headGlowOpacity?: number;
-      headGlowRadius?: number;
-      trailLength: number;
-    };
+    beam: FlowLayer3DBeamStyle;
+    connector: FlowLayer3DConnectorStyle;
+    mode?: ResolvedTheme;
     paths: Array<{ curve?: number }>;
     nodes?: readonly FlowLayer3DNode[];
     nodeStyle?: FlowLayer3DNodeStyle;
@@ -48,6 +57,9 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     }, [onActivityChange]);
     capturedNodes = nodes;
     capturedNodeStyle = nodeStyle;
+    capturedBeam = beam;
+    capturedConnector = connector;
+    capturedMode = mode;
     return (
       <button
         type="button"
@@ -76,7 +88,46 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
 afterEach(() => {
   capturedNodes = undefined;
   capturedNodeStyle = undefined;
+  capturedBeam = undefined;
+  capturedConnector = undefined;
+  capturedMode = undefined;
   vi.unstubAllGlobals();
+});
+
+it('inherits the light palette from theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical />
+    </ThemeProvider>,
+  );
+
+  expect(capturedMode).toBe('light');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'light' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.light.connector);
+  expect(capturedBeam?.beamColor).toBe(businessFlowPalettes.light.beam);
+  expect(capturedNodes?.find((node) => node.id === 'server')).toMatchObject({
+    iconColor: businessFlowPalettes.light.centralIconFill,
+    iconStrokeColor: businessFlowPalettes.light.iconStroke,
+  });
+});
+
+it('falls back to the dark palette outside theme context', () => {
+  render(<BusinessFlowVertical />);
+
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+});
+
+it('honors an explicit dark mode over light theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical mode="dark" />
+    </ThemeProvider>,
+  );
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
 });
 
 it('renders the central hierarchy and satellite documents in one shared Node3D layer', () => {

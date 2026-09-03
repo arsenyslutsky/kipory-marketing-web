@@ -1,8 +1,9 @@
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
 import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
+import type { ResolvedTheme } from '@/theme/theme';
 
 export type SignalFlowVariant = 'variant-2';
-export type SignalFlowMode = 'light' | 'dark';
+export type SignalFlowMode = ResolvedTheme;
 export type ConnectorStrokeType = Connector3DStroke;
 export type NodeGeometryShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type NodeShape =
