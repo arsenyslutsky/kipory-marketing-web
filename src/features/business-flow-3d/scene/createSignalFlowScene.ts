@@ -54,11 +54,13 @@ interface SceneOptions extends NodeShadowProps {
   connectorOpacity: number;
   connectorStroke: ConnectorStrokeType;
   connectorWidth: number;
+  connectorElevation: number;
   showContinuationConnectors: boolean;
   pathCurve: number;
   outlineOpacity: number;
   outlineWidth: number;
   nodeScale: number;
+  nodeElevation: number;
   nodeDepth: number;
   nodeDepthRandom: number;
   nodeShape: NodeShape;
@@ -178,11 +180,13 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     connectorOpacity,
     connectorStroke,
     connectorWidth,
+    connectorElevation,
     showContinuationConnectors,
     pathCurve,
     outlineOpacity,
     outlineWidth,
     nodeScale,
+    nodeElevation,
     nodeDepth,
     nodeDepthRandom,
     nodeShape,
@@ -651,6 +655,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       isDark,
       isVariant2,
       nodeCornerRadius,
+      nodeElevation,
       outlineOpacity,
       outlineWidth,
       position: data.p,
@@ -675,7 +680,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     if (!hiddenNodeIds.has(id)) createCard(id, data);
   });
 
-  const connectorLift = 0.06;
+  const connectorLift = 0.06 + connectorElevation;
 
   function edgePoints(a: string, b: string, lift = connectorLift) {
     const pointA = nodes[a].p;

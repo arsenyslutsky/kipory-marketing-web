@@ -131,3 +131,51 @@ it.each(['bar', 'outline'] as const)(
     disposeNode3DGradientTextures(renderer);
   },
 );
+
+it('adds node elevation to both the rendered and animated base position', () => {
+  const renderer = {
+    capabilities: { getMaxAnisotropy: () => 1 },
+  } as THREE.WebGLRenderer;
+  const context = {
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D;
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000"/></svg>',
+  }));
+
+  const node = createNode3DObject({
+    assetBasePath: '/assets/nodes',
+    cardDepth: 40,
+    fogEnabled: false,
+    frontGradient: gradient,
+    height: 10,
+    icon: 'elevated-node.svg',
+    iconOpacity: 1,
+    id: 'elevated-node',
+    isDark: false,
+    isVariant2: true,
+    nodeCornerRadius: 10,
+    nodeElevation: 1.25,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    position: [0, 0],
+    progressBarHeight: 15,
+    progressMode: 'bar',
+    progressPadding: 1,
+    renderer,
+    scale: 1,
+    shape: 'square',
+    sideXGradient: gradient,
+    sideZGradient: gradient,
+    theme: defaultColors.light,
+    tier: 1,
+    width: 48,
+  });
+
+  expect(node.position.y).toBeCloseTo(6.57);
+  expect(node.userData.baseY).toBeCloseTo(6.57);
+  disposeNode3DGradientTextures(renderer);
+});

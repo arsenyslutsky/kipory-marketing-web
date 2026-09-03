@@ -58,6 +58,7 @@ export type CreateNode3DObjectOptions = {
   isDark: boolean;
   isVariant2: boolean;
   nodeCornerRadius: number;
+  nodeElevation?: number;
   outlineOpacity: number;
   outlineWidth: number;
   position: readonly [number, number];
@@ -95,6 +96,7 @@ export function createNode3DObject({
   isDark,
   isVariant2,
   nodeCornerRadius,
+  nodeElevation = 0,
   outlineOpacity,
   outlineWidth,
   position,
@@ -647,7 +649,7 @@ export function createNode3DObject({
   const isRadial = radialSides !== undefined;
   const group = new THREE.Group();
   const baseBottom = (isVariant2 ? 0.4 : 0.28) - 0.11 + tier * 0.03;
-  group.position.set(position[0], baseBottom + height * 0.5, position[1]);
+  group.position.set(position[0], baseBottom + nodeElevation + height * 0.5, position[1]);
   group.scale.setScalar(THREE.MathUtils.clamp(scale, 0.1, 3));
 
   const nodeGlow = new THREE.Mesh(

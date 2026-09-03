@@ -19,6 +19,11 @@ const cssRenderer = vi.hoisted(() => ({
   setSize: vi.fn(),
 }));
 
+const flowPathCaptures = vi.hoisted(() => ({
+  beam: [] as number[][],
+  connector: [] as number[][],
+}));
+
 vi.mock('three', async (importOriginal) => {
   const actual = await importOriginal<typeof import('three')>();
   return {
@@ -39,17 +44,85 @@ vi.mock('three/addons/renderers/CSS3DRenderer.js', async (importOriginal) => {
   };
 });
 
+vi.mock('@/components/elements/Connector3D/createConnector3DObject', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/elements/Connector3D/createConnector3DObject')>();
+  return {
+    ...actual,
+    createConnector3DObject: (options: Parameters<typeof actual.createConnector3DObject>[0]) => {
+      flowPathCaptures.connector.push(options.path.points.map((point) => point.y));
+      return actual.createConnector3DObject(options);
+    },
+    createFadingConnector3DObject: (options: Parameters<typeof actual.createFadingConnector3DObject>[0]) => {
+      flowPathCaptures.connector.push(options.path.points.map((point) => point.y));
+      return actual.createFadingConnector3DObject(options);
+    },
+  };
+});
+
+vi.mock('@/components/elements/Beam3D/createBeam3DObject', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/elements/Beam3D/createBeam3DObject')>();
+  return {
+    ...actual,
+    createBeam3DObject: (options: Parameters<typeof actual.createBeam3DObject>[0]) => {
+      const beam = actual.createBeam3DObject(options);
+      const setPath = beam.setPath;
+      beam.setPath = (path) => {
+        flowPathCaptures.beam.push(path.points.map((point) => point.y));
+        setPath(path);
+      };
+      return beam;
+    },
+  };
+});
+
 import * as THREE from 'three';
 import { defaultColors } from '../config';
 import { createSignalFlowScene } from './createSignalFlowScene';
 import { getNode3DGradientTexture } from '@/components/elements/Node3D/node3DGradientTextureCache';
 
 afterEach(() => {
+  flowPathCaptures.beam.length = 0;
+  flowPathCaptures.connector.length = 0;
   renderer.shadowMap.autoUpdate = true;
   renderer.shadowMap.needsUpdate = false;
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('keeps connectors and travelling beams aligned at the configured elevation', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const controller = createSignalFlowScene({
+    ...createSceneOptions(),
+    connectorElevation: 1.5,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+  });
+
+  animationFrames.shift()?.(1000);
+
+  expect(flowPathCaptures.connector.length).toBeGreaterThan(0);
+  expect(flowPathCaptures.beam.length).toBeGreaterThan(0);
+  expect(flowPathCaptures.connector.flat()).toEqual(
+    expect.arrayContaining([expect.closeTo(1.61)]),
+  );
+  expect(flowPathCaptures.connector.flat().every((height) => Math.abs(height - 1.61) < 0.000001)).toBe(true);
+  expect(flowPathCaptures.beam.flat().every((height) => Math.abs(height - 1.61) < 0.000001)).toBe(true);
+  controller.destroy();
 });
 
 it('waits for activation and uses a scaled WebGL target with layout-sized CSS3D', () => {
@@ -167,11 +240,13 @@ function createSceneOptions() {
     connectorOpacity: 0,
     connectorStroke: 'solid' as const,
     connectorWidth: 0,
+    connectorElevation: 0,
     showContinuationConnectors: false,
     pathCurve: 0,
     outlineOpacity: 0,
     outlineWidth: 0,
     nodeScale: 1,
+    nodeElevation: 0,
     nodeDepth: 12,
     nodeDepthRandom: 0,
     nodeShape: 'rectangle' as const,

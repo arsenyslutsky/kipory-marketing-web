@@ -153,6 +153,12 @@ const meta = {
       description: 'Uniformly scale nodes around their fixed layout centers without changing connector paths.',
       table: { category: 'Nodes' },
     },
+    nodeElevation: {
+      control: { type: 'range', min: -0.25, max: 4, step: 0.05 },
+      description: 'Additive world-space elevation applied to every node and its animated base position.',
+      name: 'Node elevation',
+      table: { category: 'Nodes' },
+    },
     nodeDepth: {
       control: { type: 'range', min: 1, max: 64, step: 1 },
       table: { category: 'Nodes' },
@@ -211,6 +217,12 @@ const meta = {
     },
     connectorWidth: {
       control: { type: 'range', min: 0, max: 5, step: 0.25 },
+      table: { category: 'Connectors' },
+    },
+    connectorElevation: {
+      control: { type: 'range', min: -0.1, max: 4, step: 0.05 },
+      description: 'Additive world-space elevation shared by connectors, junctions, and travelling beams.',
+      name: 'Connector elevation',
       table: { category: 'Connectors' },
     },
     connectorOpacity: {
@@ -297,6 +309,7 @@ const meta = {
     fogEnabled: true,
     nodeShape: 'rectangle',
     nodeScale: 1,
+    nodeElevation: 0,
     nodeDepth: 12,
     nodeDepthRandom: 0,
     nodeCornerRadius: 10,
@@ -309,6 +322,7 @@ const meta = {
     outlineWidth: 3,
     connectorStroke: 'solid',
     connectorWidth: 2,
+    connectorElevation: 0,
     connectorOpacity: 0.82,
     pathCurve: 0,
     showContinuationConnectors: true,

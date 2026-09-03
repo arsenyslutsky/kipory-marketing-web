@@ -101,6 +101,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   connectorOpacity?: number;
   connectorStroke?: ConnectorStrokeType;
   connectorWidth?: number;
+  /** Additive world-space elevation shared by connectors, junctions, and travelling beams. */
+  connectorElevation?: number;
   /** Show incoming and terminal connectors that continue beyond the graph. */
   showContinuationConnectors?: boolean;
   pathCurve?: number;
@@ -108,6 +110,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   outlineWidth?: number;
   /** Uniform visual scale applied to each node without changing its layout position. */
   nodeScale?: number;
+  /** Additive world-space elevation applied to every node and its animated base position. */
+  nodeElevation?: number;
   nodeDepth?: number;
   /** Per-node random depth variation, expressed as ± a percentage of nodeDepth. */
   nodeDepthRandom?: number;

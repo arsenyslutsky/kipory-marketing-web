@@ -35,3 +35,18 @@ it('exposes the active progress fill as a color control', () => {
     table: { category: 'Progress' },
   });
 });
+
+it('exposes independent node and connector elevation controls', () => {
+  expect(meta.argTypes.nodeElevation).toMatchObject({
+    control: { max: 4, min: -0.25, step: 0.05, type: 'range' },
+    description: 'Additive world-space elevation applied to every node and its animated base position.',
+    name: 'Node elevation',
+    table: { category: 'Nodes' },
+  });
+  expect(meta.argTypes.connectorElevation).toMatchObject({
+    control: { max: 4, min: -0.1, step: 0.05, type: 'range' },
+    description: 'Additive world-space elevation shared by connectors, junctions, and travelling beams.',
+    name: 'Connector elevation',
+    table: { category: 'Connectors' },
+  });
+});
