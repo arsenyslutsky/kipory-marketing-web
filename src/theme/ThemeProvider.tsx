@@ -1,6 +1,15 @@
 'use client';
 
-import { createContext, use, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import {
   applyThemeToDocument,
   isThemePreference,
@@ -19,6 +28,16 @@ export type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+type ThemeSnapshot = {
+  preference: ThemePreference;
+  resolvedTheme: ResolvedTheme;
+};
+
+const serverThemeSnapshot: ThemeSnapshot = {
+  preference: 'system',
+  resolvedTheme: 'dark',
+};
 
 function getSystemDark() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true;
@@ -44,6 +63,35 @@ function getPrepaintedPreference() {
   return isThemePreference(preference) ? preference : undefined;
 }
 
+function getInitialThemeSnapshot(): ThemeSnapshot {
+  if (typeof window === 'undefined') return serverThemeSnapshot;
+
+  const preference = getStoredPreference() ?? getPrepaintedPreference() ?? 'system';
+  return {
+    preference,
+    resolvedTheme: resolveTheme(preference, getSystemDark()),
+  };
+}
+
+function createThemeStore() {
+  let snapshot = getInitialThemeSnapshot();
+  const listeners = new Set<() => void>();
+
+  return {
+    getSnapshot: () => snapshot,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    update: (preference: ThemePreference, resolvedTheme: ResolvedTheme) => {
+      if (snapshot.preference === preference && snapshot.resolvedTheme === resolvedTheme) return;
+
+      snapshot = { preference, resolvedTheme };
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
 export function ThemeProvider({
   children,
   preference: controlledPreference,
@@ -52,18 +100,39 @@ export function ThemeProvider({
   preference?: ThemePreference;
   onPreferenceChange?: (preference: ThemePreference) => void;
 }>) {
-  const [uncontrolledPreference, setUncontrolledPreference] = useState<ThemePreference>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('dark');
-  const preference = controlledPreference ?? uncontrolledPreference;
+  const [themeStore] = useState(createThemeStore);
+  const uncontrolledTheme = useSyncExternalStore(
+    themeStore.subscribe,
+    themeStore.getSnapshot,
+    () => serverThemeSnapshot,
+  );
+  const preference = controlledPreference ?? uncontrolledTheme.preference;
+  const resolvedTheme = controlledPreference === undefined
+    ? uncontrolledTheme.resolvedTheme
+    : resolveTheme(controlledPreference, getSystemDark());
 
   useLayoutEffect(() => {
-    const nextPreference = controlledPreference ?? getStoredPreference() ?? getPrepaintedPreference() ?? 'system';
-    const nextResolvedTheme = resolveTheme(nextPreference, getSystemDark());
+    const nextTheme = controlledPreference === undefined
+      ? themeStore.getSnapshot()
+      : {
+          preference: controlledPreference,
+          resolvedTheme: resolveTheme(controlledPreference, getSystemDark()),
+        };
 
-    if (controlledPreference === undefined) setUncontrolledPreference(nextPreference);
-    setResolvedTheme(nextResolvedTheme);
-    applyThemeToDocument(nextPreference, nextResolvedTheme);
-  }, [controlledPreference]);
+    applyThemeToDocument(nextTheme.preference, nextTheme.resolvedTheme);
+  }, [controlledPreference, resolvedTheme, themeStore]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const frame = window.requestAnimationFrame(() => {
+      root.setAttribute('data-theme-ready', 'true');
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      root.removeAttribute('data-theme-ready');
+    };
+  }, []);
 
   useEffect(() => {
     if (preference !== 'system' || typeof window.matchMedia !== 'function') return;
@@ -77,7 +146,7 @@ export function ThemeProvider({
 
     const handleChange = (event: MediaQueryListEvent) => {
       const nextResolvedTheme: ResolvedTheme = event.matches ? 'dark' : 'light';
-      setResolvedTheme(nextResolvedTheme);
+      themeStore.update('system', nextResolvedTheme);
       applyThemeToDocument('system', nextResolvedTheme);
     };
 
@@ -88,7 +157,7 @@ export function ThemeProvider({
 
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
-  }, [preference]);
+  }, [preference, themeStore]);
 
   useEffect(() => {
     if (controlledPreference !== undefined) return;
@@ -97,14 +166,13 @@ export function ThemeProvider({
       if (event.key !== THEME_STORAGE_KEY || !isThemePreference(event.newValue)) return;
 
       const nextResolvedTheme = resolveTheme(event.newValue, getSystemDark());
-      setUncontrolledPreference(event.newValue);
-      setResolvedTheme(nextResolvedTheme);
+      themeStore.update(event.newValue, nextResolvedTheme);
       applyThemeToDocument(event.newValue, nextResolvedTheme);
     };
 
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
-  }, [controlledPreference]);
+  }, [controlledPreference, themeStore]);
 
   const setPreference = useCallback((nextPreference: ThemePreference) => {
     if (controlledPreference !== undefined) {
@@ -113,8 +181,7 @@ export function ThemeProvider({
     }
 
     const nextResolvedTheme = resolveTheme(nextPreference, getSystemDark());
-    setUncontrolledPreference(nextPreference);
-    setResolvedTheme(nextResolvedTheme);
+    themeStore.update(nextPreference, nextResolvedTheme);
     applyThemeToDocument(nextPreference, nextResolvedTheme);
 
     try {
@@ -122,7 +189,7 @@ export function ThemeProvider({
     } catch {
       // A blocked storage area should not prevent the visible preference from changing.
     }
-  }, [controlledPreference, onPreferenceChange]);
+  }, [controlledPreference, onPreferenceChange, themeStore]);
 
   const value = useMemo<ThemeContextValue>(() => ({
     preference,

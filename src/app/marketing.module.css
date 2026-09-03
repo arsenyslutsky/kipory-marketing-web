@@ -103,7 +103,7 @@
 .submissionTextRevealBody { animation: submissionSignalReveal 900ms 100ms cubic-bezier(.16, 1, .3, 1) both; }
 .contactForm { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .buttonIcon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.finalActions { padding-block: 40px 44px; background: var(--surface-base); border-top: 1px solid var(--line-default); }
+.finalActions { padding-block: 40px 44px; background: var(--surface-base); border-top: 1px solid var(--final-actions-edge); }
 .finalActionsInner { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .finalActions .buttonIcon { width: .875rem; height: .875rem; }
 @media (prefers-reduced-motion: reduce) {

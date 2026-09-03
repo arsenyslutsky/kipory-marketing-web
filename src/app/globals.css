@@ -32,6 +32,7 @@ html[data-theme='dark'] {
   --action-surface: var(--signal);
   --action-hover-surface: color-mix(in srgb, var(--signal) 86%, var(--text-primary));
   --action-text: var(--on-signal);
+  --action-highlight: color-mix(in srgb, var(--text-primary) 8%, transparent);
   --header-action-surface: var(--text-primary);
   --header-action-hover-surface: color-mix(in srgb, var(--text-primary) 88%, var(--surface-base));
   --header-action-text: var(--text-inverse);
@@ -58,6 +59,7 @@ html[data-theme='dark'] {
   --protocol-chip-padding: 0;
   --count-surface: var(--surface-base);
   --count-text: var(--text-primary);
+  --final-actions-edge: transparent;
 
   /* Incremental aliases for untouched interfaces. */
   --ink: var(--surface-base);
@@ -113,6 +115,7 @@ html[data-theme='light'] {
   --action-surface: var(--signal-strong);
   --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
   --action-text: var(--on-signal);
+  --action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);
   --header-action-surface: var(--signal-strong);
   --header-action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
   --header-action-text: var(--on-signal);
@@ -139,6 +142,7 @@ html[data-theme='light'] {
   --protocol-chip-padding: 8px 10px;
   --count-surface: var(--text-primary);
   --count-text: var(--text-inverse);
+  --final-actions-edge: var(--line-default);
 
   --ink: var(--surface-base);
   --ink-soft: var(--surface-soft);
@@ -165,7 +169,8 @@ html[data-theme='light'] {
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
+  :root:not([data-theme]),
+  html[data-theme='dark'][data-theme-preference='system']:not([data-theme-ready='true']) {
     color-scheme: light;
     --surface-base: #f3f5ef;
     --surface-soft: #e7ebe2;
@@ -198,6 +203,7 @@ html[data-theme='light'] {
     --action-surface: var(--signal-strong);
     --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
     --action-text: var(--on-signal);
+    --action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);
     --header-action-surface: var(--signal-strong);
     --header-action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
     --header-action-text: var(--on-signal);
@@ -224,6 +230,7 @@ html[data-theme='light'] {
     --protocol-chip-padding: 8px 10px;
     --count-surface: var(--text-primary);
     --count-text: var(--text-inverse);
+    --final-actions-edge: var(--line-default);
 
     --ink: var(--surface-base);
     --ink-soft: var(--surface-soft);

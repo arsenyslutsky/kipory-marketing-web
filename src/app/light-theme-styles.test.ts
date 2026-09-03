@@ -11,6 +11,7 @@ const moduleTokenContracts = {
     '--surface-base',
     '--text-secondary',
     '--signal-copy',
+    '--final-actions-edge',
   ],
   'src/components/marketing/MarketingBlocks.module.css': [
     '--surface-base',
@@ -48,6 +49,7 @@ const moduleTokenContracts = {
   'src/components/ui/GlowLink.module.css': [
     '--action-surface',
     '--action-text',
+    '--action-highlight',
     '--focus-ring',
   ],
   'src/components/ui/SubmissionForm.module.css': [
@@ -80,7 +82,7 @@ describe('system-aware stylesheet contract', () => {
       '--text-primary', '--text-secondary', '--text-muted', '--text-inverse',
       '--line-default', '--line-strong', '--signal', '--signal-strong', '--on-signal',
       '--header-surface', '--header-edge', '--focus-ring', '--selection-background',
-      '--grid-color', '--glow-color',
+      '--grid-color', '--glow-color', '--action-highlight', '--final-actions-edge',
     ];
     const darkBlock = getThemeBlock('dark');
     const lightBlock = getThemeBlock('light');
@@ -94,6 +96,74 @@ describe('system-aware stylesheet contract', () => {
     expect(globals).toContain(':root:not([data-theme])');
     expect(globals).toContain('@media (prefers-color-scheme: light)');
     expect(globals).toContain("html[data-theme-ready='true']");
+  });
+
+  it('locks the approved Cold Paper Blueprint light anchors', () => {
+    const lightBlock = getThemeBlock('light');
+    const approvedAnchors = {
+      '--surface-base': '#f3f5ef',
+      '--surface-soft': '#e7ebe2',
+      '--surface-elevated': '#f8faf5',
+      '--surface-alternate': '#dfe9dd',
+      '--text-primary': '#111511',
+      '--text-secondary': '#3f4a40',
+      '--text-muted': '#5d695e',
+      '--text-inverse': '#f3f5ef',
+      '--line-default': 'rgb(34 48 35 / 16%)',
+      '--line-strong': 'rgb(25 40 27 / 32%)',
+      '--signal': '#449c40',
+      '--signal-strong': '#2f702c',
+      '--on-signal': '#f3f5ef',
+      '--header-surface': 'rgb(243 245 239 / 82%)',
+      '--header-edge': 'rgb(25 40 27 / 18%)',
+      '--focus-ring': '#2f702c',
+      '--selection-background': '#b7d9b3',
+      '--grid-color': 'rgb(45 70 47 / 10%)',
+      '--glow-color': 'rgb(68 156 64 / 18%)',
+    } as const;
+
+    for (const [token, value] of Object.entries(approvedAnchors)) {
+      expect(lightBlock, `${token} must retain its approved value`)
+        .toContain(`${token}: ${value};`);
+    }
+  });
+
+  it('covers unresolved no-script System snapshots without overriding resolved themes', () => {
+    expect(globals).toContain(
+      "html[data-theme='dark'][data-theme-preference='system']:not([data-theme-ready='true'])",
+    );
+    expect(globals).not.toContain(
+      "html[data-theme='dark'][data-theme-preference='dark']:not([data-theme-ready='true'])",
+    );
+    expect(globals).not.toContain(
+      "html[data-theme='light'][data-theme-preference='light']:not([data-theme-ready='true'])",
+    );
+  });
+
+  it('gates theme transitions by readiness and preserves accessibility fallbacks', () => {
+    expect(globals).toMatch(
+      /html\[data-theme-ready='true'\] body,[\s\S]*?transition:\s*color 180ms/,
+    );
+    expect(globals).toMatch(
+      /@media \(prefers-reduced-transparency: reduce\)[\s\S]*?\.site-header\s*\{[^}]*background: var\(--surface-base\);[^}]*backdrop-filter: none;/,
+    );
+    expect(globals).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?html\[data-theme-ready='true'\] body,[\s\S]*?transition: none;/,
+    );
+  });
+
+  it('retains the dark GlowLink sheen and final-action edge through theme tokens', () => {
+    const darkBlock = getThemeBlock('dark');
+    const lightBlock = getThemeBlock('light');
+
+    expect(darkBlock).toContain(
+      '--action-highlight: color-mix(in srgb, var(--text-primary) 8%, transparent);',
+    );
+    expect(darkBlock).toContain('--final-actions-edge: transparent;');
+    expect(lightBlock).toContain(
+      '--action-highlight: color-mix(in srgb, var(--text-inverse) 12%, transparent);',
+    );
+    expect(lightBlock).toContain('--final-actions-edge: var(--line-default);');
   });
 
   it('keeps theme decisions global while components consume semantic roles', () => {

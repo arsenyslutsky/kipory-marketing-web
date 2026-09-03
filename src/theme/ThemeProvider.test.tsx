@@ -45,6 +45,7 @@ beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
   document.documentElement.removeAttribute('data-theme-preference');
+  document.documentElement.removeAttribute('data-theme-ready');
   document.documentElement.style.colorScheme = '';
 });
 
@@ -161,6 +162,37 @@ it('removes its System media listener on unmount', () => {
   view.unmount();
 
   expect(colorScheme.listenerCount()).toBe(0);
+});
+
+it('enables theme transitions after the first paint and removes readiness on unmount', () => {
+  const colorScheme = createColorSchemeQuery(false);
+  const frames = new Map<number, FrameRequestCallback>();
+  let nextFrame = 0;
+  vi.stubGlobal('matchMedia', vi.fn(() => colorScheme));
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    nextFrame += 1;
+    frames.set(nextFrame, callback);
+    return nextFrame;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn((frame: number) => frames.delete(frame)));
+
+  const view = render(<StrictMode><ThemeProvider><Probe /></ThemeProvider></StrictMode>);
+
+  expect(document.documentElement).not.toHaveAttribute('data-theme-ready');
+  expect(frames.size).toBe(1);
+
+  act(() => {
+    const pendingFrames = [...frames.values()];
+    frames.clear();
+    pendingFrames.forEach((callback) => callback(performance.now()));
+  });
+
+  expect(document.documentElement).toHaveAttribute('data-theme-ready', 'true');
+
+  view.unmount();
+
+  expect(document.documentElement).not.toHaveAttribute('data-theme-ready');
+  expect(frames.size).toBe(0);
 });
 
 it('lets an explicit resolved theme override its context value', () => {
