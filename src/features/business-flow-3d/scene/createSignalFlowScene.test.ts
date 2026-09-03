@@ -90,7 +90,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('keeps connectors and travelling beams aligned at the configured elevation', () => {
+it.each([
+  { connectorElevation: 0, nodeScale: 1, safeConnectorHeight: 0.11 },
+  { connectorElevation: 1.5, nodeScale: 1, safeConnectorHeight: 0.258 },
+  { connectorElevation: 1.5, nodeScale: 3, safeConnectorHeight: 0.038 },
+])('keeps connector paths and travelling beams below $nodeScale× node bodies', ({
+  connectorElevation,
+  nodeScale,
+  safeConnectorHeight,
+}) => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
     animationFrames.push(callback);
@@ -108,20 +116,24 @@ it('keeps connectors and travelling beams aligned at the configured elevation', 
 
   const controller = createSignalFlowScene({
     ...createSceneOptions(),
-    connectorElevation: 1.5,
+    connectorElevation,
     connectorOpacity: 1,
     connectorWidth: 2,
+    nodeScale,
+    showContinuationConnectors: true,
   });
 
   animationFrames.shift()?.(1000);
 
   expect(flowPathCaptures.connector.length).toBeGreaterThan(0);
   expect(flowPathCaptures.beam.length).toBeGreaterThan(0);
-  expect(flowPathCaptures.connector.flat()).toEqual(
-    expect.arrayContaining([expect.closeTo(1.61)]),
-  );
-  expect(flowPathCaptures.connector.flat().every((height) => Math.abs(height - 1.61) < 0.000001)).toBe(true);
-  expect(flowPathCaptures.beam.flat().every((height) => Math.abs(height - 1.61) < 0.000001)).toBe(true);
+  // Reserve 0.012 for floating motion and 0.02 for depth separation.
+  expect(flowPathCaptures.connector.flat().every(
+    (height) => Math.abs(height - safeConnectorHeight) < 0.000001,
+  )).toBe(true);
+  expect(flowPathCaptures.beam.flat().every(
+    (height) => Math.abs(height - safeConnectorHeight) < 0.000001,
+  )).toBe(true);
   controller.destroy();
 });
 

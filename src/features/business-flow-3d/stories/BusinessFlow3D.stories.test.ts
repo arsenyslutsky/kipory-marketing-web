@@ -47,7 +47,7 @@ it('exposes independent node and connector elevation controls', () => {
   });
   expect(meta.argTypes.connectorElevation).toMatchObject({
     control: { max: 4, min: -0.1, step: 0.05, type: 'range' },
-    description: 'Additive world-space elevation shared by connectors, junctions, and travelling beams.',
+    description: 'Requested world-space elevation shared by connectors, junctions, and travelling beams, capped below node bodies.',
     name: 'Connector elevation',
     table: { category: 'Connectors' },
   });

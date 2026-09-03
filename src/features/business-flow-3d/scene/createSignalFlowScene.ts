@@ -122,6 +122,9 @@ type NodeGlowState = Node3DGlowState;
 type NodeProgressControl = Node3DProgressControl;
 type ResolvedNodeGradient = Node3DResolvedGradient;
 
+const NODE_FLOAT_AMPLITUDE = 0.012;
+const CONNECTOR_NODE_CLEARANCE = 0.02;
+
 interface RouteStop {
   id: string;
   curveProgress: number;
@@ -680,18 +683,26 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     if (!hiddenNodeIds.has(id)) createCard(id, data);
   });
 
-  const connectorLift = 0.06 + connectorElevation;
+  const lowestNodeBodyY = Math.min(...Object.values(cardObjects).map((card) => {
+    card.updateWorldMatrix(true, true);
+    const body = card.userData.body as THREE.Object3D;
+    return new THREE.Box3().setFromObject(body).min.y;
+  }));
+  const requestedConnectorY = 0.11 + (Number.isFinite(connectorElevation) ? connectorElevation : 0);
+  const connectorY = Math.min(
+    requestedConnectorY,
+    lowestNodeBodyY - NODE_FLOAT_AMPLITUDE - CONNECTOR_NODE_CLEARANCE,
+  );
 
-  function edgePoints(a: string, b: string, lift = connectorLift) {
+  function edgePoints(a: string, b: string) {
     const pointA = nodes[a].p;
     const pointB = nodes[b].p;
-    const y = 0.05 + lift;
     const midZ = (pointA[1] + pointB[1]) * 0.5;
     return [
-      new THREE.Vector3(pointA[0], y, pointA[1]),
-      new THREE.Vector3(pointA[0], y, midZ),
-      new THREE.Vector3(pointB[0], y, midZ),
-      new THREE.Vector3(pointB[0], y, pointB[1]),
+      new THREE.Vector3(pointA[0], connectorY, pointA[1]),
+      new THREE.Vector3(pointA[0], connectorY, midZ),
+      new THREE.Vector3(pointB[0], connectorY, midZ),
+      new THREE.Vector3(pointB[0], connectorY, pointB[1]),
     ];
   }
 
@@ -752,7 +763,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
   }));
 
-  const continuationY = 0.05 + connectorLift;
+  const continuationY = connectorY;
   const continuationDistance = Math.max(initialCameraBase * 2.2, 16);
   const incomingFadeDistance = 100 / initialPixelsPerWorldUnit;
   const [, rootDepth] = nodeFootprint(nodes[rootNodeId]);
@@ -1150,7 +1161,9 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
     Object.values(cardObjects).forEach((card) => {
       const hover = hit?.object === card.userData.body;
-      const targetY = card.userData.baseY + (hover ? 0.18 : 0) + Math.sin(time * 1.1 + card.position.x) * 0.012;
+      const targetY = card.userData.baseY
+        + (hover ? 0.18 : 0)
+        + Math.sin(time * 1.1 + card.position.x) * NODE_FLOAT_AMPLITUDE;
       card.position.y = THREE.MathUtils.lerp(card.position.y, targetY, 0.08);
     });
 

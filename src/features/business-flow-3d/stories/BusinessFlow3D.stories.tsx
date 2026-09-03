@@ -221,7 +221,7 @@ const meta = {
     },
     connectorElevation: {
       control: { type: 'range', min: -0.1, max: 4, step: 0.05 },
-      description: 'Additive world-space elevation shared by connectors, junctions, and travelling beams.',
+      description: 'Requested world-space elevation shared by connectors, junctions, and travelling beams, capped below node bodies.',
       name: 'Connector elevation',
       table: { category: 'Connectors' },
     },
