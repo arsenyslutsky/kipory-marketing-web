@@ -9,8 +9,20 @@ it('keeps the landing flow scale independent from vertical viewport changes', ()
     return height?.trim();
   });
 
-  expect(heroVisualHeights).toEqual(['840px', '1014px', '780px']);
+  expect(heroVisualHeights).toEqual(['840px', undefined, '1014px', '780px']);
   expect(heroVisualHeights.every((height) => !/[dlsv]vh\b/.test(height ?? ''))).toBe(true);
+});
+
+it('fits the landing flow into the intermediate width without changing its fixed-height host', () => {
+  const css = readFileSync(resolve(process.cwd(), 'src/app/marketing.module.css'), 'utf8');
+  const intermediateRule = css.match(/@media \(min-width: 901px\) and \(max-width: 1100px\)\s*{\s*\.heroVisual\s*{([^}]*)}/)?.[1];
+
+  expect(intermediateRule).toBeDefined();
+  expect(intermediateRule).not.toMatch(/\b(?:height|min-height|max-height)\s*:/);
+  expect(intermediateRule).not.toMatch(/\b(?:min|max)-height\b|[dlsv]?vh\b/);
+  expect(intermediateRule).not.toMatch(/\binset\s*:/);
+  expect(intermediateRule).toMatch(/transform\s*:\s*translate3d\(180px, 350px, 0\) scale\(\.44\)/);
+  expect(intermediateRule).toMatch(/transform-origin\s*:\s*center top/);
 });
 
 it('anchors the desktop landing flow to the hero bottom', () => {
@@ -24,5 +36,5 @@ it('anchors the desktop landing flow to the hero bottom', () => {
     inset: 'auto 0 0',
     transform: 'translateX(clamp(264px, 13vw, 284px))',
   });
-  expect(heroVisualRules[1]?.inset).toBe('0 0 auto');
+  expect(heroVisualRules[2]?.inset).toBe('0 0 auto');
 });
