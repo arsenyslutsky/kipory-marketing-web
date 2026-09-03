@@ -54,7 +54,7 @@ it('exposes the active progress fill opacity as a range control', () => {
 
 it('exposes independent node and connector elevation controls', () => {
   expect(meta.argTypes.nodeElevation).toMatchObject({
-    control: { max: 4, min: -0.25, step: 0.05, type: 'range' },
+    control: { max: 4, min: -4, step: 0.05, type: 'range' },
     description: 'Additive world-space elevation applied to every node and its animated base position.',
     name: 'Node elevation',
     table: { category: 'Nodes' },

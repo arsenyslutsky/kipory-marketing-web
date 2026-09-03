@@ -154,7 +154,7 @@ const meta = {
       table: { category: 'Nodes' },
     },
     nodeElevation: {
-      control: { type: 'range', min: -0.25, max: 4, step: 0.05 },
+      control: { type: 'range', min: -4, max: 4, step: 0.05 },
       description: 'Additive world-space elevation applied to every node and its animated base position.',
       name: 'Node elevation',
       table: { category: 'Nodes' },
