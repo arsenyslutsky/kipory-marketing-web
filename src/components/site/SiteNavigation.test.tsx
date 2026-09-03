@@ -1,14 +1,15 @@
 import { render, screen, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
 it('keeps retired routes out and exposes contact, waitlist, and app access', () => {
   render(
-    <>
+    <ThemeProvider>
       <SiteHeader />
       <SiteFooter />
-    </>,
+    </ThemeProvider>,
   );
 
   expect(screen.queryAllByRole('link', { name: 'Product' })).toHaveLength(0);
@@ -39,10 +40,10 @@ it('keeps retired routes out and exposes contact, waitlist, and app access', () 
 
 it('uses the supplied logo asset in the header and footer brands', () => {
   render(
-    <>
+    <ThemeProvider>
       <SiteHeader />
       <SiteFooter />
-    </>,
+    </ThemeProvider>,
   );
 
   screen.getAllByRole('link', { name: 'Kipory home' }).forEach((brand) => {
