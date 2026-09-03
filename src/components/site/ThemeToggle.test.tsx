@@ -38,6 +38,17 @@ it('exposes the current preference in the labelled desktop group and mobile cycl
   expect(cycle).toHaveClass(styles.mobile);
 });
 
+it('uses a persistent underline to distinguish the selected desktop setting without relying on color alone', () => {
+  renderToggle();
+
+  const group = screen.getByRole('group', { name: 'Theme preference' });
+  const selected = within(group).getByRole('button', { name: 'System' });
+  const unselected = within(group).getByRole('button', { name: 'Light' });
+
+  expect(selected.querySelector(`.${styles.selectedIndicator}`)).toBeInTheDocument();
+  expect(unselected.querySelector(`.${styles.selectedIndicator}`)).not.toBeInTheDocument();
+});
+
 it.each([
   ['System', 'system', 'light'],
   ['Light', 'light', 'light'],

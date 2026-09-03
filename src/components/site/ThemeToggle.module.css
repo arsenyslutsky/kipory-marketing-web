@@ -25,12 +25,22 @@
 }
 
 .desktop button {
+  position: relative;
   min-width: 0;
   padding: 0 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
+}
+
+.selectedIndicator {
+  position: absolute;
+  right: 7px;
+  bottom: 3px;
+  left: 7px;
+  height: 2px;
+  background: currentColor;
 }
 
 .desktop button:hover,

@@ -52,6 +52,7 @@ export function ThemeToggle() {
           >
             <ThemeIcon preference={item} />
             <span>{labels[item]}</span>
+            {item === preference && <span className={styles.selectedIndicator} aria-hidden="true" />}
           </button>
         ))}
       </div>
