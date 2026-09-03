@@ -261,6 +261,12 @@ const meta = {
       name: 'Progress color',
       table: { category: 'Progress' },
     },
+    progressBarOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      description: 'Opacity of the active progress fill. The inactive track remains theme-derived.',
+      name: 'Progress opacity',
+      table: { category: 'Progress' },
+    },
     minDelay: {
       control: { type: 'number', min: 0, step: 100 },
       table: { category: 'Progress' },

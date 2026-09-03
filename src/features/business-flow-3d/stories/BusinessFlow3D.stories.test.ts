@@ -27,6 +27,11 @@ describe('BusinessFlow3D current-app stories', () => {
       homepagePreset: { keys: Object.keys(businessFlow3DHomepageLightProps) },
     });
   });
+
+  it('keeps progress opacity explicit in both app presets', () => {
+    expect(stories.CurrentNextjsApp.args).toMatchObject({ progressBarOpacity: 1 });
+    expect(stories.CurrentAppLight.args).toMatchObject({ progressBarOpacity: 1 });
+  });
 });
 
 it('exposes the active progress fill as a color control', () => {
@@ -34,6 +39,15 @@ it('exposes the active progress fill as a color control', () => {
     control: 'color',
     description: 'Color of the active progress fill. The inactive track remains theme-derived.',
     name: 'Progress color',
+    table: { category: 'Progress' },
+  });
+});
+
+it('exposes the active progress fill opacity as a range control', () => {
+  expect(meta.argTypes.progressBarOpacity).toMatchObject({
+    control: { max: 1, min: 0, step: 0.05, type: 'range' },
+    description: 'Opacity of the active progress fill. The inactive track remains theme-derived.',
+    name: 'Progress opacity',
     table: { category: 'Progress' },
   });
 });

@@ -71,7 +71,7 @@ it('uses the solid fill fallback when the node icon fill mode is omitted', async
 });
 
 it.each(['bar', 'outline'] as const)(
-  'overrides the active %s progress fill without changing its theme track',
+  'overrides the active %s progress appearance without changing its theme track',
   (progressMode) => {
     const renderer = {
       capabilities: { getMaxAnisotropy: () => 1 },
@@ -104,6 +104,7 @@ it.each(['bar', 'outline'] as const)(
       position: [0, 0],
       progressBarColor: '#123456',
       progressBarHeight: 15,
+      progressBarOpacity: 0.35,
       progressMode,
       progressPadding: 1,
       renderer,
@@ -121,10 +122,12 @@ it.each(['bar', 'outline'] as const)(
       const track = progressContainer.firstElementChild as HTMLDivElement;
       const fill = track.firstElementChild as HTMLDivElement;
       expect(fill.style.backgroundColor).toBe('rgb(18, 52, 86)');
+      expect(fill.style.opacity).toBe('0.35');
       expect(track.style.backgroundColor).toBe('rgba(24, 24, 24, 0.18)');
     } else {
       const [track, fill] = progressContainer.querySelectorAll('svg > *');
       expect(fill?.getAttribute('stroke')).toBe('#123456');
+      expect((fill as SVGElement | undefined)?.style.opacity).toBe('0.35');
       expect(track?.getAttribute('stroke')).toBe(defaultColors.light.effects.nodeProgressTrack);
     }
 

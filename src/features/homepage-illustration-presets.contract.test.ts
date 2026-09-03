@@ -163,6 +163,7 @@ describe('homepage illustration preset contract', () => {
       pathCurve: 86,
       perspectiveEffect: 75,
       progressBarHeight: 15,
+      progressBarOpacity: 1,
       progressPadding: 1,
       resolutionScale: 'display',
       scrollRange: 700,
