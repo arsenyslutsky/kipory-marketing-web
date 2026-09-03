@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { homepageFlow } from './homepageFlow';
+import type { FlowConfig } from './types';
 
 const expectedBranches = {
   core: ['vault', 'library'],
@@ -51,7 +52,7 @@ describe('homepageFlow', () => {
     expect(edges).toHaveLength(25);
     expect(edges.every((id) => ids.includes(id))).toBe(true);
     expect(homepageFlow.branches).toEqual(expectedBranches);
-    expect(homepageFlow.variants).toBeUndefined();
+    expect((homepageFlow as FlowConfig).variants).toBeUndefined();
     expect(hasCycle(homepageFlow.root, homepageFlow.branches)).toBe(false);
   });
 
@@ -82,11 +83,12 @@ describe('homepageFlow', () => {
 
   it('keeps one early leaf, two rejoins, and three final outputs', () => {
     const ids = homepageFlow.nodes.map(({ id }) => id);
+    const branches: Record<string, string[]> = homepageFlow.branches;
     const inbound = Object.values(homepageFlow.branches).flat().reduce<Record<string, number>>(
       (counts, id) => ({ ...counts, [id]: (counts[id] ?? 0) + 1 }),
       {},
     );
-    const leaves = ids.filter((id) => !(homepageFlow.branches[id]?.length));
+    const leaves = ids.filter((id) => !(branches[id]?.length));
     const earlyLeaves = homepageFlow.nodes
       .filter((node) => node.tier < 7 && leaves.includes(node.id))
       .map(({ id }) => id);

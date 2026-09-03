@@ -8,6 +8,7 @@ import {
   businessFlow3DHomepageDarkProps,
   businessFlow3DHomepageLightProps,
 } from '../presets';
+import { homepageFlow } from '../homepageFlow';
 
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
@@ -372,6 +373,7 @@ export const CurrentNextjsApp: Story = {
   name: 'Current App (Dark)',
   args: {
     ...businessFlow3DHomepageDarkProps,
+    flow: homepageFlow,
     mode: 'dark',
   },
   parameters: {
@@ -390,6 +392,7 @@ export const CurrentAppLight: Story = {
   ],
   args: {
     ...businessFlow3DHomepageLightProps,
+    flow: homepageFlow,
     mode: 'light',
   },
   parameters: {

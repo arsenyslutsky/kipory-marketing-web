@@ -4,20 +4,24 @@ import {
   businessFlow3DHomepageDarkProps,
   businessFlow3DHomepageLightProps,
 } from '../presets';
+import { homepageFlow } from '../homepageFlow';
 import meta, * as stories from './BusinessFlow3D.stories';
 
 describe('BusinessFlow3D current-app stories', () => {
-  it('offers explicit dark and light variants with independent app presets', () => {
+  it('offers explicit dark and light variants with the shared homepage flow', () => {
     expect(stories.CurrentNextjsApp.name).toBe('Current App (Dark)');
     expect(stories.CurrentNextjsApp.args).toEqual({
       ...businessFlow3DHomepageDarkProps,
+      flow: homepageFlow,
       mode: 'dark',
     });
     expect(stories.CurrentAppLight.name).toBe('Current App (Light)');
     expect(stories.CurrentAppLight.args).toEqual({
       ...businessFlow3DHomepageLightProps,
+      flow: homepageFlow,
       mode: 'light',
     });
+    expect(stories.CurrentNextjsApp.args?.flow).toBe(stories.CurrentAppLight.args?.flow);
   });
 
   it('keeps homepage-preset metadata on both variants', () => {
@@ -34,9 +38,21 @@ describe('BusinessFlow3D current-app stories', () => {
     expect(stories.CurrentAppLight.args).toMatchObject({ progressBarOpacity: 1 });
   });
 
-  it('uses the tightened vertical framing only for the light app preset', () => {
-    expect(stories.CurrentNextjsApp.args).not.toHaveProperty('cameraTargetOffsetY');
-    expect(stories.CurrentAppLight.args).toMatchObject({ cameraTargetOffsetY: -3 });
+  it('keeps spatial placement identical across the current-app themes', () => {
+    const spatialKeys = [
+      'cameraPitch',
+      'cameraYaw',
+      'cameraZoom',
+      'cameraTargetOffsetY',
+      'emitterX',
+      'emitterY',
+      'perspectiveEffect',
+      'nodeScale',
+    ] as const;
+
+    spatialKeys.forEach((key) => {
+      expect(stories.CurrentAppLight.args?.[key]).toBe(stories.CurrentNextjsApp.args?.[key]);
+    });
   });
 
   it('crops the light app preview at 500px without resizing the flow scene', () => {

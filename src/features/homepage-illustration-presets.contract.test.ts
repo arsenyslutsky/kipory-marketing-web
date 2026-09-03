@@ -131,12 +131,13 @@ describe('homepage illustration preset contract', () => {
       cameraPitch: 33.19,
       cameraYaw: 0.35,
       cameraZoom: 1.1,
+      cameraTargetOffsetY: -3,
       concurrentBeams: 10,
       connectorOpacity: 0.62,
       connectorStroke: 'dashed',
       connectorWidth: 1.25,
       emitterX: 3,
-      emitterY: -8,
+      emitterY: -3.5,
       fogEnabled: true,
       gridDensity: 8,
       gridMaskBlur: 480,
@@ -176,10 +177,8 @@ describe('homepage illustration preset contract', () => {
     expect(businessFlow3DHomepageDarkProps).toEqual(expected);
     expect(businessFlow3DHomepageLightProps).toEqual({
       ...expected,
-      cameraTargetOffsetY: -3,
       connectorElevation: 2,
       connectorStroke: 'solid',
-      emitterX: 1,
       iconStrokeColor: '#ffffff',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
@@ -200,6 +199,32 @@ describe('homepage illustration preset contract', () => {
       outlineWidth: 1.25,
       pathCurve: 100,
       progressBarHeight: 10,
+    });
+
+    expect(businessFlow3DHomepageDarkProps).toMatchObject({
+      cameraTargetOffsetY: -3,
+      emitterX: 3,
+      emitterY: -3.5,
+    });
+    expect(businessFlow3DHomepageLightProps).toMatchObject({
+      cameraTargetOffsetY: -3,
+      emitterX: 3,
+      emitterY: -3.5,
+    });
+
+    const spatialKeys = [
+      'cameraPitch',
+      'cameraYaw',
+      'cameraZoom',
+      'cameraTargetOffsetY',
+      'emitterX',
+      'emitterY',
+      'perspectiveEffect',
+      'nodeScale',
+    ] as const;
+
+    spatialKeys.forEach((key) => {
+      expect(businessFlow3DHomepageLightProps[key]).toBe(businessFlow3DHomepageDarkProps[key]);
     });
   });
 
