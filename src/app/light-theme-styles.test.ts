@@ -76,6 +76,12 @@ function getThemeBlock(theme: 'dark' | 'light') {
   )?.[1] ?? '';
 }
 
+function getSystemLightBlock() {
+  return globals.match(
+    /@media \(prefers-color-scheme: light\) \{\s*:root:not\(\[data-theme\]\),[\s\S]*?\{([\s\S]*?)\n  \}\n\}/,
+  )?.[1] ?? '';
+}
+
 describe('system-aware stylesheet contract', () => {
   it('defines the complete semantic palette for both resolved themes', () => {
     const required = [
@@ -127,6 +133,15 @@ describe('system-aware stylesheet contract', () => {
     for (const [token, value] of Object.entries(approvedAnchors)) {
       expect(lightBlock, `${token} must retain its approved value`)
         .toContain(`${token}: ${value};`);
+    }
+  });
+
+  it('keeps protocol labels unboxed in explicit and System-resolved light themes', () => {
+    for (const block of [getThemeBlock('light'), getSystemLightBlock()]) {
+      expect(block).toContain('--protocol-chip-surface: transparent;');
+      expect(block).toContain('--protocol-chip-line: transparent;');
+      expect(block).toContain('--protocol-chip-shadow: none;');
+      expect(block).toContain('--protocol-chip-padding: 0;');
     }
   });
 
