@@ -12,6 +12,7 @@ const {
   horizontalHomepageProps,
   horizontalRender,
   threeDDarkHomepageProps,
+  threeDDefaultFlow,
   threeDLightHomepageProps,
   threeDRender,
   verticalHomepageProps,
@@ -25,6 +26,12 @@ const {
   },
   horizontalRender: vi.fn(),
   threeDDarkHomepageProps: { cameraZoom: 1.1, presetVariant: 'dark' },
+  threeDDefaultFlow: {
+    root: 'core',
+    nodes: [],
+    branches: {},
+    variants: { 'variant-2': { hiddenNodes: ['insight', 'records', 'code', 'metrics'] } },
+  },
   threeDLightHomepageProps: { cameraZoom: 1.1, presetVariant: 'light' },
   threeDRender: vi.fn(),
   verticalHomepageProps: { height: '45rem', width: '20rem' },
@@ -50,6 +57,7 @@ vi.mock('@/features/business-flow-3d', () => ({
   },
   businessFlow3DHomepageDarkProps: threeDDarkHomepageProps,
   businessFlow3DHomepageLightProps: threeDLightHomepageProps,
+  defaultFlow: threeDDefaultFlow,
 }));
 vi.mock('@/features/business-flow-vertical', () => ({
   BusinessFlowVertical: (props: Record<string, unknown>) => {
@@ -150,19 +158,45 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
 it('selects an independent hero 3D preset for each resolved theme', () => {
   const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
 
-  expect(threeDRender).toHaveBeenLastCalledWith({
+  expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDDarkHomepageProps,
     mode: 'dark',
-  });
+  }));
 
   darkView.unmount();
   threeDRender.mockClear();
   render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
 
-  expect(threeDRender).toHaveBeenLastCalledWith({
+  expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDLightHomepageProps,
     mode: 'light',
+  }));
+});
+
+it('omits the two protocol-overlapping terminal nodes from both homepage themes', () => {
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+  const darkFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  darkView.unmount();
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const lightFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  [darkFlow, lightFlow].forEach((flow) => {
+    expect(flow.variants['variant-2'].hiddenNodes).toEqual([
+      'insight',
+      'records',
+      'code',
+      'metrics',
+      'compile',
+      'artifacts',
+    ]);
   });
+  expect(threeDDefaultFlow.variants['variant-2'].hiddenNodes).toEqual([
+    'insight',
+    'records',
+    'code',
+    'metrics',
+  ]);
 });
 
 it('routes homepage conversion actions to active destinations', () => {
