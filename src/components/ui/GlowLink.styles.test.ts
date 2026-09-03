@@ -7,8 +7,9 @@ const stylesheet = readFileSync(
   'utf8',
 );
 
-it('uses Carbon Ink text on the Signal Green GlowLink surface', () => {
+it('uses the resolved action text on the resolved action surface', () => {
   const surfaceRule = stylesheet.match(/^\.surface \{([^}]*)\}/m)?.[1];
 
-  expect(surfaceRule).toContain('color: var(--ink);');
+  expect(surfaceRule).toContain('color: var(--action-text);');
+  expect(surfaceRule).toContain('var(--action-surface);');
 });

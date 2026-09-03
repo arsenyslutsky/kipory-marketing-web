@@ -4,7 +4,7 @@
   );
 
   min-width: 0;
-  color: inherit;
+  color: var(--text-primary);
   overflow: hidden;
 }
 
@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: var(--protocol-icon-list-title-inline-gap, 22px);
-  color: var(--accent);
+  color: var(--signal-copy);
   font-family: var(--type-accent-family);
   font-size: var(--type-accent-size-page);
   font-weight: var(--type-accent-weight);
@@ -64,7 +64,7 @@
 }
 
 .comingSoon {
-  color: var(--protocol-icon-list-status-color, var(--accent));
+  color: var(--protocol-icon-list-status-color, var(--signal-copy));
   font-family: var(--type-control-family);
   font-size: var(--type-control-size-2xs);
   font-weight: var(--type-control-weight);
@@ -111,7 +111,7 @@
   );
   overflow-x: auto;
   overscroll-behavior-inline: contain;
-  scrollbar-color: var(--accent-dark) color-mix(in srgb, var(--paper) 8%, transparent);
+  scrollbar-color: var(--signal-strong) color-mix(in srgb, var(--line-default) 60%, transparent);
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }

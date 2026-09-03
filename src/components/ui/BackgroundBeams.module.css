@@ -5,11 +5,11 @@
   opacity: .72;
   pointer-events: none;
   -webkit-mask-image:
-    linear-gradient(to right, transparent 2%, var(--ink) 35%, var(--ink) 92%, transparent 100%),
-    linear-gradient(to bottom, transparent 0, var(--ink) 18%, var(--ink) 82%, transparent 100%);
+    linear-gradient(to right, transparent 2%, var(--surface-base) 35%, var(--surface-base) 92%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, var(--surface-base) 18%, var(--surface-base) 82%, transparent 100%);
   mask-image:
-    linear-gradient(to right, transparent 2%, var(--ink) 35%, var(--ink) 92%, transparent 100%),
-    linear-gradient(to bottom, transparent 0, var(--ink) 18%, var(--ink) 82%, transparent 100%);
+    linear-gradient(to right, transparent 2%, var(--surface-base) 35%, var(--surface-base) 92%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, var(--surface-base) 18%, var(--surface-base) 82%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 }
@@ -22,9 +22,9 @@
 }
 
 .staticPath {
-  stroke: var(--paper-soft);
+  stroke: var(--line-strong);
   stroke-width: .5;
-  opacity: .08;
+  opacity: .32;
 }
 
 .ambientGlow {
@@ -32,8 +32,8 @@
   inset: 4% -8% 0 28%;
   background: radial-gradient(
     ellipse at 62% 42%,
-    color-mix(in srgb, var(--accent) 18%, transparent) 0,
-    color-mix(in srgb, var(--accent) 8%, transparent) 38%,
+    var(--glow-color) 0,
+    color-mix(in srgb, var(--glow-color) 44%, transparent) 38%,
     transparent 72%
   );
 }
@@ -45,8 +45,8 @@
 @media (max-width: 620px) {
   .root {
     opacity: .52;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--ink) 28%, var(--ink) 72%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0, var(--ink) 28%, var(--ink) 72%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--surface-base) 28%, var(--surface-base) 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, var(--surface-base) 28%, var(--surface-base) 72%, transparent 100%);
   }
 
   .svg {

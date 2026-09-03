@@ -74,7 +74,10 @@ describe('design-system token contract', () => {
     const colorLiteral = /#[0-9a-f]{3,8}\b|(?:rgb|rgba|hsl|hsla|oklch)\([^)]*\)|(?<!-)\b(?:black|white)\b(?!-)/gi;
     const violations = uiColorPaths.flatMap((path) => {
       let source = readFileSync(path, 'utf8');
-      if (path.endsWith('globals.css')) source = source.replace(/^:root\s*\{[\s\S]*?^\}/m, '');
+      if (path.endsWith('globals.css')) {
+        const globalRulesStart = source.indexOf('* { box-sizing: border-box; }');
+        source = globalRulesStart >= 0 ? source.slice(globalRulesStart) : source;
+      }
 
       return [...source.matchAll(colorLiteral)].map((match) => (
         `${displayPath(path)}:${source.slice(0, match.index).split('\n').length}: ${match[0]}`
@@ -87,9 +90,12 @@ describe('design-system token contract', () => {
   it('keeps every declared palette color in active use', () => {
     const globalsPath = resolve(sourceRoot, 'app/globals.css');
     const source = readFileSync(globalsPath, 'utf8');
-    const rootBlock = source.match(/^:root\s*\{([\s\S]*?)^\}/m)?.[1] ?? '';
-    const colorTokens = [...rootBlock.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla|oklch)\([^;]+\))/gi)]
-      .map((match) => match[1]);
+    const globalRulesStart = source.indexOf('* { box-sizing: border-box; }');
+    const palette = globalRulesStart >= 0 ? source.slice(0, globalRulesStart) : source;
+    const colorTokens = [...new Set(
+      [...palette.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla|oklch)\([^;]+\))/gi)]
+        .map((match) => match[1]),
+    )];
     const allCss = cssFiles.map((path) => readFileSync(path, 'utf8')).join('\n');
     const unused = colorTokens.filter((token) => {
       const references = allCss.match(new RegExp(`var\\(--${token}\\)`, 'g')) ?? [];

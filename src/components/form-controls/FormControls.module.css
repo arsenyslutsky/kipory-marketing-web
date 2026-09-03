@@ -4,25 +4,25 @@
   margin-inline: var(--form-control-horizontal-margin);
   padding-block: var(--form-control-padding, var(--form-field-control-padding, 16px));
   padding-inline: var(--form-control-horizontal-padding);
-  color: var(--surface-alternate-text);
-  caret-color: var(--accent);
+  color: var(--text-on-alternate);
+  caret-color: var(--focus-ring);
   background-color: color-mix(
     in srgb,
     var(
       --form-control-background,
-      color-mix(in srgb, var(--ink) 14%, transparent)
+      var(--field-surface)
     ) var(--form-control-background-opacity, 100%),
     transparent
   );
   border: 0;
-  border-bottom: 1px solid var(--surface-alternate-line);
+  border-bottom: 1px solid var(--line-on-alternate);
   border-radius: 0;
   outline: 0;
   font-size: var(--type-body-size-input);
 }
 
 .control::placeholder {
-  color: currentColor;
+  color: var(--field-placeholder);
   opacity: 1;
 }
 
@@ -33,7 +33,7 @@
       --form-control-focused-background,
       var(
         --form-control-background,
-        color-mix(in srgb, var(--ink) 14%, transparent)
+        var(--field-focus-surface)
       )
     ) var(
       --form-control-focused-background-opacity,
@@ -41,7 +41,7 @@
     ),
     transparent
   );
-  border-color: var(--accent);
+  border-color: var(--focus-ring);
 }
 
 .control:focus-visible {
@@ -59,7 +59,7 @@
 }
 
 .dropdown:invalid { color: var(--text-muted); }
-.dropdown option { color: var(--surface-alternate-text); background: var(--surface-alternate); }
+.dropdown option { color: var(--option-text); background: var(--option-surface); }
 
 @supports (appearance: base-select) {
   .dropdown,
@@ -68,9 +68,10 @@
   }
 
   .dropdown::picker(select) {
-    color: var(--surface-alternate-text);
-    background: var(--surface-alternate);
-    border: 1px solid var(--surface-alternate-line);
+    color: var(--option-text);
+    background: var(--option-surface);
+    border: 1px solid var(--option-line);
+    box-shadow: var(--control-shadow);
   }
 
   .dropdown::picker-icon,
@@ -79,8 +80,8 @@
   }
 
   .dropdown option:checked {
-    color: var(--ink);
-    background: var(--accent);
+    color: var(--action-text);
+    background: var(--action-surface);
   }
 }
 

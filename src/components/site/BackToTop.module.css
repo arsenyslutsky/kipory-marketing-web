@@ -8,11 +8,12 @@
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  border: 1px solid var(--utility-line);
   border-radius: 50%;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--signal-copy);
+  background: var(--utility-surface);
   backdrop-filter: blur(0.5rem);
+  box-shadow: var(--control-shadow);
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
@@ -24,7 +25,8 @@
     visibility 0s linear 0.25s,
     color 0.2s ease,
     border-color 0.2s ease,
-    background-color 0.2s ease;
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .visible {
@@ -36,13 +38,13 @@
 }
 
 .root:hover {
-  color: var(--paper);
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--ink-soft) 94%, transparent);
+  color: var(--text-primary);
+  border-color: var(--utility-hover-line);
+  background: var(--utility-hover-surface);
 }
 
 .root:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 0.2rem;
 }
 
