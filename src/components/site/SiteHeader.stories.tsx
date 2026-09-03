@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { ThemeProvider } from '@/theme/ThemeProvider';
 import { SiteHeader } from './SiteHeader';
 
 const meta = {
   title: 'Marketing/SiteHeader',
   component: SiteHeader,
   parameters: { layout: 'fullscreen' },
-  decorators: [(Story) => <ThemeProvider><div style={{ minHeight: 320, background: 'var(--ink)' }}><Story /></div></ThemeProvider>],
+  decorators: [(Story) => <div style={{ minHeight: 320, background: 'var(--ink)' }}><Story /></div>],
 } satisfies Meta<typeof SiteHeader>;
 
 export default meta;

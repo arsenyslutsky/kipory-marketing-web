@@ -175,7 +175,6 @@ const meta = {
     icon: 'hexagon_default.svg',
     iconOpacity: 0.5,
     interactive: true,
-    mode: 'dark',
     nodeCornerRadius: 10,
     nodeDepth: 20,
     nodeScale: 1,

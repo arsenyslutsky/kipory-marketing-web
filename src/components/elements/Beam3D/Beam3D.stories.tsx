@@ -135,7 +135,6 @@ const meta = {
     height: '28rem',
     highlightColor: '#c9ebc7',
     interactive: true,
-    mode: 'dark',
     packetColor: '#f1fbf0',
     packetCoreShape: 'circle',
     packetCoreSize: 1,
