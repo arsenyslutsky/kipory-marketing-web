@@ -383,7 +383,7 @@ describe('homepage illustration preset contract', () => {
     expect(heroVisualRule).toMatch(/inset:\s*0/);
     expect(heroVisualRule).toMatch(/height:\s*100dvh/);
     expect(heroVisualRule).toMatch(
-      /transform:\s*translate3d\(clamp\(72px,\s*7vw,\s*144px\),\s*-64px,\s*0\)/,
+      /transform:\s*translate3d\(clamp\(264px,\s*13vw,\s*284px\),\s*-64px,\s*0\)/,
     );
     expect(heroVisualRule).not.toMatch(/scale\(/);
   });
