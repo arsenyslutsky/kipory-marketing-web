@@ -136,7 +136,7 @@ describe('homepage illustration preset contract', () => {
       connectorOpacity: 0.62,
       connectorStroke: 'dashed',
       connectorWidth: 1.25,
-      emitterX: 3,
+      emitterX: 6,
       emitterY: -3.5,
       fogEnabled: true,
       gridDensity: 8,
@@ -203,12 +203,12 @@ describe('homepage illustration preset contract', () => {
 
     expect(businessFlow3DHomepageDarkProps).toMatchObject({
       cameraTargetOffsetY: -3,
-      emitterX: 3,
+      emitterX: 6,
       emitterY: -3.5,
     });
     expect(businessFlow3DHomepageLightProps).toMatchObject({
       cameraTargetOffsetY: -3,
-      emitterX: 3,
+      emitterX: 6,
       emitterY: -3.5,
     });
 
