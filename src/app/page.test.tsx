@@ -12,7 +12,7 @@ const {
   horizontalHomepageProps,
   horizontalRender,
   threeDDarkHomepageProps,
-  threeDDefaultFlow,
+  threeDHomepageFlow,
   threeDLightHomepageProps,
   threeDRender,
   verticalHomepageProps,
@@ -25,14 +25,13 @@ const {
     width: '20rem',
   },
   horizontalRender: vi.fn(),
-  threeDDarkHomepageProps: { cameraZoom: 1.1, presetVariant: 'dark' },
-  threeDDefaultFlow: {
+  threeDDarkHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'dark' },
+  threeDHomepageFlow: {
     root: 'core',
     nodes: [],
     branches: {},
-    variants: { 'variant-2': { hiddenNodes: ['insight', 'records', 'code', 'metrics'] } },
   },
-  threeDLightHomepageProps: { cameraZoom: 1.1, presetVariant: 'light' },
+  threeDLightHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'light' },
   threeDRender: vi.fn(),
   verticalHomepageProps: { height: '45rem', width: '20rem' },
   verticalRender: vi.fn(),
@@ -57,7 +56,7 @@ vi.mock('@/features/business-flow-3d', () => ({
   },
   businessFlow3DHomepageDarkProps: threeDDarkHomepageProps,
   businessFlow3DHomepageLightProps: threeDLightHomepageProps,
-  defaultFlow: threeDDefaultFlow,
+  homepageFlow: threeDHomepageFlow,
 }));
 vi.mock('@/features/business-flow-vertical', () => ({
   BusinessFlowVertical: (props: Record<string, unknown>) => {
@@ -160,7 +159,7 @@ it('selects an independent hero 3D preset for each resolved theme', () => {
 
   expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDDarkHomepageProps,
-    emitterY: -3.5,
+    flow: threeDHomepageFlow,
     mode: 'dark',
   }));
 
@@ -170,12 +169,12 @@ it('selects an independent hero 3D preset for each resolved theme', () => {
 
   expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
     ...threeDLightHomepageProps,
-    emitterY: -3.5,
+    flow: threeDHomepageFlow,
     mode: 'light',
   }));
 });
 
-it('omits the two protocol-overlapping terminal nodes from both homepage themes', () => {
+it('uses the exact shared homepage flow object for both homepage themes', () => {
   const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
   const darkFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
 
@@ -183,60 +182,17 @@ it('omits the two protocol-overlapping terminal nodes from both homepage themes'
   render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
   const lightFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
 
-  [darkFlow, lightFlow].forEach((flow) => {
-    expect(flow.variants['variant-2'].hiddenNodes).toEqual([
-      'insight',
-      'records',
-      'code',
-      'metrics',
-      'compile',
-      'artifacts',
-    ]);
-  });
-  expect(threeDDefaultFlow.variants['variant-2'].hiddenNodes).toEqual([
-    'insight',
-    'records',
-    'code',
-    'metrics',
-  ]);
+  expect(darkFlow).toBe(threeDHomepageFlow);
+  expect(lightFlow).toBe(threeDHomepageFlow);
+  expect(darkFlow).toBe(lightFlow);
 });
 
-it('extends every visible homepage terminal through two downstream tiers', () => {
+it('passes the shared homepage flow without mutation', () => {
   render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
   const flow = threeDRender.mock.calls.at(-1)?.[0].flow;
 
-  expect(flow.nodes.filter((node: { tier: number }) => node.tier === 7).map((node: { id: string }) => node.id)).toEqual([
-    'publish',
-    'permissions',
-    'govern',
-    'stream',
-    'history',
-    'location',
-  ]);
-  expect(flow.nodes.filter((node: { tier: number }) => node.tier === 8).map((node: { id: string }) => node.id)).toEqual([
-    'endpoint',
-    'workspace',
-    'review',
-    'notify',
-    'archive',
-    'territory',
-  ]);
-  expect(flow.branches).toEqual(expect.objectContaining({
-    deploy: ['publish'],
-    publish: ['endpoint'],
-    identity: ['permissions'],
-    permissions: ['workspace'],
-    audit: ['govern'],
-    govern: ['review'],
-    signals: ['stream'],
-    stream: ['notify'],
-    timeline: ['history'],
-    history: ['archive'],
-    maps: ['location'],
-    location: ['territory'],
-  }));
-  expect(threeDDefaultFlow.nodes).toEqual([]);
-  expect(threeDDefaultFlow.branches).toEqual({});
+  expect(flow).toBe(threeDHomepageFlow);
+  expect(threeDHomepageFlow).toEqual({ root: 'core', nodes: [], branches: {} });
 });
 
 it('routes homepage conversion actions to active destinations', () => {
