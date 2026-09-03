@@ -3,6 +3,7 @@ import styles from './MarketingBlocks.module.css';
 
 export type SectionHeaderVisualProps = {
   headerGap?: number;
+  titleWeight?: number;
   titleWidth?: number;
 };
 
@@ -18,12 +19,14 @@ export function SectionHeader({
   titleId,
   className,
   headerGap = 22,
+  titleWeight,
   titleWidth = 700,
   style,
   ...props
 }: SectionHeaderProps) {
   const visualStyle = {
     '--section-header-gap': `${headerGap}px`,
+    '--section-header-title-weight': titleWeight,
     '--section-header-title-width': `${titleWidth}px`,
     ...style,
   } as CSSProperties;

@@ -221,6 +221,18 @@ it('keeps the pillars content close to its separator', () => {
     });
 });
 
+it('gives only the pillars section title medium emphasis', () => {
+  render(<HomePage />);
+
+  const pillarsHeader = screen.getByRole('heading', { level: 2, name: 'Our Pillars' }).closest('header');
+  const deliveryHeader = screen
+    .getByRole('heading', { level: 2, name: 'Everything your team needs to move faster - without compromise.' })
+    .closest('header');
+
+  expect(pillarsHeader).toHaveStyle({ '--section-header-title-weight': '400' });
+  expect(deliveryHeader).not.toHaveStyle({ '--section-header-title-weight': '400' });
+});
+
 it('places the canonical protocol strip before the hero learn-more link', () => {
   render(<HomePage />);
 

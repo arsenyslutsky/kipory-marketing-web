@@ -177,7 +177,7 @@
   margin: 0;
   font-family: var(--type-display-family);
   font-size: var(--type-display-size-section-compact);
-  font-weight: var(--type-display-weight-light);
+  font-weight: var(--section-header-title-weight, var(--type-display-weight-light));
   line-height: var(--type-display-leading-section-compact);
   letter-spacing: var(--type-display-tracking);
   text-wrap: balance;

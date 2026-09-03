@@ -117,6 +117,7 @@ export default function HomePage() {
                   eyebrow="With future in mind"
                   title="Our Pillars"
                   titleId="pillars-title"
+                  titleWeight={400}
                 />
                 <div className={styles.capabilityList}>
                   {capabilities.map((capability, index) => (
