@@ -21,11 +21,11 @@ it('uses the waitlist core PNG set instead of mounting WebGL on mobile', async (
     '[data-mobile-workflow-fallback="waitlist-core"] img',
   );
 
-  expect(darkImage).toHaveAttribute('src', '/images/workflows/mobile/waitlist-core-flow.png');
-  expect(darkImage).toHaveAttribute(
-    'srcset',
-    '/images/workflows/mobile/waitlist-core-flow.png 1x, /images/workflows/mobile/waitlist-core-flow@2x.png 2x, /images/workflows/mobile/waitlist-core-flow@3x.png 3x',
+  expect(darkImage?.style.getPropertyValue('--mobile-workflow-dark-image')).toBe(
+    'image-set(url("/images/workflows/mobile/waitlist-core-flow.png") 1x, url("/images/workflows/mobile/waitlist-core-flow@2x.png") 2x, url("/images/workflows/mobile/waitlist-core-flow@3x.png") 3x)',
   );
+  expect(darkImage).not.toHaveAttribute('src', '/images/workflows/mobile/waitlist-core-flow.png');
+  expect(darkImage).not.toHaveAttribute('srcset');
   expect(darkImage).toHaveAttribute('width', '176');
   expect(darkImage).toHaveAttribute('height', '176');
   expect(darkImage?.parentElement).toHaveStyle({
@@ -42,11 +42,11 @@ it('uses the waitlist core PNG set instead of mounting WebGL on mobile', async (
     '[data-mobile-workflow-fallback="waitlist-core"] img',
   );
 
-  expect(lightImage).toHaveAttribute('src', '/images/workflows/mobile/waitlist-core-flow-light.png');
-  expect(lightImage).toHaveAttribute(
-    'srcset',
-    '/images/workflows/mobile/waitlist-core-flow-light.png 1x, /images/workflows/mobile/waitlist-core-flow-light@2x.png 2x, /images/workflows/mobile/waitlist-core-flow-light@3x.png 3x',
+  expect(lightImage?.style.getPropertyValue('--mobile-workflow-light-image')).toBe(
+    'image-set(url("/images/workflows/mobile/waitlist-core-flow-light.png") 1x, url("/images/workflows/mobile/waitlist-core-flow-light@2x.png") 2x, url("/images/workflows/mobile/waitlist-core-flow-light@3x.png") 3x)',
   );
+  expect(lightImage).not.toHaveAttribute('src', '/images/workflows/mobile/waitlist-core-flow-light.png');
+  expect(lightImage).not.toHaveAttribute('srcset');
 });
 
 it('replaces a submitted waiting-list form with an accessible success panel', async () => {

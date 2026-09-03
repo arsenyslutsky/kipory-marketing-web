@@ -130,6 +130,29 @@ it('honors an explicit dark mode over light theme context', () => {
   expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
 });
 
+it('passes explicit front gradient colors to Node3D independently of the theme palette', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical
+        gradientStartColor="#102030"
+        gradientMidColor="#405060"
+        gradientEndColor="#708090"
+      />
+    </ThemeProvider>,
+  );
+
+  expect(capturedNodeStyle?.frontGradient).toEqual({
+    angle: 117,
+    start: '#102030',
+    mid: '#405060',
+    end: '#708090',
+  });
+  expect(capturedNodeStyle?.frontGradient).not.toEqual({
+    angle: 117,
+    ...businessFlowPalettes.light.frontGradient,
+  });
+});
+
 it('renders the central hierarchy and satellite documents in one shared Node3D layer', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),

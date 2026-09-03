@@ -12,9 +12,9 @@ import businessFlowVerticalMeta from '../../features/business-flow-vertical/stor
 
 it('provides System, Light, and Dark canvas theme preferences', () => {
   expect(preview.globalTypes?.theme?.toolbar?.items).toEqual([
-    expect.objectContaining({ value: 'system', title: 'System' }),
-    expect.objectContaining({ value: 'light', title: 'Light' }),
-    expect.objectContaining({ value: 'dark', title: 'Dark' }),
+    expect.objectContaining({ value: 'system', title: 'System', icon: 'browser' }),
+    expect.objectContaining({ value: 'light', title: 'Light', icon: 'sun' }),
+    expect.objectContaining({ value: 'dark', title: 'Dark', icon: 'moon' }),
   ]);
   expect(preview.initialGlobals).toMatchObject({ theme: 'system' });
 });

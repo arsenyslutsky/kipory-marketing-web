@@ -111,9 +111,9 @@
 .link[data-glow-active='true'] .surface {
   background:
     linear-gradient(115deg, var(--action-highlight-interactive), transparent 48%),
-    var(--action-hover-surface);
+    var(--action-interactive-surface);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--action-text) 28%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--action-text) var(--action-interactive-edge), transparent),
     var(--control-shadow);
 }
 

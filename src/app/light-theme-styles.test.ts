@@ -142,6 +142,18 @@ describe('system-aware stylesheet contract', () => {
     );
   });
 
+  it('selects mobile fallback image families on each image after the root theme is prepainted', () => {
+    expect(globals).toMatch(
+      /html\[data-theme='light'\] \[data-mobile-workflow-fallback\] img\s*\{[^}]*--mobile-workflow-selected-image: var\(--mobile-workflow-light-image\);/,
+    );
+    expect(globals).toMatch(
+      /\[data-mobile-workflow-fallback\] img\s*\{[^}]*--mobile-workflow-selected-image: var\(--mobile-workflow-dark-image\);/,
+    );
+    expect(globals).toMatch(
+      /\[data-mobile-workflow-fallback\]\[data-mode='light'\] img\s*\{[^}]*--mobile-workflow-selected-image: var\(--mobile-workflow-light-image\);/,
+    );
+  });
+
   it('gates theme transitions by readiness and preserves accessibility fallbacks', () => {
     expect(globals).toMatch(
       /html\[data-theme-ready='true'\] body,[\s\S]*?transition:\s*color 180ms/,
@@ -165,6 +177,10 @@ describe('system-aware stylesheet contract', () => {
       '--action-highlight-interactive: color-mix(in srgb, var(--text-primary) 12%, transparent);',
     );
     expect(darkBlock).toContain('--final-actions-edge: transparent;');
+    expect(darkBlock).toContain('--header-action-hover-surface: var(--header-action-surface);');
+    expect(darkBlock).toContain('--outline-control-hover-surface: var(--outline-control-surface);');
+    expect(darkBlock).toContain('--learn-more-hover-color: var(--signal-copy);');
+    expect(darkBlock).toContain('--learn-more-hover-decoration: transparent;');
     expect(lightBlock).toContain(
       '--action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);',
     );

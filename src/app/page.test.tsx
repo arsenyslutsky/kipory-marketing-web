@@ -91,15 +91,10 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
     'pillars',
     'delivery',
   ]);
-  expect(darkFallbacks.map((image) => image.getAttribute('src'))).toEqual([
-    '/images/workflows/mobile/hero-flow.png',
-    '/images/workflows/mobile/pillars-flow.png',
-    '/images/workflows/mobile/delivery-flow.png',
-  ]);
-  expect(darkFallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
-    '/images/workflows/mobile/hero-flow.png 1x, /images/workflows/mobile/hero-flow@2x.png 2x, /images/workflows/mobile/hero-flow@3x.png 3x',
-    '/images/workflows/mobile/pillars-flow.png 1x, /images/workflows/mobile/pillars-flow@2x.png 2x, /images/workflows/mobile/pillars-flow@3x.png 3x',
-    '/images/workflows/mobile/delivery-flow.png 1x, /images/workflows/mobile/delivery-flow@2x.png 2x, /images/workflows/mobile/delivery-flow@3x.png 3x',
+  expect(darkFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-dark-image'))).toEqual([
+    'image-set(url("/images/workflows/mobile/hero-flow.png") 1x, url("/images/workflows/mobile/hero-flow@2x.png") 2x, url("/images/workflows/mobile/hero-flow@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow.png") 1x, url("/images/workflows/mobile/pillars-flow@2x.png") 2x, url("/images/workflows/mobile/pillars-flow@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/delivery-flow.png") 1x, url("/images/workflows/mobile/delivery-flow@2x.png") 2x, url("/images/workflows/mobile/delivery-flow@3x.png") 3x)',
   ]);
   expect(darkFallbacks.map((image) => [image.getAttribute('width'), image.getAttribute('height')])).toEqual([
     ['390', '780'],
@@ -114,16 +109,14 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
     container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
   );
 
-  expect(lightFallbacks.map((image) => image.getAttribute('src'))).toEqual([
-    '/images/workflows/mobile/hero-flow-light.png',
-    '/images/workflows/mobile/pillars-flow-light.png',
-    '/images/workflows/mobile/delivery-flow-light.png',
+  expect(lightFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-light-image'))).toEqual([
+    'image-set(url("/images/workflows/mobile/hero-flow-light.png") 1x, url("/images/workflows/mobile/hero-flow-light@2x.png") 2x, url("/images/workflows/mobile/hero-flow-light@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow-light.png") 1x, url("/images/workflows/mobile/pillars-flow-light@2x.png") 2x, url("/images/workflows/mobile/pillars-flow-light@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/delivery-flow-light.png") 1x, url("/images/workflows/mobile/delivery-flow-light@2x.png") 2x, url("/images/workflows/mobile/delivery-flow-light@3x.png") 3x)',
   ]);
-  expect(lightFallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
-    '/images/workflows/mobile/hero-flow-light.png 1x, /images/workflows/mobile/hero-flow-light@2x.png 2x, /images/workflows/mobile/hero-flow-light@3x.png 3x',
-    '/images/workflows/mobile/pillars-flow-light.png 1x, /images/workflows/mobile/pillars-flow-light@2x.png 2x, /images/workflows/mobile/pillars-flow-light@3x.png 3x',
-    '/images/workflows/mobile/delivery-flow-light.png 1x, /images/workflows/mobile/delivery-flow-light@2x.png 2x, /images/workflows/mobile/delivery-flow-light@3x.png 3x',
-  ]);
+  expect([...darkFallbacks, ...lightFallbacks].every((image) => (
+    !image.getAttribute('src')?.startsWith('/images/workflows/mobile/') && !image.hasAttribute('srcset')
+  ))).toBe(true);
   expect(threeDRender).not.toHaveBeenCalled();
   expect(verticalRender).not.toHaveBeenCalled();
   expect(horizontalRender).not.toHaveBeenCalled();

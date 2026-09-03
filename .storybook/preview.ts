@@ -13,9 +13,9 @@ const preview: Preview = {
       toolbar: {
         icon: 'mirror',
         items: [
-          { value: 'system', title: 'System' },
-          { value: 'light', title: 'Light' },
-          { value: 'dark', title: 'Dark' },
+          { value: 'system', title: 'System', icon: 'browser' },
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
         ],
       },
     },

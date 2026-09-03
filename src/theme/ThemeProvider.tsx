@@ -163,11 +163,18 @@ export function ThemeProvider({
     if (controlledPreference !== undefined) return;
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key !== THEME_STORAGE_KEY || !isThemePreference(event.newValue)) return;
+      if (event.key !== THEME_STORAGE_KEY && event.key !== null) return;
 
-      const nextResolvedTheme = resolveTheme(event.newValue, getSystemDark());
-      themeStore.update(event.newValue, nextResolvedTheme);
-      applyThemeToDocument(event.newValue, nextResolvedTheme);
+      const nextPreference = event.newValue === null
+        ? 'system'
+        : isThemePreference(event.newValue)
+          ? event.newValue
+          : undefined;
+      if (!nextPreference) return;
+
+      const nextResolvedTheme = resolveTheme(nextPreference, getSystemDark());
+      themeStore.update(nextPreference, nextResolvedTheme);
+      applyThemeToDocument(nextPreference, nextResolvedTheme);
     };
 
     window.addEventListener('storage', handleStorage);

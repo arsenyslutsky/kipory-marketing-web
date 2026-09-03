@@ -141,6 +141,7 @@ export function BusinessFlow3D({
       queueMicrotask(() => { if (mounted) setError(message); });
     };
     void loadSignalFlowSceneFactory().then((createSignalFlowScene) => {
+      if (!mounted) return;
       try {
         controller = createSignalFlowScene({
         active: false,
@@ -202,10 +203,6 @@ export function BusinessFlow3D({
         },
         elements,
       });
-        if (!mounted) {
-          controller.destroy();
-          return;
-        }
         controllerRef.current = controller;
         controller.setActive(runtimeActiveRef.current);
       } catch (sceneError) {

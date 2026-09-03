@@ -10,13 +10,18 @@
 }
 
 .image {
+  background-image: var(--mobile-workflow-selected-image, var(--mobile-workflow-dark-image));
+  background-position: center;
+  background-repeat: no-repeat;
   object-position: center;
 }
 
 .contain {
+  background-size: contain;
   object-fit: contain;
 }
 
 .cover {
+  background-size: cover;
   object-fit: cover;
 }

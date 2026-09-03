@@ -30,15 +30,17 @@ html[data-theme='dark'] {
   --glow-color: rgb(68 156 64 / 18%);
   --beam-highlight: #e7ebe2;
   --action-surface: var(--signal);
-  --action-hover-surface: color-mix(in srgb, var(--signal) 86%, var(--text-primary));
+  --action-hover-surface: var(--action-surface);
+  --action-interactive-surface: var(--action-surface);
+  --action-interactive-edge: 18%;
   --action-text: var(--on-signal);
   --action-highlight-idle: color-mix(in srgb, var(--text-primary) 8%, transparent);
   --action-highlight-interactive: color-mix(in srgb, var(--text-primary) 12%, transparent);
   --header-action-surface: var(--text-primary);
-  --header-action-hover-surface: color-mix(in srgb, var(--text-primary) 88%, var(--surface-base));
+  --header-action-hover-surface: var(--header-action-surface);
   --header-action-text: var(--text-inverse);
   --outline-control-surface: color-mix(in srgb, var(--text-primary) 3%, transparent);
-  --outline-control-hover-surface: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --outline-control-hover-surface: var(--outline-control-surface);
   --field-surface: rgb(10 12 11 / 14%);
   --field-focus-surface: var(--field-surface);
   --field-placeholder: var(--text-on-alternate);
@@ -61,6 +63,8 @@ html[data-theme='dark'] {
   --count-surface: var(--surface-base);
   --count-text: var(--text-primary);
   --final-actions-edge: transparent;
+  --learn-more-hover-color: var(--signal-copy);
+  --learn-more-hover-decoration: transparent;
 
   /* Incremental aliases for untouched interfaces. */
   --ink: var(--surface-base);
@@ -115,6 +119,8 @@ html[data-theme='light'] {
   --beam-highlight: var(--surface-soft);
   --action-surface: var(--signal-strong);
   --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
+  --action-interactive-surface: var(--action-hover-surface);
+  --action-interactive-edge: 28%;
   --action-text: var(--on-signal);
   --action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);
   --action-highlight-interactive: color-mix(in srgb, var(--text-inverse) 12%, transparent);
@@ -145,6 +151,8 @@ html[data-theme='light'] {
   --count-surface: var(--text-primary);
   --count-text: var(--text-inverse);
   --final-actions-edge: var(--line-default);
+  --learn-more-hover-color: var(--text-primary);
+  --learn-more-hover-decoration: var(--signal-copy);
 
   --ink: var(--surface-base);
   --ink-soft: var(--surface-soft);
@@ -204,6 +212,8 @@ html[data-theme='light'] {
     --beam-highlight: var(--surface-soft);
     --action-surface: var(--signal-strong);
     --action-hover-surface: color-mix(in srgb, var(--signal-strong) 88%, var(--text-primary));
+    --action-interactive-surface: var(--action-hover-surface);
+    --action-interactive-edge: 28%;
     --action-text: var(--on-signal);
     --action-highlight-idle: color-mix(in srgb, var(--text-inverse) 12%, transparent);
     --action-highlight-interactive: color-mix(in srgb, var(--text-inverse) 12%, transparent);
@@ -234,6 +244,8 @@ html[data-theme='light'] {
     --count-surface: var(--text-primary);
     --count-text: var(--text-inverse);
     --final-actions-edge: var(--line-default);
+    --learn-more-hover-color: var(--text-primary);
+    --learn-more-hover-decoration: var(--signal-copy);
 
     --ink: var(--surface-base);
     --ink-soft: var(--surface-soft);
@@ -254,6 +266,29 @@ html[data-theme='light'] {
     --theme-toggle-hover: var(--surface-soft);
     --theme-toggle-focus: var(--focus-ring);
   }
+}
+
+[data-mobile-workflow-fallback] img {
+  --mobile-workflow-selected-image: var(--mobile-workflow-dark-image);
+}
+
+html[data-theme='light'] [data-mobile-workflow-fallback] img {
+  --mobile-workflow-selected-image: var(--mobile-workflow-light-image);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) [data-mobile-workflow-fallback] img,
+  html[data-theme='dark'][data-theme-preference='system']:not([data-theme-ready='true']) [data-mobile-workflow-fallback] img {
+    --mobile-workflow-selected-image: var(--mobile-workflow-light-image);
+  }
+}
+
+:root [data-mobile-workflow-fallback][data-mode='dark'] img {
+  --mobile-workflow-selected-image: var(--mobile-workflow-dark-image);
+}
+
+:root [data-mobile-workflow-fallback][data-mode='light'] img {
+  --mobile-workflow-selected-image: var(--mobile-workflow-light-image);
 }
 
 * { box-sizing: border-box; }

@@ -63,7 +63,7 @@
   animation-fill-mode: backwards;
 }
 .learnMoreLink { width: max-content; display: inline-flex; align-items: center; gap: .55rem; color: var(--signal-copy); font: var(--type-control-weight) var(--type-control-size-sm)/var(--type-control-leading) var(--type-control-family); letter-spacing: var(--type-control-tracking-wide); text-transform: uppercase; transition: color .2s ease, text-decoration-color .2s ease; }
-.learnMoreLink:hover { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--signal-copy); text-underline-offset: .35em; }
+.learnMoreLink:hover { color: var(--learn-more-hover-color); text-decoration: underline; text-decoration-color: var(--learn-more-hover-decoration); text-underline-offset: .35em; }
 .heroLearnMore { margin: 30px 0 0; padding-top: 15px; }
 .sectionLearnMore { margin-top: 52px; }
 .learnMoreChevron { position: relative; top: -.125rem; width: 1rem; height: 1.125rem; display: inline-flex; flex: 0 0 auto; animation: learnMoreChevronFloat 1.8s ease-in-out infinite; }

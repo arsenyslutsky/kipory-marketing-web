@@ -211,7 +211,7 @@ export function BusinessFlowVertical({
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
     mode,
-    frontGradient: { angle: 117, ...palette.frontGradient },
+    frontGradient: gradient,
     sideXGradient: { angle: 360, ...palette.sideXGradient },
     sideZGradient: { angle: 177, ...palette.sideZGradient },
     assetBasePath: '/assets/nodes',
@@ -230,6 +230,7 @@ export function BusinessFlowVertical({
     nodeProgressMode,
     nodeProgressSize,
     palette,
+    gradient,
   ]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
   const paths = useMemo(

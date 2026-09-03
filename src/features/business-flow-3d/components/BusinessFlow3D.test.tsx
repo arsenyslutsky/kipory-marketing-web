@@ -188,12 +188,22 @@ it('defers construction until preload and pauses the scene outside the viewport'
   await waitFor(() => expect(setActive).toHaveBeenLastCalledWith(false));
 });
 
-it('destroys a stale scene created after its delayed module import resolves', async () => {
+it('rejects a stale scene factory before it can replace the current CSS renderer', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
   const staleController = createController();
   const currentController = createController();
-  const staleFactory = vi.fn(() => staleController);
-  const currentFactory = vi.fn(() => currentController);
+  const staleFactory = vi.fn((options) => {
+    const renderer = document.createElement('div');
+    renderer.dataset.renderer = 'stale';
+    options.elements.cssLayer.replaceChildren(renderer);
+    return staleController;
+  });
+  const currentFactory = vi.fn((options) => {
+    const renderer = document.createElement('div');
+    renderer.dataset.renderer = 'current';
+    options.elements.cssLayer.replaceChildren(renderer);
+    return currentController;
+  });
   let resolveStaleFactory!: (factory: typeof createSignalFlowScene) => void;
   let resolveCurrentFactory!: (factory: typeof createSignalFlowScene) => void;
   vi.mocked(loadSignalFlowSceneFactory)
@@ -214,12 +224,15 @@ it('destroys a stale scene created after its delayed module import resolves', as
     resolveCurrentFactory(currentFactory);
   });
   await waitFor(() => expect(currentFactory).toHaveBeenCalledOnce());
+  const currentRenderer = view.container.querySelector('[data-renderer="current"]');
+  expect(currentRenderer).toBeInTheDocument();
 
   await act(async () => {
     resolveStaleFactory(staleFactory);
   });
-  await waitFor(() => expect(staleFactory).toHaveBeenCalledOnce());
 
-  expect(staleController.destroy).toHaveBeenCalledOnce();
+  expect(staleFactory).not.toHaveBeenCalled();
+  expect(view.container.querySelector('[data-renderer="current"]')).toBe(currentRenderer);
+  expect(staleController.destroy).not.toHaveBeenCalled();
   expect(currentController.destroy).not.toHaveBeenCalled();
 });

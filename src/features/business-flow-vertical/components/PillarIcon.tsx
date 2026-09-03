@@ -1,14 +1,15 @@
 import { useId, type ReactNode, type SVGProps } from 'react';
+import { businessFlowPalette } from '@/features/business-flow-palette';
 
 export type PillarIconName = 'server' | 'graph' | 'vector' | 'intelligence';
 export type PillarIconFillMode = 'gradient' | 'black';
 
 export type PillarIconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
-  fillColor: string;
+  fillColor?: string;
   fillMode?: PillarIconFillMode;
-  gradientEndColor: string;
-  gradientMidColor: string;
-  gradientStartColor: string;
+  gradientEndColor?: string;
+  gradientMidColor?: string;
+  gradientStartColor?: string;
   name: PillarIconName;
   title?: string;
 };
@@ -57,11 +58,11 @@ const iconPaths: Record<PillarIconName, ReactNode> = {
 };
 
 export function PillarIcon({
-  fillColor,
+  fillColor = businessFlowPalette.black,
   fillMode = 'gradient',
-  gradientEndColor,
-  gradientMidColor,
-  gradientStartColor,
+  gradientEndColor = businessFlowPalette.frontGradient.end,
+  gradientMidColor = businessFlowPalette.frontGradient.mid,
+  gradientStartColor = businessFlowPalette.frontGradient.start,
   name,
   title,
   strokeWidth = 5,

@@ -118,6 +118,24 @@ it('accepts valid cross-tab storage changes without writing them back', () => {
   expect(setItem).not.toHaveBeenCalled();
 });
 
+it.each([
+  ['removeItem', THEME_STORAGE_KEY],
+  ['clear', null],
+] as const)('returns to System when another tab calls localStorage.%s', (_operation, key) => {
+  const colorScheme = createColorSchemeQuery(false);
+  localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+  vi.stubGlobal('matchMedia', vi.fn(() => colorScheme));
+
+  render(<ThemeProvider><Probe /></ThemeProvider>);
+  expect(screen.getByRole('button')).toHaveTextContent('dark:dark');
+
+  fireEvent(window, new StorageEvent('storage', { key, newValue: null }));
+
+  expect(screen.getByRole('button')).toHaveTextContent('system:light');
+  expect(document.documentElement).toHaveAttribute('data-theme-preference', 'system');
+  expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+});
+
 it('ignores invalid cross-tab storage changes', () => {
   const colorScheme = createColorSchemeQuery(false);
   vi.stubGlobal('matchMedia', vi.fn(() => colorScheme));

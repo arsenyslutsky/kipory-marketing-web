@@ -38,4 +38,10 @@ it('preserves distinct pale idle and interactive highlights in dark mode', () =>
   expect(surfaceRule).not.toContain('var(--action-highlight-interactive)');
   expect(interactiveSurfaceRule).toContain('var(--action-highlight-interactive)');
   expect(interactiveSurfaceRule).not.toContain('var(--action-highlight-idle)');
+  expect(darkBlock).toContain('--action-hover-surface: var(--action-surface);');
+  expect(darkBlock).toContain('--action-interactive-surface: var(--action-surface);');
+  expect(darkBlock).toContain('--action-interactive-edge: 18%;');
+  expect(interactiveSurfaceRule).toContain('var(--action-interactive-surface)');
+  expect(interactiveSurfaceRule).toContain('var(--action-interactive-edge)');
+  expect(interactiveSurfaceRule).not.toContain('var(--action-hover-surface)');
 });
