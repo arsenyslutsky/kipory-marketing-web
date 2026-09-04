@@ -29,11 +29,19 @@ const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarge
   },
   'animated-illustrations-businessflowvertical--current-nextjs-app': {
     relativePath: 'src/features/business-flow-vertical/presets.ts',
-    exportName: 'businessFlowVerticalHomepageProps',
+    exportName: 'businessFlowVerticalHomepageDarkProps',
+  },
+  'animated-illustrations-businessflowvertical--current-app-light': {
+    relativePath: 'src/features/business-flow-vertical/presets.ts',
+    exportName: 'businessFlowVerticalHomepageLightProps',
   },
   'animated-illustrations-businessflowhorizontal--current-nextjs-app': {
     relativePath: 'src/features/business-flow-horizontal/presets.ts',
-    exportName: 'businessFlowHorizontalHomepageProps',
+    exportName: 'businessFlowHorizontalHomepageDarkProps',
+  },
+  'animated-illustrations-businessflowhorizontal--current-app-light': {
+    relativePath: 'src/features/business-flow-horizontal/presets.ts',
+    exportName: 'businessFlowHorizontalHomepageLightProps',
   },
   'animated-illustrations-businesscorenodeflow--current-nextjs-app': {
     relativePath: 'src/features/business-core-node-flow/presets.ts',

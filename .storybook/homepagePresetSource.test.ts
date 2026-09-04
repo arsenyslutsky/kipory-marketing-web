@@ -129,12 +129,22 @@ it.each([
   [
     'animated-illustrations-businessflowvertical--current-nextjs-app' as const,
     'src/features/business-flow-vertical/presets.ts',
-    'businessFlowVerticalHomepageProps',
+    'businessFlowVerticalHomepageDarkProps',
+  ],
+  [
+    'animated-illustrations-businessflowvertical--current-app-light' as const,
+    'src/features/business-flow-vertical/presets.ts',
+    'businessFlowVerticalHomepageLightProps',
   ],
   [
     'animated-illustrations-businessflowhorizontal--current-nextjs-app' as const,
     'src/features/business-flow-horizontal/presets.ts',
-    'businessFlowHorizontalHomepageProps',
+    'businessFlowHorizontalHomepageDarkProps',
+  ],
+  [
+    'animated-illustrations-businessflowhorizontal--current-app-light' as const,
+    'src/features/business-flow-horizontal/presets.ts',
+    'businessFlowHorizontalHomepageLightProps',
   ],
   [
     'animated-illustrations-businesscorenodeflow--current-nextjs-app' as const,
@@ -181,7 +191,7 @@ it('atomically saves only the registered preset and leaves invalid saves unchang
   const targetPath = join(projectRoot, target.relativePath);
   const initialSource = `import type { Props } from './types';
 
-export const businessFlowHorizontalHomepageProps = {
+export const businessFlowHorizontalHomepageDarkProps = {
   connectorOpacity: 0.22,
   beamEnabled: true,
 } satisfies Props;
@@ -213,6 +223,50 @@ export const businessFlowHorizontalHomepageProps = {
       ),
     ).rejects.toThrow('must be a string, finite number, or boolean');
     expect(await readFile(targetPath, 'utf8')).toBe(savedSource);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it('saves dark and light horizontal homepage controls to independent exports', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-themed-horizontal-presets-'));
+  const darkStoryId = 'animated-illustrations-businessflowhorizontal--current-nextjs-app' as const;
+  const lightStoryId = 'animated-illustrations-businessflowhorizontal--current-app-light' as const;
+  const target = getHomepagePresetTarget(darkStoryId);
+  const targetPath = join(projectRoot, target.relativePath);
+  const initialSource = `export const businessFlowHorizontalHomepageDarkProps = {
+  outlineOpacity: 0,
+  nodeShadowOpacity: 0.5,
+} satisfies Props;
+
+export const businessFlowHorizontalHomepageLightProps = {
+  outlineOpacity: 0.3,
+  nodeShadowOpacity: 0.38,
+} satisfies Props;
+`;
+
+  try {
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, initialSource, 'utf8');
+
+    await saveHomepagePreset(projectRoot, darkStoryId, { outlineOpacity: 0.2 });
+    await saveHomepagePreset(projectRoot, lightStoryId, {
+      outlineOpacity: 0.7,
+      nodeShadowOpacity: 0.31,
+    });
+
+    expect(await readFile(targetPath, 'utf8')).toBe(
+      `export const businessFlowHorizontalHomepageDarkProps = {
+  outlineOpacity: 0.2,
+  nodeShadowOpacity: 0.5,
+} satisfies Props;
+
+export const businessFlowHorizontalHomepageLightProps = {
+  outlineOpacity: 0.7,
+  nodeShadowOpacity: 0.31,
+} satisfies Props;
+`,
+    );
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }
