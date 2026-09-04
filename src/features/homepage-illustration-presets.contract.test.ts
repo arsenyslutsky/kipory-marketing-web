@@ -18,9 +18,17 @@ import {
   businessFlowHorizontalHomepageLightProps,
 } from './business-flow-horizontal/presets';
 import {
+  CurrentAppLight as businessFlowHorizontalCurrentAppLight,
+  CurrentNextjsApp as businessFlowHorizontalCurrentAppDark,
+} from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
+import {
   businessFlowVerticalHomepageDarkProps,
   businessFlowVerticalHomepageLightProps,
 } from './business-flow-vertical/presets';
+import {
+  CurrentAppLight as businessFlowVerticalCurrentAppLight,
+  CurrentNextjsApp as businessFlowVerticalCurrentAppDark,
+} from './business-flow-vertical/stories/BusinessFlowVertical.stories';
 
 const cases = [
   {
@@ -36,6 +44,34 @@ const cases = [
     presetValue: businessFlow3DHomepageLightProps,
     story: 'BusinessFlow3D',
     storyArgs: businessFlow3DCurrentAppLight.args ?? {},
+  },
+  {
+    feature: 'business-flow-horizontal',
+    preset: 'businessFlowHorizontalHomepageDarkProps',
+    presetValue: businessFlowHorizontalHomepageDarkProps,
+    story: 'BusinessFlowHorizontal',
+    storyArgs: businessFlowHorizontalCurrentAppDark.args ?? {},
+  },
+  {
+    feature: 'business-flow-horizontal',
+    preset: 'businessFlowHorizontalHomepageLightProps',
+    presetValue: businessFlowHorizontalHomepageLightProps,
+    story: 'BusinessFlowHorizontal',
+    storyArgs: businessFlowHorizontalCurrentAppLight.args ?? {},
+  },
+  {
+    feature: 'business-flow-vertical',
+    preset: 'businessFlowVerticalHomepageDarkProps',
+    presetValue: businessFlowVerticalHomepageDarkProps,
+    story: 'BusinessFlowVertical',
+    storyArgs: businessFlowVerticalCurrentAppDark.args ?? {},
+  },
+  {
+    feature: 'business-flow-vertical',
+    preset: 'businessFlowVerticalHomepageLightProps',
+    presetValue: businessFlowVerticalHomepageLightProps,
+    story: 'BusinessFlowVertical',
+    storyArgs: businessFlowVerticalCurrentAppLight.args ?? {},
   },
 ] as const;
 
@@ -490,39 +526,3 @@ describe('homepage illustration preset contract', () => {
     expect(storyArgs).toMatchObject(presetValue);
   });
 });
-import {
-  CurrentAppLight as businessFlowHorizontalCurrentAppLight,
-  CurrentNextjsApp as businessFlowHorizontalCurrentAppDark,
-} from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
-import {
-  CurrentAppLight as businessFlowVerticalCurrentAppLight,
-  CurrentNextjsApp as businessFlowVerticalCurrentAppDark,
-} from './business-flow-vertical/stories/BusinessFlowVertical.stories';
-  {
-    feature: 'business-flow-horizontal',
-    preset: 'businessFlowHorizontalHomepageDarkProps',
-    presetValue: businessFlowHorizontalHomepageDarkProps,
-    story: 'BusinessFlowHorizontal',
-    storyArgs: businessFlowHorizontalCurrentAppDark.args ?? {},
-  },
-  {
-    feature: 'business-flow-horizontal',
-    preset: 'businessFlowHorizontalHomepageLightProps',
-    presetValue: businessFlowHorizontalHomepageLightProps,
-    story: 'BusinessFlowHorizontal',
-    storyArgs: businessFlowHorizontalCurrentAppLight.args ?? {},
-  },
-  {
-    feature: 'business-flow-vertical',
-    preset: 'businessFlowVerticalHomepageDarkProps',
-    presetValue: businessFlowVerticalHomepageDarkProps,
-    story: 'BusinessFlowVertical',
-    storyArgs: businessFlowVerticalCurrentAppDark.args ?? {},
-  },
-  {
-    feature: 'business-flow-vertical',
-    preset: 'businessFlowVerticalHomepageLightProps',
-    presetValue: businessFlowVerticalHomepageLightProps,
-    story: 'BusinessFlowVertical',
-    storyArgs: businessFlowVerticalCurrentAppLight.args ?? {},
-  },
