@@ -12,7 +12,10 @@ import {
   WorkflowArrivalBursts,
   type WorkflowArrivalBurstsHandle,
 } from '@/components/elements/WorkflowArrivalBursts';
-import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import {
+  getBusinessFlowHeroTreatment,
+  getBusinessFlowPalette,
+} from '@/features/business-flow-palette';
 import { useResolvedTheme } from '@/theme/ThemeProvider';
 import type { ResolvedTheme } from '@/theme/theme';
 import type { CSSProperties } from 'react';
@@ -62,6 +65,8 @@ export type BusinessFlowHorizontalProps = WorkflowRuntimeOptions & NodeShadowPro
   nodeProgressMinDelay?: number;
   nodeProgressMode?: Node3DProgressMode;
   nodeProgressSize?: number;
+  outlineOpacity?: number;
+  outlineWidth?: number;
   strokeWidth?: number;
   width?: CSSProperties['width'];
 };
@@ -141,6 +146,8 @@ export function BusinessFlowHorizontal({
   nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
   nodeProgressSize = 15,
+  outlineOpacity,
+  outlineWidth,
   nodeShadowBias,
   nodeShadowBlurSamples,
   nodeShadowColor,
@@ -157,12 +164,13 @@ export function BusinessFlowHorizontal({
 }: BusinessFlowHorizontalProps) {
   const mode = useResolvedTheme(explicitMode);
   const palette = getBusinessFlowPalette(mode);
-  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.horizontalAuxiliaryIconFill;
+  const heroTreatment = getBusinessFlowHeroTreatment(mode);
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? heroTreatment.iconFill;
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
-  const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
-  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.horizontalIconStroke;
-  const connectorColor = connectorColorProp ?? palette.connector;
+  const centralIconFillColor = centralIconFillColorProp ?? heroTreatment.iconFill;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? heroTreatment.iconStroke;
+  const connectorColor = connectorColorProp ?? heroTreatment.connectorColor;
   const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
@@ -181,9 +189,9 @@ export function BusinessFlowHorizontal({
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
-    stroke: 'dashed' as const,
+    stroke: heroTreatment.connectorStroke,
     width: connectorWidth,
-  }), [connectorColor, connectorOpacity, connectorWidth]);
+  }), [connectorColor, connectorOpacity, connectorWidth, heroTreatment]);
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
@@ -233,19 +241,19 @@ export function BusinessFlowHorizontal({
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
     mode,
-    frontGradient: { angle: 117, ...palette.frontGradient },
-    sideXGradient: { angle: 360, ...palette.sideXGradient },
-    sideZGradient: { angle: 177, ...palette.sideZGradient },
+    frontGradient: { angle: 117, ...heroTreatment.frontGradient },
+    sideXGradient: { angle: 360, ...heroTreatment.sideXGradient },
+    sideZGradient: { angle: 177, ...heroTreatment.sideZGradient },
     assetBasePath: '/assets/nodes',
-    nodeCornerRadius: 10,
-    outlineOpacity: 0,
-    outlineWidth: 1,
+    nodeCornerRadius: heroTreatment.nodeCornerRadius,
+    outlineOpacity: outlineOpacity ?? heroTreatment.outlineOpacity,
+    outlineWidth: outlineWidth ?? heroTreatment.outlineWidth,
     progressBarHeight: nodeProgressSize,
     progressMaxDelay: nodeProgressMaxDelay,
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-  }), [mode, nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize, palette]);
+  }), [heroTreatment, mode, nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize, outlineOpacity, outlineWidth]);
   const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
     burstRef.current?.add(event);
   }, []);
@@ -289,12 +297,12 @@ export function BusinessFlowHorizontal({
         nodeShadowBias={nodeShadowBias}
         nodeShadowBlurSamples={nodeShadowBlurSamples}
         nodeShadowColor={nodeShadowColor}
-        nodeShadowLightX={nodeShadowLightX}
-        nodeShadowLightY={nodeShadowLightY}
-        nodeShadowLightZ={nodeShadowLightZ}
+        nodeShadowLightX={nodeShadowLightX ?? heroTreatment.nodeShadowLightX}
+        nodeShadowLightY={nodeShadowLightY ?? heroTreatment.nodeShadowLightY}
+        nodeShadowLightZ={nodeShadowLightZ ?? heroTreatment.nodeShadowLightZ}
         nodeShadowNormalBias={nodeShadowNormalBias}
-        nodeShadowOpacity={nodeShadowOpacity}
-        nodeShadowRadius={nodeShadowRadius}
+        nodeShadowOpacity={nodeShadowOpacity ?? heroTreatment.nodeShadowOpacity}
+        nodeShadowRadius={nodeShadowRadius ?? heroTreatment.nodeShadowRadius}
         onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}

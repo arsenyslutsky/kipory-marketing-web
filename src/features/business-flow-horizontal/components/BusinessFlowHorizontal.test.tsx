@@ -132,12 +132,44 @@ it('inherits the light palette from theme context', () => {
   );
 
   expect(capturedMode).toBe('light');
-  expect(capturedNodeStyle).toMatchObject({ mode: 'light' });
-  expect(capturedConnector?.color).toBe(businessFlowPalettes.light.connector);
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'light',
+    frontGradient: { angle: 117, start: '#98c496', mid: '#449c40', end: '#449c40' },
+    sideXGradient: { angle: 360, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    sideZGradient: { angle: 177, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    nodeCornerRadius: 0,
+    outlineOpacity: 0.3,
+    outlineWidth: 1.25,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: '#449c40',
+    stroke: 'solid',
+  });
   expect(capturedBeam?.beamColor).toBe(businessFlowPalettes.light.beam);
   expect(capturedNodes?.find((node) => node.id === 'collector')).toMatchObject({
-    iconColor: businessFlowPalettes.light.horizontalCentralIconFill,
-    iconStrokeColor: businessFlowPalettes.light.horizontalIconStroke,
+    iconColor: '#182019',
+    iconStrokeColor: '#ffffff',
+  });
+  expect(capturedNodeShadow).toMatchObject({
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowOpacity: 0.38,
+    nodeShadowRadius: 8,
+  });
+});
+
+it('lets explicit node-outline values override the active theme treatment', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowHorizontal outlineOpacity={0.72} outlineWidth={2.5} />
+    </ThemeProvider>,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'light',
+    outlineOpacity: 0.72,
+    outlineWidth: 2.5,
   });
 });
 
@@ -145,8 +177,21 @@ it('falls back to the dark palette outside theme context', () => {
   render(<BusinessFlowHorizontal />);
 
   expect(capturedMode).toBe('dark');
-  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
-  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'dark',
+    frontGradient: { angle: 117, start: '#066b43', mid: '#03492b', end: '#052f24' },
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: businessFlowPalettes.dark.connector,
+    stroke: 'dashed',
+  });
+  expect(capturedNodes?.find((node) => node.id === 'collector')).toMatchObject({
+    iconColor: '#f3f5ef',
+    iconStrokeColor: '#f3f5ef',
+  });
 });
 
 it('passes public node-shadow parameters to the shared renderer', () => {
@@ -284,7 +329,7 @@ it('propagates the complete homepage beam effect to the shared layer', () => {
   render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
 
   const layer = screen.getByTestId('flow-layer');
-  expect(layer).toHaveAttribute('data-beam-width', '1.4');
+  expect(layer).toHaveAttribute('data-beam-width', '1.75');
   expect(layer).toHaveAttribute('data-head-glow-blur', '2');
   expect(layer).toHaveAttribute('data-head-glow-opacity', '1');
   expect(layer).toHaveAttribute('data-head-glow-radius', '11');
