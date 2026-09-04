@@ -400,6 +400,118 @@ it('ends a beam inside an early leaf that has no outgoing continuation', () => {
   controller.destroy();
 });
 
+it.each([false, true])('connects same-row nodes at their sides and keeps beams on that route (reverse: %s)', (reverse) => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  const options = createSceneOptions();
+  const controller = createSignalFlowScene({
+    ...options,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    flow: {
+      ...options.flow,
+      nodes: options.flow.nodes.map((node) => ({
+        ...node,
+        position: [node.id === 'root' ? 0 : reverse ? -3 : 3, 0],
+      })),
+    },
+  });
+  animationFrames.shift()?.(1000);
+
+  const points = flowPathCaptures.connectorPoints[0]!;
+  expect(points).toHaveLength(2);
+  expect(points.every(({ z }) => z === 0)).toBe(true);
+  expect(Math.abs(points[0].x)).toBeGreaterThan(0);
+  expect(Math.abs(points[1].x)).toBeLessThan(3);
+  expect(Math.abs(points[1].x)).toBeGreaterThan(Math.abs(points[0].x));
+  const beamPoints = flowPathCaptures.beamPoints[0]!;
+  expect(beamPoints.every(({ z }) => z === 0)).toBe(true);
+  expect(beamPoints.at(-1)?.x).toBe(reverse ? -3 : 3);
+  controller.destroy();
+});
+
+it('routes a side-entry edge down its source column before turning into the target', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  const options = createSceneOptions();
+  const controller = createSignalFlowScene({
+    ...options,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    flow: {
+      ...options.flow,
+      sideEntryEdges: [['root', 'leaf']],
+      nodes: options.flow.nodes.map((node) => node.id === 'leaf'
+        ? { ...node, position: [3, 3] }
+        : node),
+    },
+  });
+  animationFrames.shift()?.(1000);
+
+  const connectorPoints = flowPathCaptures.connectorPoints[0]!;
+  expect(connectorPoints.map(({ x }) => x)).toEqual([0, 0, 3]);
+  expect(connectorPoints[1].z).toBe(3);
+  expect(connectorPoints[2].z).toBe(3);
+  expect(flowPathCaptures.beamPoints[0]).toEqual(expect.arrayContaining(connectorPoints));
+  controller.destroy();
+});
+
+it('suppresses excluded terminal continuations for both connectors and travelling beams', () => {
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+    animationFrames.push(callback);
+    return animationFrames.length;
+  }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  const options = createSceneOptions();
+  const controller = createSignalFlowScene({
+    ...options,
+    connectorOpacity: 1,
+    connectorWidth: 2,
+    showContinuationConnectors: true,
+    flow: { ...options.flow, terminalContinuationNodes: [] },
+  });
+  animationFrames.shift()?.(1000);
+
+  expect(flowPathCaptures.connectorPoints).toHaveLength(2);
+  expect(flowPathCaptures.connectorPoints.flat().some(({ z }) => z < 0)).toBe(true);
+  expect(flowPathCaptures.connectorPoints.flat().some(({ z }) => z > 3)).toBe(false);
+  expect(flowPathCaptures.beamPoints[0]?.at(-1)?.z).toBe(3);
+  controller.destroy();
+});
+
 it('waits for activation and uses a scaled WebGL target with layout-sized CSS3D', () => {
   const animationFrames: FrameRequestCallback[] = [];
   const cancelAnimationFrame = vi.fn();
@@ -438,7 +550,7 @@ it('waits for activation and uses a scaled WebGL target with layout-sized CSS3D'
   controller.destroy();
 });
 
-it('uses the light theme major-grid color for the central grid emphasis', () => {
+it('keeps the emphasized light-theme grid covered by continuous ground', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
     animationFrames.push(callback);
@@ -470,17 +582,28 @@ it('uses the light theme major-grid color for the central grid emphasis', () => 
   animationFrames.shift()?.(1000);
   const scene = renderer.render.mock.calls[0]?.[0] as THREE.Scene | undefined;
   let gridMaterial: THREE.ShaderMaterial | undefined;
+  let gridSize = 0;
+  let groundSize = 0;
   scene?.traverse((object) => {
+    if (object instanceof THREE.Mesh
+      && object.geometry instanceof THREE.PlaneGeometry
+      && object.material instanceof THREE.MeshStandardMaterial) {
+      groundSize = object.geometry.parameters.width;
+    }
     if (
       object instanceof THREE.LineSegments
       && object.material instanceof THREE.ShaderMaterial
       && object.material.uniforms.uMaskColor
     ) {
       gridMaterial = object.material;
+      object.geometry.computeBoundingBox();
+      gridSize = object.geometry.boundingBox!.getSize(new THREE.Vector3()).x;
     }
   });
 
   expect(gridMaterial?.uniforms.uMaskColor.value.getHexString()).toBe('123456');
+  expect(gridSize).toBeGreaterThan(0);
+  expect(groundSize).toBeGreaterThanOrEqual(gridSize);
   controller.destroy();
 });
 

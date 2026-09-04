@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessCoreNodeFlow } from '../components/BusinessCoreNodeFlow';
 import { businessCoreNodeFlowIconOptions } from '../nodes';
 import {
@@ -26,6 +27,7 @@ const meta = {
   argTypes: {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     className: { table: { disable: true } },
     activityStrategy: {
       control: 'inline-radio',

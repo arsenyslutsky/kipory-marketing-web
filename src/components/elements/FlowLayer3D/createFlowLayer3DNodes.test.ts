@@ -14,6 +14,7 @@ afterEach(() => {
 
 const nodeStyle = {
   assetBasePath: '/assets/nodes',
+  bodyColor: '#123456',
   frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
   mode: 'dark' as const,
   nodeCornerRadius: 12,
@@ -67,6 +68,7 @@ it('composes valid nodes, skips invalid descriptors, and clears them on destroy'
 
   expect(createNode3DObject).toHaveBeenCalledWith(expect.objectContaining({
     assetBasePath: '/assets/nodes',
+    bodyColor: '#123456',
     cardDepth: 1.25,
     fogEnabled: false,
     height: 0.375,

@@ -47,6 +47,7 @@ export type FlowLayer3DNode = {
 
 export type FlowLayer3DNodeStyle = {
   assetBasePath: string;
+  bodyColor?: string;
   frontGradient: Node3DResolvedGradient;
   mode?: Node3DMode;
   nodeCornerRadius: number;
@@ -145,6 +146,8 @@ export type FlowLayer3DBeamRun = {
   path: FlowLayer3DPath;
   /** Normalized fraction of the active path; falls back to the shared beam style. */
   trailLength?: number;
+  /** Visual trail length in CSS pixels; takes precedence over normalized trailLength. */
+  trailLengthInPixels?: number;
 };
 
 export type FlowLayer3DBeamSource = {

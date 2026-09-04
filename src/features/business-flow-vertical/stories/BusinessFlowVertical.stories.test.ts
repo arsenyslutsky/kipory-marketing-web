@@ -40,4 +40,39 @@ describe('BusinessFlowVertical current-app stories', () => {
   it('disables direct mode editing', () => {
     expect(verticalMeta.argTypes.mode).toEqual({ table: { disable: true } });
   });
+
+  it('exposes the icon opacity and outline controls required by the landing-page treatment', () => {
+    for (const key of ['auxiliaryIconOpacity', 'centralIconOpacity'] as const) {
+      expect(verticalMeta.argTypes[key]).toMatchObject({
+        control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      });
+    }
+    expect(verticalMeta.argTypes.outlineOpacity).toMatchObject({
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+    });
+    expect(verticalMeta.argTypes.outlineWidth).toMatchObject({
+      control: { type: 'range', min: 0, max: 5, step: 0.25 },
+    });
+  });
+
+  it('exposes the complete beam body and saved trail treatment', () => {
+    expect(verticalMeta.argTypes.beamWidth).toMatchObject({
+      control: { type: 'range', min: 0.1, max: 4, step: 0.1 },
+      table: { category: 'Beams' },
+    });
+    expect(verticalMeta.argTypes.beamGlowIntensity).toMatchObject({
+      control: { type: 'range', min: 0, max: 3, step: 0.05 },
+      table: { category: 'Beams' },
+    });
+    expect(verticalMeta.argTypes.beamTrailLength).toMatchObject({
+      control: { type: 'range', min: 0, max: 320, step: 1 },
+      table: { category: 'Beams' },
+    });
+  });
+
+  it('labels the shared trail setting in CSS pixels', () => {
+    expect(verticalMeta.argTypes.beamTrailLength.description).toBe(
+      'Length of the glowing trail behind each beam, measured along its connector path in CSS pixels. Use 0 for an orb only.',
+    );
+  });
 });

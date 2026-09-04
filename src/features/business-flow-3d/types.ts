@@ -1,6 +1,7 @@
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
 import type { NodeShadowProps } from '@/components/elements/FlowLayer3D';
 import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
+import type { NodeAppearanceProps } from '@/features/node-appearance';
 import type { ResolvedTheme } from '@/theme/theme';
 
 export type SignalFlowVariant = 'variant-2';
@@ -29,6 +30,10 @@ export interface FlowConfig {
   root: string;
   nodes: FlowNodeConfig[];
   branches: Record<string, string[]>;
+  /** Nodes with outgoing continuations; defaults to all nodes on the final tier. */
+  terminalContinuationNodes?: string[];
+  /** Edges that descend along the source column before entering the target from the side. */
+  sideEntryEdges?: [string, string][];
   variants?: Partial<Record<SignalFlowVariant, { hiddenNodes?: string[] }>>;
 }
 
@@ -79,7 +84,7 @@ export interface SignalFlowTheme {
 
 export type SignalFlowColors = Record<SignalFlowMode, SignalFlowTheme>;
 
-export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowProps {
+export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowProps, NodeAppearanceProps {
   variant?: SignalFlowVariant;
   mode?: SignalFlowMode;
   flow?: FlowConfig;
@@ -121,21 +126,6 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowP
   nodeIconOpacity?: number;
   /** Color of the SVG icon linework without overriding its fill treatment. */
   iconStrokeColor?: string;
-  /** Gradient angle for the icon-bearing node face, in degrees. */
-  nodeFrontGradientAngle?: number;
-  /** Gradient angle for node sides aligned to the X axis, in degrees. */
-  nodeSideXGradientAngle?: number;
-  /** Gradient angle for node sides aligned to the Z axis, in degrees. */
-  nodeSideZGradientAngle?: number;
-  nodeFrontGradientStartColor?: string;
-  nodeFrontGradientMidColor?: string;
-  nodeFrontGradientEndColor?: string;
-  nodeSideXGradientStartColor?: string;
-  nodeSideXGradientMidColor?: string;
-  nodeSideXGradientEndColor?: string;
-  nodeSideZGradientStartColor?: string;
-  nodeSideZGradientMidColor?: string;
-  nodeSideZGradientEndColor?: string;
   perspectiveEffect?: number;
   cameraPitch?: number;
   cameraYaw?: number;

@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
+import homepageStyles from '@/app/marketing.module.css';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
 import {
@@ -13,6 +15,7 @@ import { homepageFlow } from '../homepageFlow';
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
   return {
+    nodeBodyColor: scene.cardShadow,
     nodeFrontGradientStartColor: scene.cardHighlight,
     nodeFrontGradientMidColor: scene.card,
     nodeFrontGradientEndColor: scene.cardShadow,
@@ -26,6 +29,14 @@ function nodeGradientArgs(mode: 'light' | 'dark') {
 }
 
 const darkNodeGradientArgs = nodeGradientArgs('dark');
+
+const withHomepageHeroFrame: Decorator = (Story) => (
+  <section className={homepageStyles.hero}>
+    <div className={homepageStyles.heroVisual}>
+      <Story />
+    </div>
+  </section>
+);
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlow3D',
@@ -47,6 +58,7 @@ const meta = {
   argTypes: {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     variant: { table: { disable: true } },
     className: { table: { disable: true } },
     onModeChange: { table: { disable: true } },
@@ -184,30 +196,6 @@ const meta = {
       description: 'Opacity of the SVG artwork on the icon-bearing node face.',
       table: { category: 'Nodes' },
     },
-    nodeFrontGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for the icon-bearing front face.',
-      table: { category: 'Nodes' },
-    },
-    nodeSideXGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for node sides aligned to the X axis.',
-      table: { category: 'Nodes' },
-    },
-    nodeSideZGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for node sides aligned to the Z axis.',
-      table: { category: 'Nodes' },
-    },
-    nodeFrontGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeFrontGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeFrontGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
     outlineOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.05 },
       table: { category: 'Nodes' },
@@ -371,6 +359,8 @@ export const Workflow1: Story = {
 
 export const CurrentNextjsApp: Story = {
   name: 'Current App (Dark)',
+  decorators: [withHomepageHeroFrame],
+  globals: { theme: 'dark' },
   args: {
     ...businessFlow3DHomepageDarkProps,
     flow: homepageFlow,
@@ -383,13 +373,8 @@ export const CurrentNextjsApp: Story = {
 
 export const CurrentAppLight: Story = {
   name: 'Current App (Light)',
-  decorators: [
-    (Story) => (
-      <div style={{ height: 500, overflow: 'hidden' }}>
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withHomepageHeroFrame],
+  globals: { theme: 'light' },
   args: {
     ...businessFlow3DHomepageLightProps,
     flow: homepageFlow,

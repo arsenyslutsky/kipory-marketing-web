@@ -48,6 +48,7 @@ export function createFlowLayer3DNodes({
       const nodeObject = createNode3DObject({
         ...nodeOptions,
         assetBasePath: nodeStyle.assetBasePath,
+        bodyColor: nodeStyle.bodyColor,
         fogEnabled: false,
         frontGradient: nodeStyle.frontGradient,
         initialGlowIntensity: glowIntensity ?? 0,

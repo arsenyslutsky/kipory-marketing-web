@@ -17,12 +17,13 @@ it('uses deterministic desktop hero spacing while preserving compact breakpoints
   expect(mobileBlock).toContain('.heroCopy { width: 100%; padding: 104px 0 32px; transform: none; }');
 });
 
-it('adds protocol breathing room only to the wide homepage hero', () => {
+it('positions the protocol group lower only in the wide homepage hero', () => {
   const protocolRule = stylesheet.match(/^\.heroProtocolsList \{([^}]*)\}/m)?.[1];
   const tabletBlock = stylesheet.match(/@media \(max-width: 900px\) \{([\s\S]*?)\n\}/)?.[1];
 
-  expect(protocolRule).toContain('padding: 70px 0 18px;');
-  expect(tabletBlock).toContain('.heroProtocolsList { padding: 0; }');
+  expect(protocolRule).toContain('padding: 125px 0 10px;');
+  expect(protocolRule).toContain('margin-bottom: 20px;');
+  expect(tabletBlock).toContain('.heroProtocolsList { margin-bottom: 0; padding: 0; }');
 });
 
 it('keeps the hero learn-more rhythm deterministic across breakpoints', () => {

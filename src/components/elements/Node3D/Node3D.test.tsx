@@ -22,6 +22,14 @@ it('forwards distinct icon fill and stroke colors to the standalone Node3D scene
   }));
 });
 
+it('forwards the node body color to the standalone Node3D scene', () => {
+  render(<Node3D bodyColor="#123456" />);
+
+  expect(createNode3DScene).toHaveBeenCalledWith(expect.objectContaining({
+    bodyColor: '#123456',
+  }));
+});
+
 it('keeps the standalone Node3D stroke color optional for legacy callers', () => {
   render(<Node3D iconColor="#123456" />);
 

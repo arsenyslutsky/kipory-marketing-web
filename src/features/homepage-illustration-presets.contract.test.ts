@@ -87,6 +87,7 @@ const themeDerivedKeys = [
   'gradientStartColor',
   'gridColor',
   'mode',
+  'nodeBodyColor',
   'nodeFrontGradientEndColor',
   'nodeFrontGradientMidColor',
   'nodeFrontGradientStartColor',
@@ -125,9 +126,8 @@ function contrastRatio(foreground: number[], background: number[]) {
 }
 
 describe('homepage illustration preset contract', () => {
-  it('keeps non-flat website flow presets structural while the light 3D variant owns its tuned palette', () => {
+  it('keeps core flows theme-derived while both 3D homepage variants own their saved node palette', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
-      businessFlow3DHomepageDarkProps,
       businessCoreNodeFlowContactProps,
       businessCoreNodeFlowWaitlistProps,
     ];
@@ -136,7 +136,20 @@ describe('homepage illustration preset contract', () => {
       themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
     });
 
+    expect(businessFlow3DHomepageDarkProps).toMatchObject({
+      nodeBodyColor: '#020605',
+      nodeFrontGradientEndColor: '#052f24',
+      nodeFrontGradientMidColor: '#03492b',
+      nodeFrontGradientStartColor: '#066b43',
+      nodeSideXGradientEndColor: '#5c899b',
+      nodeSideXGradientMidColor: '#10402e',
+      nodeSideXGradientStartColor: '#31775a',
+      nodeSideZGradientEndColor: '#0e4b81',
+      nodeSideZGradientMidColor: '#366480',
+      nodeSideZGradientStartColor: '#427298',
+    });
     expect(businessFlow3DHomepageLightProps).toMatchObject({
+      nodeBodyColor: '#9cac9d',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
       nodeFrontGradientStartColor: '#98c496',
@@ -174,15 +187,25 @@ describe('homepage illustration preset contract', () => {
       minDelay: 200,
       minEmitDelay: 150,
       nodeCornerRadius: 10,
+      nodeBodyColor: '#020605',
       nodeDepth: 20,
       nodeDepthRandom: 42,
       nodeFrontGradientAngle: 117,
+      nodeFrontGradientEndColor: '#052f24',
+      nodeFrontGradientMidColor: '#03492b',
+      nodeFrontGradientStartColor: '#066b43',
       nodeIconOpacity: 0.5,
       nodeProgressMode: 'outline',
-      nodeScale: 0.7,
+      nodeScale: 1.1,
       nodeShape: 'custom',
       nodeSideXGradientAngle: 360,
+      nodeSideXGradientEndColor: '#5c899b',
+      nodeSideXGradientMidColor: '#10402e',
+      nodeSideXGradientStartColor: '#31775a',
       nodeSideZGradientAngle: 177,
+      nodeSideZGradientEndColor: '#0e4b81',
+      nodeSideZGradientMidColor: '#366480',
+      nodeSideZGradientStartColor: '#427298',
       outlineOpacity: 0,
       outlineWidth: 1,
       pathCurve: 86,
@@ -192,7 +215,7 @@ describe('homepage illustration preset contract', () => {
       progressPadding: 1,
       resolutionScale: 'display',
       scrollRange: 700,
-      scrollTilt: 41.81,
+      scrollTilt: 12,
       showContinuationConnectors: true,
       showInterface: false,
       speed: 0.8,
@@ -204,6 +227,7 @@ describe('homepage illustration preset contract', () => {
       connectorElevation: 2,
       connectorStroke: 'solid',
       iconStrokeColor: '#ffffff',
+      nodeBodyColor: '#9cac9d',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
       nodeFrontGradientStartColor: '#98c496',
@@ -213,6 +237,7 @@ describe('homepage illustration preset contract', () => {
       nodeShadowLightX: 0,
       nodeShadowLightZ: 16.5,
       nodeShadowRadius: 8,
+      nodeScale: 0.9,
       nodeSideXGradientEndColor: '#449c40',
       nodeSideXGradientMidColor: '#449c40',
       nodeSideXGradientStartColor: '#449c40',
@@ -244,7 +269,6 @@ describe('homepage illustration preset contract', () => {
       'emitterX',
       'emitterY',
       'perspectiveEffect',
-      'nodeScale',
     ] as const;
 
     spatialKeys.forEach((key) => {
@@ -270,23 +294,19 @@ describe('homepage illustration preset contract', () => {
   it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values for both themes', () => {
     const horizontalStructure = {
       activityStrategy: 'visible',
+      auxiliaryIconOpacity: 0.72,
       beamEmissionRandomness: 100,
       beamEnabled: true,
-      beamHeadGlowBlur: 2,
-      beamHeadGlowOpacity: 1,
       beamHeadGlowRadius: 11,
       beamSpeed: 1.4,
-      beamTrailLength: 135,
       burstFadeTime: 900,
       burstRadius: 24,
       burstStrength: 0.5,
+      centralIconOpacity: 1,
       centralIconStrokeOpacity: 1,
-      connectorOpacity: 0.62,
-      connectorWidth: 1.25,
       gridDensity: 30,
       gridOpacity: 0,
       height: '50rem',
-      iconSize: 44,
       loadStrategy: 'near-viewport',
       maxConcurrentBeams: 5,
       nodeProgressMaxDelay: 1800,
@@ -297,50 +317,153 @@ describe('homepage illustration preset contract', () => {
       numberOfNodesRight: 8,
       preloadMargin: '600px 0px',
       resolutionScale: 'display',
-      strokeWidth: 2.25,
       width: 'min(28.8rem, 100%)',
     };
     const verticalStructure = {
       activityStrategy: 'visible',
       auxiliaryNodeSpacing: 0.6,
-      beamEmissionRandomness: 100,
-      beamEnabled: true,
-      beamHeadGlowBlur: 32,
-      beamHeadGlowOpacity: 0,
-      beamHeadGlowRadius: 0,
-      beamSpeed: 1.4,
-      beamTrailLength: 0,
-      burstFadeTime: 1700,
-      burstRadius: 25,
-      burstStrength: 0.5,
       centralIconFillMode: 'black',
-      centralIconStrokeOpacity: 0.91,
-      connectorOpacity: 0.62,
       connectorRadius: 10,
-      connectorWidth: 1.25,
-      gridDensity: 30,
-      gridOpacity: 0,
       height: '45rem',
-      iconSize: 40,
       loadStrategy: 'near-viewport',
-      maxConcurrentBeams: 5,
-      nodeProgressMaxDelay: 1800,
-      nodeProgressMinDelay: 500,
-      nodeProgressMode: 'outline',
-      nodeProgressSize: 15,
       numberOfNodesBottom: 5,
       numberOfNodesTop: 4,
       preloadMargin: '600px 0px',
       resolutionScale: 'display',
       showContinuationConnectors: true,
-      strokeWidth: 1.5,
       width: '20rem',
     };
 
     [businessFlowHorizontalHomepageDarkProps, businessFlowHorizontalHomepageLightProps]
       .forEach((preset) => expect(preset).toMatchObject(horizontalStructure));
+    expect(businessFlowHorizontalHomepageDarkProps.strokeWidth).toBe(2.25);
+    expect(businessFlowHorizontalHomepageLightProps.strokeWidth).toBe(3);
     [businessFlowVerticalHomepageDarkProps, businessFlowVerticalHomepageLightProps]
       .forEach((preset) => expect(preset).toMatchObject(verticalStructure));
+  });
+
+  it('uses the delivery flow visual treatment for the pillars flow without sharing topology', () => {
+    const sharedVisualKeys = [
+      'auxiliaryIconFillColor',
+      'auxiliaryIconOpacity',
+      'beamColor',
+      'beamEmissionRandomness',
+      'beamEnabled',
+      'beamGlowIntensity',
+      'beamHeadGlowBlur',
+      'beamHeadGlowOpacity',
+      'beamHeadGlowRadius',
+      'beamHighlightColor',
+      'beamSpeed',
+      'beamTrailLength',
+      'beamWidth',
+      'burstFadeTime',
+      'burstRadius',
+      'burstStrength',
+      'centralIconFillColor',
+      'centralIconOpacity',
+      'centralIconStrokeOpacity',
+      'connectorColor',
+      'connectorOpacity',
+      'connectorWidth',
+      'gridColor',
+      'gridDensity',
+      'gridOpacity',
+      'iconSize',
+      'iconStrokeColor',
+      'maxConcurrentBeams',
+      'nodeBodyColor',
+      'nodeFrontGradientAngle',
+      'nodeFrontGradientEndColor',
+      'nodeFrontGradientMidColor',
+      'nodeFrontGradientStartColor',
+      'nodeProgressMaxDelay',
+      'nodeProgressMinDelay',
+      'nodeProgressMode',
+      'nodeProgressSize',
+      'nodeShadowBias',
+      'nodeShadowBlurSamples',
+      'nodeShadowColor',
+      'nodeShadowLightX',
+      'nodeShadowLightY',
+      'nodeShadowLightZ',
+      'nodeShadowNormalBias',
+      'nodeShadowOpacity',
+      'nodeShadowRadius',
+      'nodeSideXGradientAngle',
+      'nodeSideXGradientEndColor',
+      'nodeSideXGradientMidColor',
+      'nodeSideXGradientStartColor',
+      'nodeSideZGradientAngle',
+      'nodeSideZGradientEndColor',
+      'nodeSideZGradientMidColor',
+      'nodeSideZGradientStartColor',
+      'outlineOpacity',
+      'outlineWidth',
+      'strokeWidth',
+    ] as const;
+
+    for (const [pillars, delivery] of [
+      [businessFlowVerticalHomepageDarkProps, businessFlowHorizontalHomepageDarkProps],
+      [businessFlowVerticalHomepageLightProps, businessFlowHorizontalHomepageLightProps],
+    ] as const) {
+      for (const key of sharedVisualKeys) {
+        expect(pillars[key], key).toBe(delivery[key]);
+      }
+    }
+
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({
+      auxiliaryNodeSpacing: 0.6,
+      connectorRadius: 10,
+      height: '45rem',
+      numberOfNodesBottom: 5,
+      numberOfNodesTop: 4,
+      showContinuationConnectors: true,
+      width: '20rem',
+    });
+  });
+
+  it('promotes the linked light horizontal treatment without changing its flow topology', () => {
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      auxiliaryIconFillColor: '#ffffff',
+      auxiliaryIconOpacity: 0.72,
+      beamColor: '#449c40',
+      beamHeadGlowBlur: 32,
+      beamHeadGlowOpacity: 0.6,
+      beamHighlightColor: '#ffffff',
+      beamTrailLength: 49,
+      centralIconFillColor: '#ffffff',
+      centralIconOpacity: 1,
+      centralIconStrokeOpacity: 1,
+      connectorColor: '#449c40',
+      connectorOpacity: 1,
+      connectorWidth: 1.5,
+      gridColor: '#a7b5a8',
+      gridOpacity: 0,
+      iconSize: 40,
+      iconStrokeColor: '#449c40',
+      nodeBodyColor: '#9cac9d',
+      nodeFrontGradientEndColor: '#98c496',
+      nodeFrontGradientMidColor: '#ffffff',
+      nodeFrontGradientStartColor: '#ffffff',
+      nodeShadowColor: '#000000',
+      nodeShadowOpacity: 0.15,
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
+      outlineOpacity: 0.25,
+      strokeWidth: 3,
+    });
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      height: '50rem',
+      maxConcurrentBeams: 5,
+      numberOfNodesLeft: 8,
+      numberOfNodesRight: 8,
+      width: 'min(28.8rem, 100%)',
+    });
   });
 
   it('supplies complete theme-specific node shadows and outline treatment to each flat-flow preset', () => {
@@ -371,12 +494,12 @@ describe('homepage illustration preset contract', () => {
       nodeShadowOpacity: 0.5,
     });
     expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
-      outlineOpacity: 0.3,
+      outlineOpacity: 0.25,
       outlineWidth: 1.25,
-      nodeShadowOpacity: 0.38,
+      nodeShadowOpacity: 0.15,
     });
     expect(businessFlowVerticalHomepageDarkProps).toMatchObject({ nodeShadowOpacity: 0.5 });
-    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.38 });
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.15 });
   });
 
   it('preserves contact and waitlist flow structure without freezing their colors', () => {
@@ -484,7 +607,7 @@ describe('homepage illustration preset contract', () => {
     expect(heroVisualRule).toMatch(/inset:\s*auto\s+0\s+0/);
     expect(heroVisualRule).toMatch(/height:\s*840px/);
     expect(heroVisualRule).toMatch(
-      /transform:\s*translateX\(clamp\(264px,\s*13vw,\s*284px\)\)/,
+      /transform:\s*translateX\(calc\(clamp\(264px,\s*13vw,\s*284px\)\s*-\s*240px\)\)/,
     );
     expect(heroVisualRule).not.toMatch(/scale\(/);
   });

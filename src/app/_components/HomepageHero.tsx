@@ -67,13 +67,13 @@ export function HomepageHero() {
               />
             </div>
           </div>
-          <LearnMoreLink
-            className={styles.heroLearnMore}
-            href="#pillars"
-            label="Explore our pillars"
-            scrollShiftRem={0}
-          />
         </div>
+        <LearnMoreLink
+          className={styles.heroLearnMore}
+          href="#pillars"
+          label="Explore our pillars"
+          scrollShiftRem={0}
+        />
       </SiteContainer>
     </section>
   );

@@ -17,8 +17,10 @@ export interface BusinessFlowPalette {
   homepageNodeFrontStart: string;
   horizontalAuxiliaryIconFill: string;
   horizontalCentralIconFill: string;
+  horizontalHomepageConnector: string;
   horizontalIconStroke: string;
   iconStroke: string;
+  nodeBody: string;
   nodeShadow: string;
   packetCore: string;
   packetHalo: string;
@@ -59,6 +61,7 @@ interface PaletteOverrides {
   homepageNodeFrontStart: string;
   horizontalAuxiliaryIconFill: string;
   horizontalCentralIconFill: string;
+  horizontalHomepageConnector: string;
   horizontalIconStroke: string;
   iconStroke: string;
   sideXGradient: NodeGradient;
@@ -86,8 +89,10 @@ function createBusinessFlowPalette(theme: ColorTheme, overrides: PaletteOverride
     homepageNodeFrontStart: overrides.homepageNodeFrontStart,
     horizontalAuxiliaryIconFill: overrides.horizontalAuxiliaryIconFill,
     horizontalCentralIconFill: overrides.horizontalCentralIconFill,
+    horizontalHomepageConnector: overrides.horizontalHomepageConnector,
     horizontalIconStroke: overrides.horizontalIconStroke,
     iconStroke: overrides.iconStroke,
+    nodeBody: theme.scene.cardShadow,
     nodeShadow: '#000000',
     packetCore: theme.effects.packetCore,
     packetHalo: theme.effects.packetHalo,
@@ -106,6 +111,7 @@ export const businessFlowPalettes: Record<ResolvedTheme, BusinessFlowPalette> = 
     homepageNodeFrontStart: '#066b43',
     horizontalAuxiliaryIconFill: '#0b270e',
     horizontalCentralIconFill: '#1b4e13',
+    horizontalHomepageConnector: colors.dark.effects.nodeStroke,
     horizontalIconStroke: '#9fb996',
     iconStroke: '#f3f5ef',
     sideXGradient: { end: '#5c899b', mid: colors.dark.scene.cardSideMid, start: colors.dark.scene.cardSideHighlight },
@@ -119,6 +125,7 @@ export const businessFlowPalettes: Record<ResolvedTheme, BusinessFlowPalette> = 
     homepageNodeFrontStart: '#98c496',
     horizontalAuxiliaryIconFill: '#d9e7da',
     horizontalCentralIconFill: colors.light.scene.cardSide,
+    horizontalHomepageConnector: '#3e3e3e',
     horizontalIconStroke: colors.light.scene.edge,
     iconStroke: colors.light.scene.icon,
     sideXGradient: {

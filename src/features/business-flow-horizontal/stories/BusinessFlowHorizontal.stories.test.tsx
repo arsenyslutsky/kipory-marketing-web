@@ -51,6 +51,17 @@ describe('BusinessFlowHorizontal Storybook preview', () => {
     });
   });
 
+  it('exposes independent auxiliary and central icon opacity controls', () => {
+    expect(horizontalMeta.argTypes.auxiliaryIconOpacity).toMatchObject({
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Nodes' },
+    });
+    expect(horizontalMeta.argTypes.centralIconOpacity).toMatchObject({
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Nodes' },
+    });
+  });
+
   it('offers bounded controls for left and right node counts', () => {
     expect(horizontalMeta.argTypes.numberOfNodesLeft).toMatchObject({
       control: { type: 'range', min: 0, max: 12, step: 1 },
@@ -91,5 +102,22 @@ describe('BusinessFlowHorizontal Storybook preview', () => {
 
     expect(control).toEqual(expect.objectContaining({ min: 0 }));
     expect(typeof control === 'object' && control?.max).toBeGreaterThanOrEqual(longestRouteLength);
+  });
+
+  it('exposes the complete beam body treatment for saved presets', () => {
+    expect(horizontalMeta.argTypes.beamWidth).toMatchObject({
+      control: { type: 'range', min: 0.1, max: 4, step: 0.1 },
+      table: { category: 'Beams' },
+    });
+    expect(horizontalMeta.argTypes.beamGlowIntensity).toMatchObject({
+      control: { type: 'range', min: 0, max: 3, step: 0.05 },
+      table: { category: 'Beams' },
+    });
+  });
+
+  it('labels the shared trail setting in CSS pixels', () => {
+    expect(horizontalMeta.argTypes.beamTrailLength.description).toBe(
+      'Length of the glowing trail behind each beam, measured along its connector path in CSS pixels. Use 0 for an orb only.',
+    );
   });
 });

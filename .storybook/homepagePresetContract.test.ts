@@ -24,9 +24,8 @@ import {
 } from './homepagePresetContract';
 
 describe('homepage preset contract', () => {
-  it('keeps non-flat illustration presets structural while registering the tuned light 3D palette', () => {
+  it('keeps core illustrations theme-derived while registering both saved 3D node palettes', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
-      businessFlow3DHomepageDarkProps,
       businessCoreNodeFlowContactProps,
       businessCoreNodeFlowWaitlistProps,
     ];
@@ -42,6 +41,7 @@ describe('homepage preset contract', () => {
       'gradientStartColor',
       'gridColor',
       'mode',
+      'nodeBodyColor',
       'nodeFrontGradientEndColor',
       'nodeFrontGradientMidColor',
       'nodeFrontGradientStartColor',
@@ -57,7 +57,20 @@ describe('homepage preset contract', () => {
       themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
     });
 
+    expect(businessFlow3DHomepageDarkProps).toMatchObject({
+      nodeBodyColor: '#020605',
+      nodeFrontGradientEndColor: '#052f24',
+      nodeFrontGradientMidColor: '#03492b',
+      nodeFrontGradientStartColor: '#066b43',
+      nodeSideXGradientEndColor: '#5c899b',
+      nodeSideXGradientMidColor: '#10402e',
+      nodeSideXGradientStartColor: '#31775a',
+      nodeSideZGradientEndColor: '#0e4b81',
+      nodeSideZGradientMidColor: '#366480',
+      nodeSideZGradientStartColor: '#427298',
+    });
     expect(businessFlow3DHomepageLightProps).toMatchObject({
+      nodeBodyColor: '#9cac9d',
       nodeFrontGradientEndColor: '#449c40',
       nodeFrontGradientMidColor: '#449c40',
       nodeFrontGradientStartColor: '#98c496',
@@ -146,12 +159,12 @@ describe('homepage preset contract', () => {
       nodeShadowOpacity: 0.5,
     });
     expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
-      outlineOpacity: 0.3,
+      outlineOpacity: 0.25,
       outlineWidth: 1.25,
-      nodeShadowOpacity: 0.38,
+      nodeShadowOpacity: 0.15,
     });
     expect(businessFlowVerticalHomepageDarkProps).toMatchObject({ nodeShadowOpacity: 0.5 });
-    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.38 });
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.15 });
   });
 
   it.each([

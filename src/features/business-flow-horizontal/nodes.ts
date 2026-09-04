@@ -75,7 +75,9 @@ export const businessFlowHorizontalLayoutNodes = createBusinessFlowHorizontalLay
 
 export function createBusinessFlowHorizontalNodes({
   auxiliaryIconColor,
+  auxiliaryIconOpacity = 0.72,
   centralIconColor,
+  centralIconOpacity = 1,
   centralIconStrokeOpacity,
   iconSize,
   iconStrokeColor,
@@ -83,7 +85,9 @@ export function createBusinessFlowHorizontalNodes({
   strokeWidth,
 }: {
   auxiliaryIconColor: string;
+  auxiliaryIconOpacity?: number;
   centralIconColor: string;
+  centralIconOpacity?: number;
   centralIconStrokeOpacity: number;
   iconSize: number;
   iconStrokeColor: string;
@@ -101,7 +105,7 @@ export function createBusinessFlowHorizontalNodes({
       height: dimensions.height * scale,
       icon: `${node.icon}.svg`,
       iconColor: central ? centralIconColor : auxiliaryIconColor,
-      iconOpacity: central ? 1 : 0.72,
+      iconOpacity: central ? centralIconOpacity : auxiliaryIconOpacity,
       iconStrokeColor,
       ...(central && {
         iconStrokeOpacity: centralIconStrokeOpacity,

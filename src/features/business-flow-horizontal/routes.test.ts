@@ -12,7 +12,7 @@ function createSource(overrides: Partial<Parameters<typeof createBusinessFlowHor
     maxConcurrentBeams: 5,
     random: () => 0.5,
     speed: 1,
-    trailLengthInIllustrationUnits: 0,
+    trailLengthInPixels: 0,
     ...overrides,
   });
 }
@@ -126,12 +126,12 @@ it('emits arrivals at route endpoints and rejects invalid slots', () => {
   expect(source.next(5, 0)).toBeNull();
 });
 
-it('converts illustration-pixel trail length into route progress', () => {
-  const source = createSource({ trailLengthInIllustrationUnits: 32 });
+it('keeps the configured trail length in CSS pixels for the shared renderer', () => {
+  const source = createSource({ trailLengthInPixels: 32 });
   const straightRouteRun = source.next(1, 0)!;
 
   expect(straightRouteRun.path.id).toBe('right-2-collector');
-  expect(straightRouteRun.trailLength).toBeCloseTo(32 / 56);
+  expect(straightRouteRun.trailLengthInPixels).toBe(32);
 });
 
 it('floors and caps concurrent beam slots', () => {

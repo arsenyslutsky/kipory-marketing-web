@@ -1,5 +1,6 @@
-import { createElement, isValidElement, type CSSProperties, type ReactElement } from 'react';
+import { createElement, isValidElement, type ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
+import homepageStyles from '@/app/marketing.module.css';
 import {
   businessFlow3DHomepageDarkProps,
   businessFlow3DHomepageLightProps,
@@ -15,12 +16,14 @@ describe('BusinessFlow3D current-app stories', () => {
       flow: homepageFlow,
       mode: 'dark',
     });
+    expect(stories.CurrentNextjsApp.globals).toEqual({ theme: 'dark' });
     expect(stories.CurrentAppLight.name).toBe('Current App (Light)');
     expect(stories.CurrentAppLight.args).toEqual({
       ...businessFlow3DHomepageLightProps,
       flow: homepageFlow,
       mode: 'light',
     });
+    expect(stories.CurrentAppLight.globals).toEqual({ theme: 'light' });
     expect(stories.CurrentNextjsApp.args?.flow).toBe(stories.CurrentAppLight.args?.flow);
   });
 
@@ -47,7 +50,6 @@ describe('BusinessFlow3D current-app stories', () => {
       'emitterX',
       'emitterY',
       'perspectiveEffect',
-      'nodeScale',
     ] as const;
 
     spatialKeys.forEach((key) => {
@@ -55,17 +57,31 @@ describe('BusinessFlow3D current-app stories', () => {
     });
   });
 
-  it('crops the light app preview at 500px without resizing the flow scene', () => {
-    const decorators = stories.CurrentAppLight.decorators;
-    expect(Array.isArray(decorators)).toBe(true);
-    if (!Array.isArray(decorators)) throw new Error('Expected story-local decorators.');
-    const decorator = decorators[0];
+  it('keeps the approved theme-specific node scale in each current-app story', () => {
+    expect(stories.CurrentNextjsApp.args?.nodeScale).toBe(1.1);
+    expect(stories.CurrentAppLight.args?.nodeScale).toBe(0.9);
+  });
+
+  it('uses the exact homepage hero frame for both current-app themes', () => {
+    const darkDecorators = stories.CurrentNextjsApp.decorators;
+    const lightDecorators = stories.CurrentAppLight.decorators;
+    expect(Array.isArray(darkDecorators)).toBe(true);
+    expect(Array.isArray(lightDecorators)).toBe(true);
+    if (!Array.isArray(darkDecorators) || !Array.isArray(lightDecorators)) {
+      throw new Error('Expected story-local decorators.');
+    }
+    const decorator = darkDecorators[0];
     expect(decorator).toBeTypeOf('function');
+    expect(lightDecorators[0]).toBe(decorator);
 
     const frame = decorator?.(() => createElement('div'), {} as never);
     expect(isValidElement(frame)).toBe(true);
-    const props = (frame as ReactElement<{ style: CSSProperties }>).props;
-    expect(props.style).toEqual({ height: 500, overflow: 'hidden' });
+    const frameProps = (frame as ReactElement<{
+      className: string;
+      children: ReactElement<{ className: string }>;
+    }>).props;
+    expect(frameProps.className).toBe(homepageStyles.hero);
+    expect(frameProps.children.props.className).toBe(homepageStyles.heroVisual);
   });
 });
 

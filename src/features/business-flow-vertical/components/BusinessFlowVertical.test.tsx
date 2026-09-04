@@ -60,7 +60,10 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     onActivityChange?: (active: boolean) => void;
     beamSource: {
       slots: number;
-      next: (slot: number, generation: number) => { trailLength?: number } | null;
+      next: (slot: number, generation: number) => {
+        trailLength?: number;
+        trailLengthInPixels?: number;
+      } | null;
     };
     onArrival?: (event: {
       arrival: { id: string; point: readonly [number, number]; progress: number };
@@ -95,6 +98,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
         type="button"
         data-testid="flow-layer"
         data-beam-width={beam.beamWidth}
+        data-beam-glow-intensity={beam.glowIntensity}
         data-curve={paths[0]?.curve}
         data-head-glow-blur={beam.headGlowBlur}
         data-head-glow-opacity={beam.headGlowOpacity}
@@ -102,6 +106,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
         data-paths={paths.length}
         data-reduced-motion={String(reducedMotion)}
         data-run-trail={beamSource.next(0, 0)?.trailLength}
+        data-run-trail-pixels={beamSource.next(0, 0)?.trailLengthInPixels}
         data-slots={beamSource.slots}
         data-style-trail={beam.trailLength}
         onClick={() => onArrival?.({
@@ -243,6 +248,33 @@ it('passes explicit front gradient colors to Node3D independently of the theme p
   });
 });
 
+it('passes explicit node body and face gradients to the shared renderer', () => {
+  render(
+    <BusinessFlowVertical
+      nodeBodyColor="#010203"
+      nodeFrontGradientAngle={11}
+      nodeFrontGradientStartColor="#111111"
+      nodeFrontGradientMidColor="#222222"
+      nodeFrontGradientEndColor="#333333"
+      nodeSideXGradientAngle={22}
+      nodeSideXGradientStartColor="#444444"
+      nodeSideXGradientMidColor="#555555"
+      nodeSideXGradientEndColor="#666666"
+      nodeSideZGradientAngle={33}
+      nodeSideZGradientStartColor="#777777"
+      nodeSideZGradientMidColor="#888888"
+      nodeSideZGradientEndColor="#999999"
+    />,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    bodyColor: '#010203',
+    frontGradient: { angle: 11, start: '#111111', mid: '#222222', end: '#333333' },
+    sideXGradient: { angle: 22, start: '#444444', mid: '#555555', end: '#666666' },
+    sideZGradient: { angle: 33, start: '#777777', mid: '#888888', end: '#999999' },
+  });
+});
+
 it('renders the central hierarchy and satellite documents in one shared Node3D layer', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
@@ -294,6 +326,26 @@ it('gives iconStrokeColor precedence for every node stroke without changing role
   expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
   expect(capturedNodes?.slice(0, 4).every((node) => node.iconColor === '#222222')).toBe(true);
   expect(capturedNodes?.slice(4).every((node) => node.iconColor === '#111111')).toBe(true);
+});
+
+it('passes independent icon opacities and outline treatment to the shared node renderer', () => {
+  render(
+    <BusinessFlowVertical
+      auxiliaryIconOpacity={0.31}
+      centralIconOpacity={0.84}
+      numberOfNodesBottom={1}
+      numberOfNodesTop={1}
+      outlineOpacity={0.27}
+      outlineWidth={2.5}
+    />,
+  );
+
+  expect(capturedNodes?.slice(0, 4).every((node) => node.iconOpacity === 0.84)).toBe(true);
+  expect(capturedNodes?.slice(4).every((node) => node.iconOpacity === 0.31)).toBe(true);
+  expect(capturedNodeStyle).toMatchObject({
+    outlineOpacity: 0.27,
+    outlineWidth: 2.5,
+  });
 });
 
 it('renders homepage node processing progress as outlines', () => {
@@ -356,7 +408,26 @@ it('preserves independent beam trail and head-glow controls', () => {
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-radius', '48');
 });
 
-it('keeps a zero trail disabled and converts legacy trail units per complete route', () => {
+it('lets saved beam width and glow intensity override connector-derived defaults', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(
+    <BusinessFlowVertical
+      beamGlowIntensity={2.4}
+      beamWidth={3.2}
+      connectorWidth={0.5}
+    />,
+  );
+
+  const layer = screen.getByTestId('flow-layer');
+  expect(layer).toHaveAttribute('data-beam-width', '3.2');
+  expect(layer).toHaveAttribute('data-beam-glow-intensity', '2.4');
+});
+
+it('keeps CSS-pixel trail values independent of the pillars route length', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -372,7 +443,7 @@ it('keeps a zero trail disabled and converts legacy trail units per complete rou
   );
 
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
-  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail-pixels', '0');
 
   view.rerender(
     <BusinessFlowVertical
@@ -384,7 +455,7 @@ it('keeps a zero trail disabled and converts legacy trail units per complete rou
   );
 
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
-  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0.25');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail-pixels', '21');
 });
 
 it('passes live reduced-motion preference to the shared layer and cleans up its listener', () => {

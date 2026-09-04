@@ -24,6 +24,7 @@ export type Node3DIconStyle = {
 
 export type Node3DProps = {
   assetBasePath?: string;
+  bodyColor?: string;
   cameraPitch?: number;
   cameraYaw?: number;
   cameraZoom?: number;
@@ -75,8 +76,8 @@ export type Node3DSceneElements = {
 };
 
 export type Node3DSceneOptions = Required<Omit<Node3DProps,
-  'className' | 'height' | 'width' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
->> & Pick<Node3DProps, 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
+  'className' | 'height' | 'width' | 'bodyColor' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
+>> & Pick<Node3DProps, 'bodyColor' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
   elements: Node3DSceneElements;
 };
 

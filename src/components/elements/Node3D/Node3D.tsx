@@ -19,6 +19,7 @@ function cssSize(value: CSSProperties['width']): string {
 
 export function Node3D({
   assetBasePath = '/assets/nodes',
+  bodyColor: explicitBodyColor,
   cameraPitch = 33.19,
   cameraYaw = 28,
   cameraZoom = 1,
@@ -64,6 +65,7 @@ export function Node3D({
 }: Node3DProps) {
   const mode = useResolvedTheme(explicitMode);
   const palette = getBusinessFlowPalette(mode);
+  const bodyColor = explicitBodyColor ?? palette.nodeBody;
   const frontGradientEndColor = explicitFrontGradientEndColor ?? palette.frontGradient.end;
   const frontGradientMidColor = explicitFrontGradientMidColor ?? palette.frontGradient.mid;
   const frontGradientStartColor = explicitFrontGradientStartColor ?? palette.frontGradient.start;
@@ -89,6 +91,7 @@ export function Node3D({
     try {
       const options: Node3DSceneOptions = {
         assetBasePath,
+        bodyColor,
         cameraPitch,
         cameraYaw,
         cameraZoom,
@@ -148,6 +151,7 @@ export function Node3D({
     };
   }, [
     assetBasePath,
+    bodyColor,
     cameraPitch,
     cameraYaw,
     cameraZoom,

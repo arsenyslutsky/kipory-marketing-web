@@ -27,11 +27,6 @@ const meta = {
       description: 'Show “Coming soon” from this logo position onward; 0 hides it.',
       table: { category: 'Content' },
     },
-    comingSoonGap: {
-      control: { type: 'range', min: 0, max: 48, step: 1 },
-      description: 'Vertical distance between the “Coming soon” marker and its logo.',
-      table: { category: 'Spacing' },
-    },
     comingSoonOnNextLine: {
       control: 'boolean',
       description: 'Start coming-soon protocols on a new row.',
@@ -85,7 +80,7 @@ const meta = {
     },
     scaleOfComingSoonItems: {
       control: { type: 'range', min: 0.5, max: 1.5, step: 0.05 },
-      description: 'Scale icons, names, and the marker from the coming-soon position onward.',
+      description: 'Scale icons and names from the coming-soon position onward.',
       table: { category: 'Scale' },
     },
     textScale: {
@@ -119,7 +114,6 @@ const meta = {
   },
   args: {
     comingSoonFrom: 0,
-    comingSoonGap: 6,
     comingSoonOnNextLine: false,
     comingSoonRowGap: 40,
     comingSoonTitleColor: '#449c40',
@@ -155,7 +149,6 @@ type Story = StoryObj<typeof meta>;
 export const Wrapped: Story = {
   args: {
     comingSoonFrom: 0,
-    comingSoonGap: 4,
     comingSoonTitleOpacity: 0.8,
     comingSoonLogosOpacity: 1,
     comingSoonLineFadeLength: 0.4,

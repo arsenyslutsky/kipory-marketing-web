@@ -104,6 +104,18 @@ it('passes the public icon stroke color to the renderer', async () => {
   });
 });
 
+it('passes the public node body color to the renderer', async () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
+  vi.mocked(createSignalFlowScene).mockImplementation(createController);
+
+  render(<BusinessFlow3D nodeBodyColor="#123456" showInterface={false} />);
+
+  await waitFor(() => expect(createSignalFlowScene).toHaveBeenCalledOnce());
+  expect(vi.mocked(createSignalFlowScene).mock.calls[0]?.[0]).toMatchObject({
+    nodeBodyColor: '#123456',
+  });
+});
+
 it('passes the public progress appearance to the renderer', async () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false }) as MediaQueryList));
   vi.mocked(createSignalFlowScene).mockImplementation(createController);

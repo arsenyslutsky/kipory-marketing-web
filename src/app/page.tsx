@@ -96,6 +96,7 @@ export default function HomePage() {
         data-section-reveal
         tone="alternate-to-base"
         gridFade="none"
+        gridOpacity={0.4}
         paddingTop={32}
         paddingBottom={12}
       >

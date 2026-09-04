@@ -273,12 +273,13 @@ it('places the canonical protocol strip before the hero learn-more link', () => 
   const pillarsLink = within(hero!).getByRole('link', { name: 'Explore our pillars' });
 
   expect(protocolLabels).toEqual(['REST', 'SSE', 'JSONata', 'MCP', 'Webhook', 'GraphQL']);
-  expect(protocolLists).toHaveLength(2);
-  expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'new-row');
+  expect(protocolLists).toHaveLength(1);
+  expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'overlay');
   expect(protocolRoot).toHaveClass(styles.heroProtocolsList);
   expect(protocolReveal).not.toHaveAttribute('data-scroll-parallax');
   expect(protocolReveal?.parentElement).toHaveAttribute('data-scroll-parallax');
-  expect(protocolReveal?.parentElement?.nextElementSibling).toBe(pillarsLink);
+  expect(pillarsLink.closest(`.${styles.heroCopy}`)).toBeNull();
+  expect(pillarsLink.parentElement).toHaveClass(styles.heroInner);
 });
 
 it('uses the accelerated-fit delivery label', () => {
@@ -339,8 +340,8 @@ it('marks moving homepage text groups without marking stable section headers or 
     expect(row).toHaveAttribute('data-scroll-parallax');
   });
   screen.getAllByRole('link', { name: /Explore our pillars|See how teams move faster/ }).forEach((link) => {
-    expect(link).toHaveAttribute('data-scroll-parallax');
-    expect(link).toHaveAttribute('data-scroll-fade', 'false');
+    expect(link.closest('[data-scroll-parallax]')).toBeNull();
+    expect(link).not.toHaveAttribute('data-scroll-fade');
   });
   expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
 });

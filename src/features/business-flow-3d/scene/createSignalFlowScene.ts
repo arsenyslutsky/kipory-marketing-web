@@ -65,6 +65,7 @@ interface SceneOptions extends NodeShadowProps {
   nodeDepthRandom: number;
   nodeShape: NodeShape;
   nodeCornerRadius: number;
+  nodeBodyColor?: string;
   nodeIconOpacity: number;
   iconStrokeColor?: string;
   nodeFrontGradientAngle: number;
@@ -199,6 +200,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     nodeDepthRandom,
     nodeShape,
     nodeCornerRadius,
+    nodeBodyColor,
     nodeIconOpacity,
     iconStrokeColor,
     nodeFrontGradientAngle,
@@ -525,8 +527,11 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   greenLight.position.set(0, 2, 0);
   scene.add(greenLight);
 
+  // Ground and grid must share an extent: a smaller lit ground exposes a
+  // diagonal color seam beneath the grid in wide, low-angle hero views.
+  const groundSize = 200;
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 80),
+    new THREE.PlaneGeometry(groundSize, groundSize),
     new THREE.MeshStandardMaterial({
       color: palette.ground,
       roughness: 0.92,
@@ -576,7 +581,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   if (resolvedGridOpacity > 0) {
     // Keep the physical grid edge beyond the fog range so it reads as an
     // unbounded tiled plane from every supported camera angle and zoom.
-    const gridSize = 200;
+    const gridSize = groundSize;
     const gridDivisions = THREE.MathUtils.clamp(
       Math.round(gridSize * initialPixelsPerWorldUnit / resolvedGridDensity),
       4,
@@ -658,6 +663,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     const [width, cardDepth] = nodeFootprint(data);
     const group = createNode3DObject({
       assetBasePath,
+      bodyColor: nodeBodyColor,
       cardDepth,
       fogEnabled,
       frontGradient,
@@ -734,7 +740,28 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     const target = nodes[b];
     const pointA = source.p;
     const pointB = target.p;
+    if (Math.abs(pointB[1] - pointA[1]) < ALIGNED_CONNECTOR_EPSILON) {
+      const direction = Math.sign(pointB[0] - pointA[0]) || 1;
+      const sidePoint = (id: string, side: number) => {
+        const node = nodes[id];
+        const bounds = nodeBodyBounds[id];
+        const edgeX = (side > 0 ? bounds.max.x : bounds.min.x) - network.position.x;
+        return new THREE.Vector3(
+          THREE.MathUtils.lerp(edgeX, node.p[0], CONNECTOR_NODE_TUCK_RATIO),
+          nodeConnectorY(id),
+          node.p[1],
+        );
+      };
+      return [sidePoint(a, direction), sidePoint(b, -direction)];
+    }
     const direction = (Math.sign(pointB[1] - pointA[1]) || 1) as -1 | 1;
+    if (flow.sideEntryEdges?.some(([sourceId, targetId]) => sourceId === a && targetId === b)) {
+      return [
+        nodeEdgePoint(a, direction),
+        new THREE.Vector3(pointA[0], connectorY, pointB[1]),
+        nodeCenterPoint(b),
+      ];
+    }
     const targetDirection = direction === 1 ? -1 : 1;
     const sourcePoint = nodeEdgePoint(a, direction);
     const targetPoint = nodeEdgePoint(b, targetDirection);
@@ -823,10 +850,12 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   }
 
   const terminalTier = Math.max(...visibleNodes.map(([, node]) => node.tier));
+  const terminalContinuationNodes = new Set(flow.terminalContinuationNodes
+    ?? visibleNodes.filter(([, node]) => node.tier === terminalTier).map(([id]) => id));
   const terminalEndZ = flowFar + continuationDistance;
   if (showContinuationConnectors) {
     visibleNodes
-      .filter(([, node]) => node.tier === terminalTier)
+      .filter(([id]) => terminalContinuationNodes.has(id))
       .forEach(([id, node]) => {
         const points = [
           nodeEdgePoint(id, 1),
@@ -905,7 +934,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       all.push(...points);
       all.push(nodeCenterPoint(route[i + 1]));
     }
-    if (showContinuationConnectors && nodes[terminalId].tier === terminalTier) {
+    if (showContinuationConnectors && terminalContinuationNodes.has(terminalId)) {
       const terminal = nodes[terminalId];
       all.push(nodeEdgePoint(terminalId, 1));
       all.push(new THREE.Vector3(terminal.p[0], continuationY, terminalEndZ));

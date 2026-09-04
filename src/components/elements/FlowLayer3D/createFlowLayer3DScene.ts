@@ -182,6 +182,17 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     return route ? resolveFlowPath3D(route.path) : null;
   }
 
+  function resolveTrailLength(run: FlowLayer3DBeamRun, path: THREE.Curve<THREE.Vector3>) {
+    if (run.trailLengthInPixels === undefined) {
+      return run.trailLength ?? beamStyle.trailLength;
+    }
+
+    const pathLengthInPixels = path.getLength() * measuredHeight / worldHeight;
+    if (pathLengthInPixels <= 0 || !Number.isFinite(pathLengthInPixels)) return 0;
+
+    return Math.min(1, Math.max(0, run.trailLengthInPixels) / pathLengthInPixels);
+  }
+
   function rebuildConnectors() {
     const nextConnectorObjects = createFlowLayer3DObjects({
       aspectRatio,
@@ -251,7 +262,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
     slot.run = nextRun;
     slot.beam.setPath(path);
-    slot.beam.setTrailLength(slot.run.trailLength ?? beamStyle.trailLength);
+    slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
     slot.beam.setVisible(true);
   }
 
@@ -377,6 +388,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     );
     cssRenderer.setSize(width, height);
     if (sizeChanged) rebuildNodes(height);
+    measuredWidth = width;
+    measuredHeight = height;
     if (aspectChanged || !connectorObjects) {
       rebuildConnectors();
       beamSlots.forEach((slot) => {
@@ -384,6 +397,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         const path = resolvePath(slot.run.path);
         if (!path) return;
         slot.beam.setPath(path);
+        slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
         if (slot.run.arrivals?.length) {
           slot.run = {
             ...slot.run,
@@ -395,9 +409,14 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
           };
         }
       });
+    } else if (sizeChanged) {
+      beamSlots.forEach((slot) => {
+        if (!slot.run) return;
+        const path = resolvePath(slot.run.path);
+        if (!path) return;
+        slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
+      });
     }
-    measuredWidth = width;
-    measuredHeight = height;
   }
 
   function handleResize() {

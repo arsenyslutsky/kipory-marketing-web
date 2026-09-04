@@ -64,8 +64,10 @@ export function createBusinessFlowVerticalSatellites(
 
 export function createBusinessFlowVerticalNodes({
   auxiliaryIconColor,
+  auxiliaryIconOpacity = 0.72,
   centralIconColor,
   centralIconFillMode,
+  centralIconOpacity = 1,
   centralIconStrokeOpacity,
   gradient,
   iconSize,
@@ -74,8 +76,10 @@ export function createBusinessFlowVerticalNodes({
   strokeWidth,
 }: {
   auxiliaryIconColor: string;
+  auxiliaryIconOpacity?: number;
   centralIconColor: string;
   centralIconFillMode: PillarIconFillMode;
+  centralIconOpacity?: number;
   centralIconStrokeOpacity: number;
   gradient: Node3DResolvedGradient;
   iconSize: number;
@@ -93,7 +97,7 @@ export function createBusinessFlowVerticalNodes({
       iconColor: centralIconColor,
       iconFillMode: centralIconFillMode === 'gradient' ? 'gradient' as const : 'solid' as const,
       iconGradient: gradient,
-      iconOpacity: 1,
+      iconOpacity: centralIconOpacity,
       iconStrokeColor,
       iconStrokeOpacity: centralIconStrokeOpacity,
       iconStrokeWidth: strokeWidth,
@@ -109,7 +113,7 @@ export function createBusinessFlowVerticalNodes({
       icon: `${satellite.name}.svg`,
       iconColor: auxiliaryIconColor,
       iconFillMode: 'solid' as const,
-      iconOpacity: 0.72,
+      iconOpacity: auxiliaryIconOpacity,
       iconStrokeColor,
       iconStrokeWidth: strokeWidth / 4,
       id: `satellite-${index}`,

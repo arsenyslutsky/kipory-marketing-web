@@ -34,7 +34,7 @@ it('anchors the desktop landing flow to the hero bottom', () => {
 
   expect(heroVisualRules[0]).toEqual({
     inset: 'auto 0 0',
-    transform: 'translateX(clamp(264px, 13vw, 284px))',
+    transform: 'translateX(calc(clamp(264px, 13vw, 284px) - 240px))',
   });
   expect(heroVisualRules[2]?.inset).toBe('0 0 auto');
 });

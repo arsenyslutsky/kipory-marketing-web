@@ -182,3 +182,100 @@ it('adds node elevation to both the rendered and animated base position', () => 
   expect(node.userData.baseY).toBeCloseTo(6.57);
   disposeNode3DGradientTextures(renderer);
 });
+
+it('uses the configured body color for the node base face', () => {
+  const renderer = {
+    capabilities: { getMaxAnisotropy: () => 1 },
+  } as THREE.WebGLRenderer;
+  const context = {
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D;
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000"/></svg>',
+  }));
+
+  const node = createNode3DObject({
+    assetBasePath: '/assets/nodes',
+    bodyColor: '#123456',
+    cardDepth: 40,
+    fogEnabled: false,
+    frontGradient: gradient,
+    height: 10,
+    icon: 'body-color.svg',
+    iconOpacity: 1,
+    id: 'body-color',
+    isDark: false,
+    isVariant2: true,
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    position: [0, 0],
+    progressBarHeight: 15,
+    progressMode: 'outline',
+    progressPadding: 1,
+    renderer,
+    scale: 1,
+    shape: 'square',
+    sideXGradient: gradient,
+    sideZGradient: gradient,
+    theme: defaultColors.light,
+    tier: 1,
+    width: 48,
+  });
+
+  const body = node.userData.body as THREE.Mesh;
+  const materials = body.material as THREE.Material[];
+  expect((materials[3] as THREE.MeshStandardMaterial).color.getHexString()).toBe('123456');
+  disposeNode3DGradientTextures(renderer);
+});
+
+it('keeps a radial progress outline uniformly inset when source width and depth differ', () => {
+  const renderer = {
+    capabilities: { getMaxAnisotropy: () => 1 },
+  } as THREE.WebGLRenderer;
+  const context = {
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D;
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000"/></svg>',
+  }));
+
+  const node = createNode3DObject({
+    assetBasePath: '/assets/nodes',
+    cardDepth: 48,
+    fogEnabled: false,
+    frontGradient: gradient,
+    height: 10,
+    icon: 'radial-progress.svg',
+    iconOpacity: 1,
+    id: 'radial-progress',
+    initialProgress: 0.5,
+    isDark: false,
+    isVariant2: true,
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    position: [0, 0],
+    progressBarHeight: 15,
+    progressMode: 'outline',
+    progressPadding: 1,
+    renderer,
+    scale: 1,
+    shape: 'hexagon',
+    sideXGradient: gradient,
+    sideZGradient: gradient,
+    theme: defaultColors.light,
+    tier: 1,
+    width: 58,
+  });
+
+  const progressObject = node.userData.nodeProgressControl.object as THREE.Object3D;
+  expect(progressObject.scale.x).toBeCloseTo(progressObject.scale.y);
+  disposeNode3DGradientTextures(renderer);
+});

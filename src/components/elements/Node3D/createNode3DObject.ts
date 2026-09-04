@@ -40,6 +40,7 @@ export type Node3DProgressControl = {
 
 export type CreateNode3DObjectOptions = {
   assetBasePath: string;
+  bodyColor?: string;
   cardDepth: number;
   fogEnabled: boolean;
   frontGradient: Node3DResolvedGradient;
@@ -79,6 +80,7 @@ export type CreateNode3DObjectOptions = {
 
 export function createNode3DObject({
   assetBasePath,
+  bodyColor,
   cardDepth,
   fogEnabled,
   frontGradient,
@@ -592,7 +594,7 @@ export function createNode3DObject({
     const object = new CSS3DObject(container);
     object.rotation.x = -Math.PI / 2;
     object.position.set(0, nodeHeight * 0.5 + 0.014, 0);
-    object.scale.set(worldScaleX, worldScaleZ, 1);
+    object.scale.set(worldScaleX, radialSides === undefined ? worldScaleZ : worldScaleX, 1);
     return {
       object,
       setProgress(progress) {
@@ -676,7 +678,7 @@ export function createNode3DObject({
   const frontSideMaterial = createCardSideMaterial(height, width, cardDepth, 'x', false, 'down', 0.96, sideXGradient);
   const backSideMaterial = createCardSideMaterial(height, width, cardDepth, 'x', true, 'up', isDark ? 0.74 : 0.84, sideXGradient);
   const bottomMaterial = new THREE.MeshStandardMaterial({
-    color: palette.cardShadow,
+    color: bodyColor ?? palette.cardShadow,
     roughness: 0.66,
     metalness: 0.02,
     fog: fogEnabled,

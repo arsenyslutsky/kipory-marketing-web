@@ -937,7 +937,7 @@ it('renders a completed path before assigning the next run and keeps the next ru
   controller.destroy();
 });
 
-it('applies a run-specific trail length and restores the shared fallback for later runs', () => {
+it('converts a run-specific CSS-pixel trail length and restores the shared fallback for later runs', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
     animationFrames.push(callback);
@@ -951,6 +951,11 @@ it('applies a run-specific trail length and restores the shared fallback for lat
     new THREE.CanvasTexture(document.createElement('canvas')),
   );
   const path = { id: 'trail-route', points: [[0, 0.5], [1, 0.5]] } as const;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
   const controller = createFlowLayer3DScene({
     beam: {
       beamColor: '#449c40',
@@ -967,19 +972,19 @@ it('applies a run-specific trail length and restores the shared fallback for lat
         durationMs: generation === 0 ? 100 : 1000,
         id: `trail-run:${generation}`,
         path,
-        ...(generation === 0 ? { trailLength: 0.25 } : {}),
+        ...(generation === 0 ? { trailLengthInPixels: 49 } : {}),
       }),
     },
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
-    container: document.createElement('div'),
+    container,
     cssLayer: document.createElement('div'),
     paths: [path],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
   if (!beam) throw new Error('Expected the trail beam to be created.');
 
-  expect(beam.core.material.uniforms.uTrailLength.value).toBe(0.25);
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 320);
 
   const initialFrame = animationFrames.shift();
   if (!initialFrame) throw new Error('Expected the initial animation frame.');
@@ -993,6 +998,63 @@ it('applies a run-specific trail length and restores the shared fallback for lat
 
   expect(beam.core.material.uniforms.uTrailLength.value).toBe(0.38);
 
+  controller.destroy();
+});
+
+it('preserves CSS-pixel trail lengths when the viewport resizes without changing aspect ratio', () => {
+  let resizeCallback: ResizeObserverCallback | undefined;
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver(callback: ResizeObserverCallback) {
+    resizeCallback = callback;
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.mocked(createBeam3DFlareTexture).mockReturnValueOnce(
+    new THREE.CanvasTexture(document.createElement('canvas')),
+  );
+  const path = { id: 'resizable-trail-route', points: [[0, 0.5], [1, 0.5]] } as const;
+  let width = 320;
+  let height = 640;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { get: () => height },
+    clientWidth: { get: () => width },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: true,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: {
+      slots: 1,
+      next: () => ({
+        delayMs: 0,
+        durationMs: 1000,
+        id: 'resizable-trail-run',
+        path,
+        trailLengthInPixels: 49,
+      }),
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    paths: [path],
+  });
+  const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
+  if (!beam || !resizeCallback) throw new Error('Expected the resizable trail beam and observer.');
+
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 320);
+
+  width = 640;
+  height = 1280;
+  resizeCallback([], {} as ResizeObserver);
+
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 640);
   controller.destroy();
 });
 

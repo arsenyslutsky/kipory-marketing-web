@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
 import {
   businessFlowHorizontalHomepageDarkProps,
@@ -24,6 +25,7 @@ const meta = {
   argTypes: {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     className: { table: { disable: true } },
     mode: { table: { disable: true } },
     width: {
@@ -48,8 +50,16 @@ const meta = {
       control: 'color',
       table: { category: 'Nodes' },
     },
+    auxiliaryIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Nodes' },
+    },
     centralIconFillColor: {
       control: 'color',
+      table: { category: 'Nodes' },
+    },
+    centralIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
       table: { category: 'Nodes' },
     },
     centralIconStrokeOpacity: {
@@ -118,6 +128,15 @@ const meta = {
       control: 'color',
       table: { category: 'Beams' },
     },
+    beamWidth: {
+      control: { type: 'range', min: 0.1, max: 4, step: 0.1 },
+      table: { category: 'Beams' },
+    },
+    beamGlowIntensity: {
+      control: { type: 'range', min: 0, max: 3, step: 0.05 },
+      description: 'Controls beam glow spread and the leading-packet halo strength.',
+      table: { category: 'Beams' },
+    },
     beamSpeed: {
       control: { type: 'range', min: 0.25, max: 3, step: 0.05 },
       table: { category: 'Beams' },
@@ -147,7 +166,7 @@ const meta = {
     beamTrailLength: {
       control: { type: 'range', min: 0, max: 320, step: 1 },
       description:
-        'Length of the glowing trail behind each beam, measured along its connector path in illustration pixels. Use 0 for an orb only.',
+        'Length of the glowing trail behind each beam, measured along its connector path in CSS pixels. Use 0 for an orb only.',
       table: { category: 'Beams' },
     },
     maxConcurrentBeams: {

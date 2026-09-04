@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessFlowVertical } from '../components/BusinessFlowVertical';
 import {
   businessFlowVerticalHomepageDarkProps,
@@ -17,6 +18,7 @@ const meta = {
   argTypes: {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     className: { table: { disable: true } },
     mode: { table: { disable: true } },
 
@@ -50,6 +52,10 @@ const meta = {
       description: 'Fill color applied to the single-color auxiliary icons.',
       table: { category: 'Auxiliary Nodes' },
     },
+    auxiliaryIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Auxiliary Nodes' },
+    },
 
     iconSize: {
       control: { type: 'range', min: 32, max: 200, step: 1 },
@@ -71,10 +77,22 @@ const meta = {
       description: 'Solid fill color used when centralIconFillMode is black.',
       table: { category: 'Central Nodes' },
     },
+    centralIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Central Nodes' },
+    },
     centralIconStrokeOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       description: 'Stroke opacity of the four central pillar icons.',
       table: { category: 'Central Nodes' },
+    },
+    outlineOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      table: { category: 'Nodes' },
+    },
+    outlineWidth: {
+      control: { type: 'range', min: 0, max: 5, step: 0.25 },
+      table: { category: 'Nodes' },
     },
     nodeProgressMode: {
       control: 'inline-radio',
@@ -97,18 +115,9 @@ const meta = {
       description: 'Maximum time in milliseconds that a beam pauses at a processing node.',
       table: { category: 'Progress' },
     },
-    gradientStartColor: {
-      control: 'color',
-      table: { category: 'Central Nodes' },
-    },
-    gradientMidColor: {
-      control: 'color',
-      table: { category: 'Central Nodes' },
-    },
-    gradientEndColor: {
-      control: 'color',
-      table: { category: 'Central Nodes' },
-    },
+    gradientStartColor: { table: { disable: true } },
+    gradientMidColor: { table: { disable: true } },
+    gradientEndColor: { table: { disable: true } },
 
     connectorColor: {
       control: 'color',
@@ -138,6 +147,15 @@ const meta = {
       control: 'boolean',
       table: { category: 'Beams' },
     },
+    beamWidth: {
+      control: { type: 'range', min: 0.1, max: 4, step: 0.1 },
+      table: { category: 'Beams' },
+    },
+    beamGlowIntensity: {
+      control: { type: 'range', min: 0, max: 3, step: 0.05 },
+      description: 'Controls beam glow spread and the leading-packet halo strength.',
+      table: { category: 'Beams' },
+    },
     beamSpeed: {
       control: { type: 'range', min: 0.1, max: 3, step: 0.1 },
       table: { category: 'Beams' },
@@ -165,9 +183,9 @@ const meta = {
       table: { category: 'Beams' },
     },
     beamTrailLength: {
-      control: { type: 'range', min: 0, max: 40, step: 0.5 },
+      control: { type: 'range', min: 0, max: 320, step: 1 },
       description:
-        'Length of the glowing trail behind each beam, measured along its connector path in illustration units. Use 0 for an orb only.',
+        'Length of the glowing trail behind each beam, measured along its connector path in CSS pixels. Use 0 for an orb only.',
       table: { category: 'Beams' },
     },
     maxConcurrentBeams: {

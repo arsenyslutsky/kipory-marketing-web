@@ -124,6 +124,33 @@ it('gives iconStrokeColor precedence for every core and auxiliary icon stroke', 
   expect(capturedNodes?.every((node) => node.iconStrokeColor === '#abcdef')).toBe(true);
 });
 
+it('passes explicit node body and face gradients to the shared renderer', () => {
+  render(
+    <BusinessCoreNodeFlow
+      nodeBodyColor="#010203"
+      nodeFrontGradientAngle={11}
+      nodeFrontGradientStartColor="#111111"
+      nodeFrontGradientMidColor="#222222"
+      nodeFrontGradientEndColor="#333333"
+      nodeSideXGradientAngle={22}
+      nodeSideXGradientStartColor="#444444"
+      nodeSideXGradientMidColor="#555555"
+      nodeSideXGradientEndColor="#666666"
+      nodeSideZGradientAngle={33}
+      nodeSideZGradientStartColor="#777777"
+      nodeSideZGradientMidColor="#888888"
+      nodeSideZGradientEndColor="#999999"
+    />,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    bodyColor: '#010203',
+    frontGradient: { angle: 11, start: '#111111', mid: '#222222', end: '#333333' },
+    sideXGradient: { angle: 22, start: '#444444', mid: '#555555', end: '#666666' },
+    sideZGradient: { angle: 33, start: '#777777', mid: '#888888', end: '#999999' },
+  });
+});
+
 it('passes public node-shadow parameters to the shared renderer', () => {
   render(
     <BusinessCoreNodeFlow

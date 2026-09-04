@@ -48,7 +48,10 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     paths: unknown[];
     beamSource: {
       slots: number;
-      next: (slot: number, generation: number) => { trailLength?: number } | null;
+      next: (slot: number, generation: number) => {
+        trailLength?: number;
+        trailLengthInPixels?: number;
+      } | null;
     };
     nodes?: readonly FlowLayer3DNode[];
     nodeShadowBias?: number;
@@ -95,12 +98,14 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
         type="button"
         data-testid="flow-layer"
         data-beam-width={beam.beamWidth}
+        data-beam-glow-intensity={beam.glowIntensity}
         data-head-glow-blur={beam.headGlowBlur}
         data-head-glow-opacity={beam.headGlowOpacity}
         data-head-glow-radius={beam.headGlowRadius}
         data-paths={paths.length}
         data-reduced-motion={String(reducedMotion)}
         data-run-trail={beamSource.slots > 0 ? beamSource.next(0, 0)?.trailLength : undefined}
+        data-run-trail-pixels={beamSource.slots > 0 ? beamSource.next(0, 0)?.trailLengthInPixels : undefined}
         data-slots={beamSource.slots}
         data-style-trail={beam.trailLength}
         onClick={() => onArrival?.({
@@ -170,6 +175,33 @@ it('lets explicit node-outline values override the active theme treatment', () =
     mode: 'light',
     outlineOpacity: 0.72,
     outlineWidth: 2.5,
+  });
+});
+
+it('passes explicit node body and face gradients to the shared renderer', () => {
+  render(
+    <BusinessFlowHorizontal
+      nodeBodyColor="#010203"
+      nodeFrontGradientAngle={11}
+      nodeFrontGradientStartColor="#111111"
+      nodeFrontGradientMidColor="#222222"
+      nodeFrontGradientEndColor="#333333"
+      nodeSideXGradientAngle={22}
+      nodeSideXGradientStartColor="#444444"
+      nodeSideXGradientMidColor="#555555"
+      nodeSideXGradientEndColor="#666666"
+      nodeSideZGradientAngle={33}
+      nodeSideZGradientStartColor="#777777"
+      nodeSideZGradientMidColor="#888888"
+      nodeSideZGradientEndColor="#999999"
+    />,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    bodyColor: '#010203',
+    frontGradient: { angle: 11, start: '#111111', mid: '#222222', end: '#333333' },
+    sideXGradient: { angle: 22, start: '#444444', mid: '#555555', end: '#666666' },
+    sideZGradient: { angle: 33, start: '#777777', mid: '#888888', end: '#999999' },
   });
 });
 
@@ -282,6 +314,24 @@ it('gives iconStrokeColor precedence for every node stroke without changing role
     .toBe(true);
 });
 
+it('lets callers tune auxiliary and central icon opacity independently', () => {
+  render(
+    <BusinessFlowHorizontal
+      auxiliaryIconOpacity={0.31}
+      centralIconOpacity={0.84}
+    />,
+  );
+
+  expect(capturedNodes?.filter((node) => /^(left|right)-/.test(node.id)))
+    .toEqual(expect.arrayContaining([
+      expect.objectContaining({ iconOpacity: 0.31 }),
+    ]));
+  expect(capturedNodes?.filter((node) => !/^(left|right)-/.test(node.id)))
+    .toEqual(expect.arrayContaining([
+      expect.objectContaining({ iconOpacity: 0.84 }),
+    ]));
+});
+
 it('renders homepage node processing progress as outlines', () => {
   render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
 
@@ -334,8 +384,22 @@ it('propagates the complete homepage beam effect to the shared layer', () => {
   expect(layer).toHaveAttribute('data-head-glow-opacity', '1');
   expect(layer).toHaveAttribute('data-head-glow-radius', '11');
   expect(layer).toHaveAttribute('data-style-trail', '0');
-  expect(Number(layer.getAttribute('data-run-trail'))).toBeCloseTo(0.4485, 4);
+  expect(layer).toHaveAttribute('data-run-trail-pixels', '135');
   expect(layer).toHaveAttribute('data-slots', '5');
+});
+
+it('lets saved beam width and glow intensity override connector-derived defaults', () => {
+  render(
+    <BusinessFlowHorizontal
+      beamGlowIntensity={2.4}
+      beamWidth={3.2}
+      connectorWidth={0.5}
+    />,
+  );
+
+  const layer = screen.getByTestId('flow-layer');
+  expect(layer).toHaveAttribute('data-beam-width', '3.2');
+  expect(layer).toHaveAttribute('data-beam-glow-intensity', '2.4');
 });
 
 it('renders real arrival bursts with homepage visuals and removes completed bursts', () => {

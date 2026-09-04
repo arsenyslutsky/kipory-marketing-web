@@ -4,16 +4,15 @@ import type { FlowConfig } from './types';
 
 const expectedBranches = {
   core: ['vault', 'library'],
-  vault: ['metrics', 'stack'],
+  vault: ['graph', 'stack'],
   library: ['secure'],
-  metrics: ['records'],
   stack: ['graph'],
   secure: ['profile', 'labels'],
   graph: ['pipeline', 'profile'],
   profile: ['policy'],
-  labels: ['schedule'],
+  labels: ['schedule', 'policy'],
   pipeline: ['build', 'release'],
-  policy: ['access'],
+  policy: ['access', 'events'],
   schedule: ['events'],
   build: ['deploy'],
   release: ['identity'],
@@ -21,8 +20,10 @@ const expectedBranches = {
   events: ['routes'],
   deploy: ['publish'],
   identity: ['govern'],
-  signals: ['govern'],
+  signals: ['govern', 'routes'],
   routes: ['stream'],
+  publish: ['govern'],
+  govern: ['stream'],
 } as const;
 
 function hasCycle(root: string, branches: Record<string, string[]>) {
@@ -46,10 +47,10 @@ describe('homepageFlow', () => {
     const edges = Object.values(homepageFlow.branches).flat();
 
     expect(homepageFlow.root).toBe('core');
-    expect(homepageFlow.nodes).toHaveLength(24);
-    expect(new Set(ids).size).toBe(24);
+    expect(homepageFlow.nodes).toHaveLength(22);
+    expect(new Set(ids).size).toBe(22);
     expect(Object.keys(homepageFlow.branches).every((id) => ids.includes(id))).toBe(true);
-    expect(edges).toHaveLength(26);
+    expect(edges).toHaveLength(30);
     expect(edges.every((id) => ids.includes(id))).toBe(true);
     expect(homepageFlow.branches).toEqual(expectedBranches);
     expect((homepageFlow as FlowConfig).variants).toBeUndefined();
@@ -65,7 +66,7 @@ describe('homepageFlow', () => {
     ));
     const columns = [...new Set(homepageFlow.nodes.map((node) => node.position[0]))].sort((a, b) => a - b);
 
-    expect(tierCounts).toEqual([1, 2, 3, 4, 3, 4, 4, 3]);
+    expect(tierCounts).toEqual([1, 2, 2, 3, 3, 4, 4, 3]);
     expect(tierZ).toEqual([[-5], [-0.7], [3.2], [7.4], [11], [15.2], [19], [23.4]]);
     expect(columns).toEqual([0, 3.3, 6.6, 9.9, 13.2]);
   });
@@ -75,13 +76,20 @@ describe('homepageFlow', () => {
 
     expect(byId.core?.size).toEqual([4.3, 2.2]);
     ['vault', 'library'].forEach((id) => expect(byId[id]?.size).toEqual([3.2, 1.8]));
-    ['metrics', 'stack', 'secure'].forEach((id) => expect(byId[id]?.size).toEqual([2.6, 1.5]));
+    ['stack', 'secure'].forEach((id) => expect(byId[id]?.size).toEqual([2.6, 1.5]));
     homepageFlow.nodes
       .filter((node) => node.tier >= 3)
       .forEach((node) => expect(node.size).toEqual([2.15, 1.25]));
   });
 
-  it('keeps one early leaf, three rejoins, and three final outputs', () => {
+  it('places publish one logical column right of deploy on the terminal row', () => {
+    const byId = Object.fromEntries(homepageFlow.nodes.map((node) => [node.id, node]));
+
+    expect(byId.deploy?.position).toEqual([0, 19]);
+    expect(byId.publish?.position).toEqual([3.3, 23.4]);
+  });
+
+  it('joins the bottom row into a single terminal route with the added middle branch', () => {
     const ids = homepageFlow.nodes.map(({ id }) => id);
     const branches: Record<string, string[]> = homepageFlow.branches;
     const inbound = Object.values(homepageFlow.branches).flat().reduce<Record<string, number>>(
@@ -96,15 +104,20 @@ describe('homepageFlow', () => {
       .filter((node) => node.tier === 7 && leaves.includes(node.id))
       .map(({ id }) => id);
 
-    expect(earlyLeaves).toEqual(['records']);
-    expect(finalOutputs).toEqual(['publish', 'govern', 'stream']);
+    expect(earlyLeaves).toEqual([]);
+    expect(finalOutputs).toEqual(['stream']);
     expect(inbound.profile).toBe(2);
     expect(inbound.identity).toBe(2);
-    expect(inbound.govern).toBe(2);
+    expect(inbound.govern).toBe(3);
     expect(Object.entries(inbound).filter(([, count]) => count > 1).map(([id]) => id)).toEqual([
+      'graph',
       'profile',
+      'policy',
+      'events',
       'identity',
+      'routes',
       'govern',
+      'stream',
     ]);
   });
 });
