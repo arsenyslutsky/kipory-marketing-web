@@ -8,6 +8,13 @@ import verticalMeta from './BusinessFlowVertical.stories';
 import * as verticalStories from './BusinessFlowVertical.stories';
 
 describe('BusinessFlowVertical current-app stories', () => {
+  it('keeps Foundation unpinned so it follows the active Storybook theme', () => {
+    expect(verticalMeta.args).toBeUndefined();
+    expect(verticalStories.Foundation.args).toBeUndefined();
+    expect(verticalStories.Foundation.globals).toBeUndefined();
+    expect(verticalStories.Foundation.parameters?.homepagePreset).toBeUndefined();
+  });
+
   it('offers complete theme-pinned landing-page variants', () => {
     expect(verticalStories.CurrentNextjsApp.name).toBe('Current App (Dark)');
     expect(verticalStories.CurrentNextjsApp.globals).toEqual({ theme: 'dark' });

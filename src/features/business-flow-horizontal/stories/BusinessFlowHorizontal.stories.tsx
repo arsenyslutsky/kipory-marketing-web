@@ -183,7 +183,6 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowHorizontalHomepageDarkProps,
 } satisfies Meta<typeof BusinessFlowHorizontal>;
 
 export default meta;

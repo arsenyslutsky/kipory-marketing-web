@@ -12,7 +12,10 @@ import {
   WorkflowArrivalBursts,
   type WorkflowArrivalBurstsHandle,
 } from '@/components/elements/WorkflowArrivalBursts';
-import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import {
+  getBusinessFlowHeroTreatment,
+  getBusinessFlowPalette,
+} from '@/features/business-flow-palette';
 import { useResolvedTheme } from '@/theme/ThemeProvider';
 import type { ResolvedTheme } from '@/theme/theme';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
@@ -169,15 +172,16 @@ export function BusinessFlowVertical({
 }: BusinessFlowVerticalProps) {
   const mode = useResolvedTheme(explicitMode);
   const palette = getBusinessFlowPalette(mode);
-  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.auxiliaryIconFill;
+  const heroTreatment = getBusinessFlowHeroTreatment(mode);
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? heroTreatment.iconFill;
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
-  const centralIconFillColor = centralIconFillColorProp ?? palette.centralIconFill;
-  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.iconStroke;
-  const connectorColor = connectorColorProp ?? palette.connector;
-  const gradientEndColor = gradientEndColorProp ?? palette.frontGradient.end;
-  const gradientMidColor = gradientMidColorProp ?? palette.frontGradient.mid;
-  const gradientStartColor = gradientStartColorProp ?? palette.frontGradient.start;
+  const centralIconFillColor = centralIconFillColorProp ?? heroTreatment.iconFill;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? heroTreatment.iconStroke;
+  const connectorColor = connectorColorProp ?? heroTreatment.connectorColor;
+  const gradientEndColor = gradientEndColorProp ?? heroTreatment.frontGradient.end;
+  const gradientMidColor = gradientMidColorProp ?? heroTreatment.frontGradient.mid;
+  const gradientStartColor = gradientStartColorProp ?? heroTreatment.frontGradient.start;
   const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
@@ -224,12 +228,12 @@ export function BusinessFlowVertical({
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
     mode,
     frontGradient: gradient,
-    sideXGradient: { angle: 360, ...palette.sideXGradient },
-    sideZGradient: { angle: 177, ...palette.sideZGradient },
+    sideXGradient: { angle: 360, ...heroTreatment.sideXGradient },
+    sideZGradient: { angle: 177, ...heroTreatment.sideZGradient },
     assetBasePath: '/assets/nodes',
-    nodeCornerRadius: 10,
-    outlineOpacity: 0,
-    outlineWidth: 1,
+    nodeCornerRadius: heroTreatment.nodeCornerRadius,
+    outlineOpacity: heroTreatment.outlineOpacity,
+    outlineWidth: heroTreatment.outlineWidth,
     progressBarHeight: nodeProgressSize,
     progressMaxDelay: nodeProgressMaxDelay,
     progressMinDelay: nodeProgressMinDelay,
@@ -241,7 +245,7 @@ export function BusinessFlowVertical({
     nodeProgressMinDelay,
     nodeProgressMode,
     nodeProgressSize,
-    palette,
+    heroTreatment,
     gradient,
   ]);
   const curve = Math.min(100, Math.max(0, connectorRadius * 20));
@@ -273,9 +277,9 @@ export function BusinessFlowVertical({
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
-    stroke: 'dashed' as const,
+    stroke: heroTreatment.connectorStroke,
     width: connectorWidth,
-  }), [connectorColor, connectorOpacity, connectorWidth]);
+  }), [connectorColor, connectorOpacity, connectorWidth, heroTreatment]);
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
@@ -331,12 +335,12 @@ export function BusinessFlowVertical({
         nodeShadowBias={nodeShadowBias}
         nodeShadowBlurSamples={nodeShadowBlurSamples}
         nodeShadowColor={nodeShadowColor}
-        nodeShadowLightX={nodeShadowLightX}
-        nodeShadowLightY={nodeShadowLightY}
-        nodeShadowLightZ={nodeShadowLightZ}
+        nodeShadowLightX={nodeShadowLightX ?? heroTreatment.nodeShadowLightX}
+        nodeShadowLightY={nodeShadowLightY ?? heroTreatment.nodeShadowLightY}
+        nodeShadowLightZ={nodeShadowLightZ ?? heroTreatment.nodeShadowLightZ}
         nodeShadowNormalBias={nodeShadowNormalBias}
-        nodeShadowOpacity={nodeShadowOpacity}
-        nodeShadowRadius={nodeShadowRadius}
+        nodeShadowOpacity={nodeShadowOpacity ?? heroTreatment.nodeShadowOpacity}
+        nodeShadowRadius={nodeShadowRadius ?? heroTreatment.nodeShadowRadius}
         onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}

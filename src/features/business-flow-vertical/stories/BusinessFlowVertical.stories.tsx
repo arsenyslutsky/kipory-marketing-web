@@ -213,7 +213,6 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowVerticalHomepageDarkProps,
 } satisfies Meta<typeof BusinessFlowVertical>;
 
 export default meta;

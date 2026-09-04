@@ -28,7 +28,10 @@ it('lets ordinary WebGL foundation stories inherit the canvas theme', () => {
     businessFlow3DMeta,
     businessFlowHorizontalMeta,
     businessFlowVerticalMeta,
-  ].forEach((meta) => expect(meta.args).not.toHaveProperty('mode'));
+  ].forEach((meta) => {
+    const args = 'args' in meta ? meta.args : undefined;
+    expect(args ?? {}).not.toHaveProperty('mode');
+  });
 });
 
 const adjustableStories = [

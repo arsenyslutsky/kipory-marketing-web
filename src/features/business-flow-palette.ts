@@ -33,6 +33,24 @@ interface NodeGradient {
   start: string;
 }
 
+export interface BusinessFlowHeroTreatment {
+  connectorColor: string;
+  connectorStroke: 'dashed' | 'solid';
+  frontGradient: NodeGradient;
+  iconFill: string;
+  iconStroke: string;
+  nodeCornerRadius: number;
+  nodeShadowLightX: number;
+  nodeShadowLightY: number;
+  nodeShadowLightZ: number;
+  nodeShadowOpacity: number;
+  nodeShadowRadius: number;
+  outlineOpacity: number;
+  outlineWidth: number;
+  sideXGradient: NodeGradient;
+  sideZGradient: NodeGradient;
+}
+
 interface PaletteOverrides {
   auxiliaryIconFill: string;
   centralIconFill: string;
@@ -112,8 +130,61 @@ export const businessFlowPalettes: Record<ResolvedTheme, BusinessFlowPalette> = 
   }),
 };
 
+export const businessFlowHeroTreatments: Record<ResolvedTheme, BusinessFlowHeroTreatment> = {
+  dark: {
+    connectorColor: businessFlowPalettes.dark.connector,
+    connectorStroke: 'dashed',
+    frontGradient: { ...businessFlowPalettes.dark.frontGradient },
+    iconFill: businessFlowPalettes.dark.iconStroke,
+    iconStroke: businessFlowPalettes.dark.iconStroke,
+    nodeCornerRadius: 10,
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowOpacity: 0.5,
+    nodeShadowRadius: 8,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+    sideXGradient: { ...businessFlowPalettes.dark.sideXGradient },
+    sideZGradient: { ...businessFlowPalettes.dark.sideZGradient },
+  },
+  light: {
+    connectorColor: businessFlowPalettes.light.beam,
+    connectorStroke: 'solid',
+    frontGradient: {
+      end: businessFlowPalettes.light.beam,
+      mid: businessFlowPalettes.light.beam,
+      start: businessFlowPalettes.light.homepageNodeFrontStart,
+    },
+    iconFill: businessFlowPalettes.light.iconStroke,
+    iconStroke: businessFlowPalettes.light.white,
+    nodeCornerRadius: 0,
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowOpacity: 0.38,
+    nodeShadowRadius: 8,
+    outlineOpacity: 0.3,
+    outlineWidth: 1.25,
+    sideXGradient: {
+      end: businessFlowPalettes.light.beam,
+      mid: businessFlowPalettes.light.beam,
+      start: businessFlowPalettes.light.beam,
+    },
+    sideZGradient: {
+      end: businessFlowPalettes.light.beam,
+      mid: businessFlowPalettes.light.beam,
+      start: businessFlowPalettes.light.beam,
+    },
+  },
+};
+
 export function getBusinessFlowPalette(mode: ResolvedTheme): BusinessFlowPalette {
   return businessFlowPalettes[mode];
+}
+
+export function getBusinessFlowHeroTreatment(mode: ResolvedTheme): BusinessFlowHeroTreatment {
+  return businessFlowHeroTreatments[mode];
 }
 
 // Kept for existing workflow consumers until they resolve the active theme themselves.

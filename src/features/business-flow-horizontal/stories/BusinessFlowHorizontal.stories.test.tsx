@@ -10,6 +10,13 @@ import horizontalMeta from './BusinessFlowHorizontal.stories';
 import * as horizontalStories from './BusinessFlowHorizontal.stories';
 
 describe('BusinessFlowHorizontal Storybook preview', () => {
+  it('keeps Foundation unpinned so it follows the active Storybook theme', () => {
+    expect(horizontalMeta.args).toBeUndefined();
+    expect(horizontalStories.Foundation.args).toBeUndefined();
+    expect(horizontalStories.Foundation.globals).toBeUndefined();
+    expect(horizontalStories.Foundation.parameters?.homepagePreset).toBeUndefined();
+  });
+
   it('offers complete theme-pinned landing-page variants', () => {
     expect(horizontalStories.CurrentNextjsApp.name).toBe('Current App (Dark)');
     expect(horizontalStories.CurrentNextjsApp.globals).toEqual({ theme: 'dark' });

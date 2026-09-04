@@ -133,12 +133,30 @@ it('inherits the light palette from theme context', () => {
   );
 
   expect(capturedMode).toBe('light');
-  expect(capturedNodeStyle).toMatchObject({ mode: 'light' });
-  expect(capturedConnector?.color).toBe(businessFlowPalettes.light.connector);
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'light',
+    frontGradient: { angle: 117, start: '#98c496', mid: '#449c40', end: '#449c40' },
+    sideXGradient: { angle: 360, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    sideZGradient: { angle: 177, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    nodeCornerRadius: 0,
+    outlineOpacity: 0.3,
+    outlineWidth: 1.25,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: '#449c40',
+    stroke: 'solid',
+  });
   expect(capturedBeam?.beamColor).toBe(businessFlowPalettes.light.beam);
   expect(capturedNodes?.find((node) => node.id === 'server')).toMatchObject({
-    iconColor: businessFlowPalettes.light.centralIconFill,
-    iconStrokeColor: businessFlowPalettes.light.iconStroke,
+    iconColor: '#182019',
+    iconStrokeColor: '#ffffff',
+  });
+  expect(capturedNodeShadow).toMatchObject({
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowOpacity: 0.38,
+    nodeShadowRadius: 8,
   });
 });
 
@@ -146,8 +164,21 @@ it('falls back to the dark palette outside theme context', () => {
   render(<BusinessFlowVertical />);
 
   expect(capturedMode).toBe('dark');
-  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
-  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'dark',
+    frontGradient: { angle: 117, start: '#066b43', mid: '#03492b', end: '#052f24' },
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: businessFlowPalettes.dark.connector,
+    stroke: 'dashed',
+  });
+  expect(capturedNodes?.find((node) => node.id === 'server')).toMatchObject({
+    iconColor: '#f3f5ef',
+    iconStrokeColor: '#f3f5ef',
+  });
 });
 
 it('passes public node-shadow parameters to the shared renderer', () => {
