@@ -18,15 +18,9 @@ import {
 import { BackToTop } from '@/components/site/BackToTop';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { RouteTransition } from '@/components/site/RouteTransition';
-import {
-  BusinessFlowVertical,
-  businessFlowVerticalHomepageProps,
-} from '@/features/business-flow-vertical';
-import {
-  BusinessFlowHorizontal,
-  businessFlowHorizontalHomepageProps,
-} from '@/features/business-flow-horizontal';
 import { createPageMetadata, siteConfig } from '@/lib/siteMetadata';
+import { HomepageBusinessFlowHorizontal } from './_components/HomepageBusinessFlowHorizontal';
+import { HomepageBusinessFlowVertical } from './_components/HomepageBusinessFlowVertical';
 import { HomepageHero } from './_components/HomepageHero';
 import { LearnMoreLink } from './_components/LearnMoreLink';
 import styles from './marketing.module.css';
@@ -145,10 +139,7 @@ export default function HomePage() {
                   name="pillars"
                   width={360}
                 >
-                  <BusinessFlowVertical
-                    {...businessFlowVerticalHomepageProps}
-                    className={styles.pillarsIllustration}
-                  />
+                  <HomepageBusinessFlowVertical className={styles.pillarsIllustration} />
                 </MobileWorkflowFallback>
               </div>
             )}
@@ -223,7 +214,7 @@ export default function HomePage() {
                   name="delivery"
                   width={360}
                 >
-                  <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
+                  <HomepageBusinessFlowHorizontal />
                 </MobileWorkflowFallback>
               </div>
             )}

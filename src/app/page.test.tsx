@@ -9,22 +9,15 @@ import styles from './marketing.module.css';
 
 const {
   glowLinkRender,
-  horizontalHomepageProps,
-  horizontalRender,
+  horizontalWrapperRender,
   threeDDarkHomepageProps,
   threeDHomepageFlow,
   threeDLightHomepageProps,
   threeDRender,
-  verticalHomepageProps,
-  verticalRender,
+  verticalWrapperRender,
 } = vi.hoisted(() => ({
   glowLinkRender: vi.fn(),
-  horizontalHomepageProps: {
-    beamSpeed: 1.4,
-    height: '38rem',
-    width: '20rem',
-  },
-  horizontalRender: vi.fn(),
+  horizontalWrapperRender: vi.fn(),
   threeDDarkHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'dark' },
   threeDHomepageFlow: {
     root: 'core',
@@ -33,8 +26,7 @@ const {
   },
   threeDLightHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'light' },
   threeDRender: vi.fn(),
-  verticalHomepageProps: { height: '45rem', width: '20rem' },
-  verticalRender: vi.fn(),
+  verticalWrapperRender: vi.fn(),
 }));
 
 vi.mock('@/components/site/HeroScrollEffects', () => ({
@@ -58,26 +50,24 @@ vi.mock('@/features/business-flow-3d', () => ({
   businessFlow3DHomepageLightProps: threeDLightHomepageProps,
   homepageFlow: threeDHomepageFlow,
 }));
-vi.mock('@/features/business-flow-vertical', () => ({
-  BusinessFlowVertical: (props: Record<string, unknown>) => {
-    verticalRender(props);
+vi.mock('./_components/HomepageBusinessFlowVertical', () => ({
+  HomepageBusinessFlowVertical: (props: Record<string, unknown>) => {
+    verticalWrapperRender(props);
     return <div />;
   },
-  businessFlowVerticalHomepageProps: verticalHomepageProps,
 }));
-vi.mock('@/features/business-flow-horizontal', () => ({
-  BusinessFlowHorizontal: (props: Record<string, unknown>) => {
-    horizontalRender(props);
+vi.mock('./_components/HomepageBusinessFlowHorizontal', () => ({
+  HomepageBusinessFlowHorizontal: (props: Record<string, unknown>) => {
+    horizontalWrapperRender(props);
     return <figure aria-label="Horizontal business flow" />;
   },
-  businessFlowHorizontalHomepageProps: horizontalHomepageProps,
 }));
 
 beforeEach(() => {
   glowLinkRender.mockClear();
-  horizontalRender.mockClear();
+  horizontalWrapperRender.mockClear();
   threeDRender.mockClear();
-  verticalRender.mockClear();
+  verticalWrapperRender.mockClear();
 });
 
 afterEach(() => {
@@ -128,8 +118,8 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
     !image.getAttribute('src')?.startsWith('/images/workflows/mobile/') && !image.hasAttribute('srcset')
   ))).toBe(true);
   expect(threeDRender).not.toHaveBeenCalled();
-  expect(verticalRender).not.toHaveBeenCalled();
-  expect(horizontalRender).not.toHaveBeenCalled();
+  expect(verticalWrapperRender).not.toHaveBeenCalled();
+  expect(horizontalWrapperRender).not.toHaveBeenCalled();
 });
 
 it('participates in the quiet navigation handoff', () => {
@@ -138,7 +128,7 @@ it('participates in the quiet navigation handoff', () => {
   expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
 });
 
-it('renders all shared homepage presets and replaces the delivery placeholder', () => {
+it('renders both themed-flow wrappers and replaces the delivery placeholder', () => {
   render(<HomePage />);
 
   const pageSourcePath = './page.tsx';
@@ -149,8 +139,12 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   expect(horizontalFlow).toBeInTheDocument();
   expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
   expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDDarkHomepageProps));
-  expect(verticalRender.mock.calls[0][0]).toEqual(expect.objectContaining(verticalHomepageProps));
-  expect(horizontalRender).toHaveBeenCalledWith(expect.objectContaining(horizontalHomepageProps));
+  expect(verticalWrapperRender).toHaveBeenCalledTimes(1);
+  expect(horizontalWrapperRender).toHaveBeenCalledTimes(1);
+  expect(verticalWrapperRender.mock.calls[0]?.[0]).toEqual({
+    className: styles.pillarsIllustration,
+  });
+  expect(horizontalWrapperRender.mock.calls[0]?.[0]).toEqual({});
   expect(glowLinkRender).toHaveBeenCalledWith(expect.objectContaining(glowLinkHomepageProps));
 });
 
