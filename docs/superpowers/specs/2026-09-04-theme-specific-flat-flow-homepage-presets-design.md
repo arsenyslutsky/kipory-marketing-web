@@ -2,7 +2,7 @@
 
 ## Summary
 
-The horizontal and vertical `Current App (Dark)` and `Current App (Light)` Storybook stories will each own a complete, theme-specific homepage preset. Every visible control in those stories will show the effective value rendered on the landing page and will be eligible for **Save to Next.js**. The landing page will select the matching preset at runtime through small client wrappers, following the established `HomepageBusinessFlow3D` pattern.
+The horizontal and vertical `Current App (Dark)` and `Current App (Light)` Storybook stories will each own a complete, theme-specific homepage preset. Every visible control in those stories will show the effective value rendered on the landing page and will be eligible for **Save to Next.js**. The horizontal flow will additionally expose its node-outline opacity and width as first-class component props and Storybook controls. The landing page will select the matching preset at runtime through small client wrappers, following the established `HomepageBusinessFlow3D` pattern.
 
 This replaces the current shared structural preset used by both themes. That shared preset leaves palette and node-shadow props undefined so the illustration component can derive them internally. Storybook cannot display those derived values: optional range controls fall back to their minimums, producing misleading values such as `-20`, `0`, and `1`. Changing one of those controls also creates an override that is not included in the persistent preset keys.
 
@@ -10,6 +10,7 @@ This replaces the current shared structural preset used by both themes. That sha
 
 - Make every visible Current App control truthful: its value must equal the value currently rendered by the landing page.
 - Make every editable Current App control durable through **Save to Next.js**.
+- Expose horizontal node-outline opacity and width with the same control ranges and names used by `BusinessFlow3D`.
 - Allow the horizontal and vertical Light and Dark variants to be tuned independently.
 - Keep the landing page synchronized with the corresponding saved preset after reload and during theme changes.
 - Preserve the existing Foundation stories as exploratory, theme-inheriting component playgrounds.
@@ -64,6 +65,31 @@ The node-shadow controls will start with the effective values currently used by 
 - opacity: `0.5` in Dark and `0.38` in Light
 
 The presets will likewise make the currently derived icon, gradient, connector, beam, and grid colors explicit so their Storybook controls are accurate and saveable.
+
+The horizontal presets will also make the effective outline treatment explicit:
+
+- Dark: `outlineOpacity: 0`, `outlineWidth: 1`
+- Light: `outlineOpacity: 0.3`, `outlineWidth: 1.25`
+
+These values preserve the current landing-page appearance before any user tuning.
+
+## Horizontal Node-Outline API
+
+`BusinessFlowHorizontalProps` will add two optional properties matching the existing `BusinessFlow3D` and `Node3D` vocabulary:
+
+```ts
+outlineOpacity?: number;
+outlineWidth?: number;
+```
+
+When omitted, each property will continue to resolve from the active `businessFlowHeroTreatment`, preserving behavior for existing consumers and the Foundation story. When provided, the value will override the theme treatment in the `FlowLayer3DNodeStyle` passed to the shared renderer.
+
+The horizontal Storybook meta will expose both properties under the `Nodes` category using the established 3D ranges:
+
+- opacity: range `0..1`, step `0.05`
+- width: range `0..5`, step `0.25`
+
+Both horizontal theme presets will include these properties, so the Current App stories display their true initial values and **Save to Next.js** persists changes to the matching theme only. This addition is intentionally scoped to the horizontal component currently under review; the vertical component retains its theme-derived outline treatment.
 
 ## Landing-Page Theme Selection
 
@@ -142,10 +168,11 @@ Implementation will follow test-driven development.
 1. Preset contract tests will first require four explicit exports, complete theme-derived values, and identical non-theme structural values.
 2. Wrapper tests will require Dark and Light theme resolution to pass the exact corresponding preset and explicit mode.
 3. Landing-page tests will require the server page to use the new wrappers and remain free of a `'use client'` directive.
-4. Story tests will require each named story to consume its matching preset, pin the correct theme, hide non-persistent props, and expose only saveable editable controls.
-5. Source registry tests will require each of the four story IDs to map to the correct export.
-6. Middleware/source tests will save one representative shadow value through both Light and Dark IDs and prove that only the targeted export changes.
-7. Browser verification will confirm that node-shadow controls show the effective values, each toolbar reaches `Saved`, refresh retains the saved value, and the corresponding landing-page theme updates.
+4. Horizontal component tests will require explicit outline props to override theme-derived node styles while omissions retain the existing theme defaults.
+5. Story tests will require each named story to consume its matching preset, pin the correct theme, hide non-persistent props, expose only saveable editable controls, and publish the bounded horizontal outline controls.
+6. Source registry tests will require each of the four story IDs to map to the correct export.
+7. Middleware/source tests will save representative shadow and horizontal outline values through both Light and Dark IDs and prove that only the targeted export changes.
+8. Browser verification will confirm that node-shadow and horizontal node-outline controls show the effective values, each toolbar reaches `Saved`, refresh retains the saved value, and the corresponding landing-page theme updates.
 
 Final verification will run the focused tests, full test suite, typecheck, lint, Next.js production build, Storybook production build, the Impeccable detector on changed UI files, and bounded browser checks for both themes.
 
@@ -153,6 +180,8 @@ Final verification will run the focused tests, full test suite, typecheck, lint,
 
 - Horizontal and vertical Current App Light stories show the actual Light landing-page shadow values rather than Storybook range minimums.
 - Dark stories show the actual Dark landing-page values.
+- Horizontal Current App stories expose `outlineOpacity` and `outlineWidth`, initialized to the matching landing-page treatment and persisted per theme.
+- Omitting the new horizontal outline props preserves existing theme-derived rendering for non-homepage consumers.
 - Every editable control displayed in a Current App story is included in that story's persistent preset keys.
 - Saving Light never changes Dark, and saving Dark never changes Light.
 - Reloading Storybook retains the saved value.
