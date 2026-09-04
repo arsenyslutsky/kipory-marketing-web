@@ -13,10 +13,14 @@ import {
   CurrentAppLight as businessFlow3DCurrentAppLight,
   CurrentNextjsApp as businessFlow3DCurrentAppDark,
 } from './business-flow-3d/stories/BusinessFlow3D.stories';
-import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
-import { CurrentNextjsApp as businessFlowHorizontalCurrentApp } from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
-import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
-import { CurrentNextjsApp as businessFlowVerticalCurrentApp } from './business-flow-vertical/stories/BusinessFlowVertical.stories';
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from './business-flow-horizontal/presets';
+import {
+  businessFlowVerticalHomepageDarkProps,
+  businessFlowVerticalHomepageLightProps,
+} from './business-flow-vertical/presets';
 
 const cases = [
   {
@@ -32,20 +36,6 @@ const cases = [
     presetValue: businessFlow3DHomepageLightProps,
     story: 'BusinessFlow3D',
     storyArgs: businessFlow3DCurrentAppLight.args ?? {},
-  },
-  {
-    feature: 'business-flow-vertical',
-    preset: 'businessFlowVerticalHomepageProps',
-    presetValue: businessFlowVerticalHomepageProps,
-    story: 'BusinessFlowVertical',
-    storyArgs: businessFlowVerticalCurrentApp.args ?? {},
-  },
-  {
-    feature: 'business-flow-horizontal',
-    preset: 'businessFlowHorizontalHomepageProps',
-    presetValue: businessFlowHorizontalHomepageProps,
-    story: 'BusinessFlowHorizontal',
-    storyArgs: businessFlowHorizontalCurrentApp.args ?? {},
   },
 ] as const;
 
@@ -99,11 +89,9 @@ function contrastRatio(foreground: number[], background: number[]) {
 }
 
 describe('homepage illustration preset contract', () => {
-  it('keeps shared website flow presets structural while the light 3D variant owns its tuned palette', () => {
+  it('keeps non-flat website flow presets structural while the light 3D variant owns its tuned palette', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
       businessFlow3DHomepageDarkProps,
-      businessFlowHorizontalHomepageProps,
-      businessFlowVerticalHomepageProps,
       businessCoreNodeFlowContactProps,
       businessCoreNodeFlowWaitlistProps,
     ];
@@ -243,8 +231,8 @@ describe('homepage illustration preset contract', () => {
     expect(contrastRatio(compositedGrid, ground)).toBeGreaterThanOrEqual(1.1);
   });
 
-  it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values', () => {
-    expect(businessFlowHorizontalHomepageProps).toEqual({
+  it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values for both themes', () => {
+    const horizontalStructure = {
       activityStrategy: 'visible',
       beamEmissionRandomness: 100,
       beamEnabled: true,
@@ -257,8 +245,8 @@ describe('homepage illustration preset contract', () => {
       burstRadius: 24,
       burstStrength: 0.5,
       centralIconStrokeOpacity: 1,
-      connectorOpacity: 0.8,
-      connectorWidth: 1,
+      connectorOpacity: 0.62,
+      connectorWidth: 1.25,
       gridDensity: 30,
       gridOpacity: 0,
       height: '50rem',
@@ -275,8 +263,8 @@ describe('homepage illustration preset contract', () => {
       resolutionScale: 'display',
       strokeWidth: 2.25,
       width: 'min(28.8rem, 100%)',
-    });
-    expect(businessFlowVerticalHomepageProps).toEqual({
+    };
+    const verticalStructure = {
       activityStrategy: 'visible',
       auxiliaryNodeSpacing: 0.6,
       beamEmissionRandomness: 100,
@@ -291,9 +279,9 @@ describe('homepage illustration preset contract', () => {
       burstStrength: 0.5,
       centralIconFillMode: 'black',
       centralIconStrokeOpacity: 0.91,
-      connectorOpacity: 0.6,
+      connectorOpacity: 0.62,
       connectorRadius: 10,
-      connectorWidth: 1,
+      connectorWidth: 1.25,
       gridDensity: 30,
       gridOpacity: 0,
       height: '45rem',
@@ -311,7 +299,48 @@ describe('homepage illustration preset contract', () => {
       showContinuationConnectors: true,
       strokeWidth: 1.5,
       width: '20rem',
+    };
+
+    [businessFlowHorizontalHomepageDarkProps, businessFlowHorizontalHomepageLightProps]
+      .forEach((preset) => expect(preset).toMatchObject(horizontalStructure));
+    [businessFlowVerticalHomepageDarkProps, businessFlowVerticalHomepageLightProps]
+      .forEach((preset) => expect(preset).toMatchObject(verticalStructure));
+  });
+
+  it('supplies complete theme-specific node shadows and outline treatment to each flat-flow preset', () => {
+    const nodeShadowKeys = [
+      'nodeShadowBias',
+      'nodeShadowBlurSamples',
+      'nodeShadowColor',
+      'nodeShadowLightX',
+      'nodeShadowLightY',
+      'nodeShadowLightZ',
+      'nodeShadowNormalBias',
+      'nodeShadowOpacity',
+      'nodeShadowRadius',
+    ] as const;
+
+    for (const preset of [
+      businessFlowHorizontalHomepageDarkProps,
+      businessFlowHorizontalHomepageLightProps,
+      businessFlowVerticalHomepageDarkProps,
+      businessFlowVerticalHomepageLightProps,
+    ]) {
+      for (const key of nodeShadowKeys) expect(preset).toHaveProperty(key);
+    }
+
+    expect(businessFlowHorizontalHomepageDarkProps).toMatchObject({
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      nodeShadowOpacity: 0.5,
     });
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      outlineOpacity: 0.3,
+      outlineWidth: 1.25,
+      nodeShadowOpacity: 0.38,
+    });
+    expect(businessFlowVerticalHomepageDarkProps).toMatchObject({ nodeShadowOpacity: 0.5 });
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.38 });
   });
 
   it('preserves contact and waitlist flow structure without freezing their colors', () => {
@@ -363,7 +392,12 @@ describe('homepage illustration preset contract', () => {
         resolutionScale: 'display',
       });
     });
-    [businessFlowHorizontalHomepageProps, businessFlowVerticalHomepageProps].forEach((preset) => {
+    [
+      businessFlowHorizontalHomepageDarkProps,
+      businessFlowHorizontalHomepageLightProps,
+      businessFlowVerticalHomepageDarkProps,
+      businessFlowVerticalHomepageLightProps,
+    ].forEach((preset) => {
       expect(preset).toMatchObject({
         activityStrategy: 'visible',
         loadStrategy: 'near-viewport',

@@ -7,8 +7,14 @@ import {
   businessFlow3DHomepageDarkProps,
   businessFlow3DHomepageLightProps,
 } from '../src/features/business-flow-3d/presets';
-import { businessFlowHorizontalHomepageProps } from '../src/features/business-flow-horizontal/presets';
-import { businessFlowVerticalHomepageProps } from '../src/features/business-flow-vertical/presets';
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from '../src/features/business-flow-horizontal/presets';
+import {
+  businessFlowVerticalHomepageDarkProps,
+  businessFlowVerticalHomepageLightProps,
+} from '../src/features/business-flow-vertical/presets';
 
 import {
   createHomepagePresetCapabilityRequest,
@@ -18,11 +24,9 @@ import {
 } from './homepagePresetContract';
 
 describe('homepage preset contract', () => {
-  it('keeps shared illustration presets structural while registering the tuned light 3D palette', () => {
+  it('keeps non-flat illustration presets structural while registering the tuned light 3D palette', () => {
     const presets: ReadonlyArray<Record<string, unknown>> = [
       businessFlow3DHomepageDarkProps,
-      businessFlowHorizontalHomepageProps,
-      businessFlowVerticalHomepageProps,
       businessCoreNodeFlowContactProps,
       businessCoreNodeFlowWaitlistProps,
     ];
@@ -81,7 +85,8 @@ describe('homepage preset contract', () => {
         'speed',
       ]));
     });
-    expect(Object.keys(businessFlowHorizontalHomepageProps)).toEqual(expect.arrayContaining([
+    [businessFlowHorizontalHomepageDarkProps, businessFlowHorizontalHomepageLightProps]
+      .forEach((preset) => expect(Object.keys(preset)).toEqual(expect.arrayContaining([
       'beamSpeed',
       'connectorOpacity',
       'height',
@@ -89,8 +94,9 @@ describe('homepage preset contract', () => {
       'numberOfNodesRight',
       'resolutionScale',
       'width',
-    ]));
-    expect(Object.keys(businessFlowVerticalHomepageProps)).toEqual(expect.arrayContaining([
+    ])));
+    [businessFlowVerticalHomepageDarkProps, businessFlowVerticalHomepageLightProps]
+      .forEach((preset) => expect(Object.keys(preset)).toEqual(expect.arrayContaining([
       'auxiliaryNodeSpacing',
       'beamSpeed',
       'connectorOpacity',
@@ -99,7 +105,7 @@ describe('homepage preset contract', () => {
       'numberOfNodesTop',
       'resolutionScale',
       'width',
-    ]));
+    ])));
     [businessCoreNodeFlowContactProps, businessCoreNodeFlowWaitlistProps].forEach((preset) => {
       expect(Object.keys(preset)).toEqual(expect.arrayContaining([
         'beamSpeed',
@@ -110,6 +116,42 @@ describe('homepage preset contract', () => {
         'size',
       ]));
     });
+  });
+
+  it('registers complete theme-specific node shadow and outline presets for the flat workflows', () => {
+    const nodeShadowKeys = [
+      'nodeShadowBias',
+      'nodeShadowBlurSamples',
+      'nodeShadowColor',
+      'nodeShadowLightX',
+      'nodeShadowLightY',
+      'nodeShadowLightZ',
+      'nodeShadowNormalBias',
+      'nodeShadowOpacity',
+      'nodeShadowRadius',
+    ] as const;
+
+    for (const preset of [
+      businessFlowHorizontalHomepageDarkProps,
+      businessFlowHorizontalHomepageLightProps,
+      businessFlowVerticalHomepageDarkProps,
+      businessFlowVerticalHomepageLightProps,
+    ]) {
+      for (const key of nodeShadowKeys) expect(preset).toHaveProperty(key);
+    }
+
+    expect(businessFlowHorizontalHomepageDarkProps).toMatchObject({
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      nodeShadowOpacity: 0.5,
+    });
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      outlineOpacity: 0.3,
+      outlineWidth: 1.25,
+      nodeShadowOpacity: 0.38,
+    });
+    expect(businessFlowVerticalHomepageDarkProps).toMatchObject({ nodeShadowOpacity: 0.5 });
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.38 });
   });
 
   it.each([

@@ -10,7 +10,7 @@ import type {
 import { businessFlowPalettes } from '@/features/business-flow-palette';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { ResolvedTheme } from '@/theme/theme';
-import { businessFlowHorizontalHomepageProps } from '../presets';
+import { businessFlowHorizontalHomepageDarkProps } from '../presets';
 import { BusinessFlowHorizontal } from './BusinessFlowHorizontal';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
@@ -252,7 +252,7 @@ it('gives iconStrokeColor precedence for every node stroke without changing role
 });
 
 it('renders homepage node processing progress as outlines', () => {
-  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
 
   expect(capturedNodeStyle).toMatchObject({
     progressBarHeight: 15,
@@ -281,21 +281,21 @@ it('propagates custom node progress size, type, and delay range to the shared la
 });
 
 it('renders the homepage illustration another twenty percent wider without exceeding its container', () => {
-  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
 
   const illustration = screen.getByRole('img', { name: /Horizontal business flow/i });
   expect(illustration.style.getPropertyValue('--camera-width')).toBe('min(28.8rem, 100%)');
 });
 
 it('renders the homepage illustration tall enough to span the four-row delivery list', () => {
-  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
 
   const illustration = screen.getByRole('img', { name: /Horizontal business flow/i });
   expect(illustration.style.getPropertyValue('--camera-height')).toBe('50rem');
 });
 
 it('propagates the complete homepage beam effect to the shared layer', () => {
-  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
 
   const layer = screen.getByTestId('flow-layer');
   expect(layer).toHaveAttribute('data-beam-width', '1.4');
@@ -308,7 +308,7 @@ it('propagates the complete homepage beam effect to the shared layer', () => {
 });
 
 it('renders real arrival bursts with homepage visuals and removes completed bursts', () => {
-  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />);
+  render(<BusinessFlowHorizontal {...businessFlowHorizontalHomepageDarkProps} />);
   expect(screen.queryByTestId('arrival-burst')).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByTestId('flow-layer'));

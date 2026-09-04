@@ -10,7 +10,7 @@ import type {
 import { businessFlowPalettes } from '@/features/business-flow-palette';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { ResolvedTheme } from '@/theme/theme';
-import { businessFlowVerticalHomepageProps } from '../presets';
+import { businessFlowVerticalHomepageDarkProps } from '../presets';
 import { BusinessFlowVertical } from './BusinessFlowVertical';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
@@ -271,7 +271,7 @@ it('renders homepage node processing progress as outlines', () => {
     matches: false,
     removeEventListener: vi.fn(),
   })));
-  render(<BusinessFlowVertical {...businessFlowVerticalHomepageProps} />);
+  render(<BusinessFlowVertical {...businessFlowVerticalHomepageDarkProps} />);
 
   expect(capturedNodeStyle).toMatchObject({
     progressBarHeight: 15,
