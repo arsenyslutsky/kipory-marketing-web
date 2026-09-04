@@ -165,12 +165,12 @@ export function BusinessFlowHorizontal({
   const mode = useResolvedTheme(explicitMode);
   const palette = getBusinessFlowPalette(mode);
   const heroTreatment = getBusinessFlowHeroTreatment(mode);
-  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? heroTreatment.iconFill;
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.horizontalAuxiliaryIconFill;
   const beamColor = beamColorProp ?? palette.beam;
   const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
-  const centralIconFillColor = centralIconFillColorProp ?? heroTreatment.iconFill;
-  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? heroTreatment.iconStroke;
-  const connectorColor = connectorColorProp ?? heroTreatment.connectorColor;
+  const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.horizontalIconStroke;
+  const connectorColor = connectorColorProp ?? palette.connector;
   const gridColor = gridColorProp ?? palette.grid;
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
@@ -189,9 +189,9 @@ export function BusinessFlowHorizontal({
   const connector = useMemo(() => ({
     color: connectorColor,
     opacity: connectorOpacity,
-    stroke: heroTreatment.connectorStroke,
+    stroke: 'dashed' as const,
     width: connectorWidth,
-  }), [connectorColor, connectorOpacity, connectorWidth, heroTreatment]);
+  }), [connectorColor, connectorOpacity, connectorWidth]);
   const beam = useMemo(() => ({
     beamColor,
     beamHighlightColor,
@@ -241,11 +241,11 @@ export function BusinessFlowHorizontal({
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
     mode,
-    frontGradient: { angle: 117, ...heroTreatment.frontGradient },
-    sideXGradient: { angle: 360, ...heroTreatment.sideXGradient },
-    sideZGradient: { angle: 177, ...heroTreatment.sideZGradient },
+    frontGradient: { angle: 117, ...palette.frontGradient },
+    sideXGradient: { angle: 360, ...palette.sideXGradient },
+    sideZGradient: { angle: 177, ...palette.sideZGradient },
     assetBasePath: '/assets/nodes',
-    nodeCornerRadius: heroTreatment.nodeCornerRadius,
+    nodeCornerRadius: 10,
     outlineOpacity: outlineOpacity ?? heroTreatment.outlineOpacity,
     outlineWidth: outlineWidth ?? heroTreatment.outlineWidth,
     progressBarHeight: nodeProgressSize,
@@ -253,7 +253,17 @@ export function BusinessFlowHorizontal({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-  }), [heroTreatment, mode, nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize, outlineOpacity, outlineWidth]);
+  }), [
+    heroTreatment,
+    mode,
+    nodeProgressMaxDelay,
+    nodeProgressMinDelay,
+    nodeProgressMode,
+    nodeProgressSize,
+    outlineOpacity,
+    outlineWidth,
+    palette,
+  ]);
   const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
     burstRef.current?.add(event);
   }, []);
@@ -297,12 +307,12 @@ export function BusinessFlowHorizontal({
         nodeShadowBias={nodeShadowBias}
         nodeShadowBlurSamples={nodeShadowBlurSamples}
         nodeShadowColor={nodeShadowColor}
-        nodeShadowLightX={nodeShadowLightX ?? heroTreatment.nodeShadowLightX}
-        nodeShadowLightY={nodeShadowLightY ?? heroTreatment.nodeShadowLightY}
-        nodeShadowLightZ={nodeShadowLightZ ?? heroTreatment.nodeShadowLightZ}
+        nodeShadowLightX={nodeShadowLightX}
+        nodeShadowLightY={nodeShadowLightY}
+        nodeShadowLightZ={nodeShadowLightZ}
         nodeShadowNormalBias={nodeShadowNormalBias}
-        nodeShadowOpacity={nodeShadowOpacity ?? heroTreatment.nodeShadowOpacity}
-        nodeShadowRadius={nodeShadowRadius ?? heroTreatment.nodeShadowRadius}
+        nodeShadowOpacity={nodeShadowOpacity}
+        nodeShadowRadius={nodeShadowRadius}
         onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}
