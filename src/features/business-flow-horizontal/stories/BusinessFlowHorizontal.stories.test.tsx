@@ -11,7 +11,7 @@ import * as horizontalStories from './BusinessFlowHorizontal.stories';
 
 describe('BusinessFlowHorizontal Storybook preview', () => {
   it('keeps Foundation unpinned so it follows the active Storybook theme', () => {
-    expect(horizontalMeta.args).toBeUndefined();
+    expect(horizontalMeta).not.toHaveProperty('args');
     expect(horizontalStories.Foundation.args).toBeUndefined();
     expect(horizontalStories.Foundation.globals).toBeUndefined();
     expect(horizontalStories.Foundation.parameters?.homepagePreset).toBeUndefined();

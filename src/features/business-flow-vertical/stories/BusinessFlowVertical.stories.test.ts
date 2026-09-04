@@ -9,7 +9,7 @@ import * as verticalStories from './BusinessFlowVertical.stories';
 
 describe('BusinessFlowVertical current-app stories', () => {
   it('keeps Foundation unpinned so it follows the active Storybook theme', () => {
-    expect(verticalMeta.args).toBeUndefined();
+    expect(verticalMeta).not.toHaveProperty('args');
     expect(verticalStories.Foundation.args).toBeUndefined();
     expect(verticalStories.Foundation.globals).toBeUndefined();
     expect(verticalStories.Foundation.parameters?.homepagePreset).toBeUndefined();
