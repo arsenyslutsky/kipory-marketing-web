@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
-import { businessFlowHorizontalHomepageProps } from '../presets';
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlowHorizontal',
@@ -22,6 +25,7 @@ const meta = {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
     className: { table: { disable: true } },
+    mode: { table: { disable: true } },
     width: {
       control: 'text',
       table: { category: 'Layout' },
@@ -50,6 +54,14 @@ const meta = {
     },
     centralIconStrokeOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Nodes' },
+    },
+    outlineOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      table: { category: 'Nodes' },
+    },
+    outlineWidth: {
+      control: { type: 'range', min: 0, max: 5, step: 0.25 },
       table: { category: 'Nodes' },
     },
     color: { table: { disable: true } },
@@ -171,7 +183,7 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowHorizontalHomepageProps,
+  args: businessFlowHorizontalHomepageDarkProps,
 } satisfies Meta<typeof BusinessFlowHorizontal>;
 
 export default meta;
@@ -180,9 +192,19 @@ type Story = StoryObj<typeof meta>;
 export const Foundation: Story = {};
 
 export const CurrentNextjsApp: Story = {
-  name: 'Current Next.js App',
-  args: businessFlowHorizontalHomepageProps,
+  name: 'Current App (Dark)',
+  globals: { theme: 'dark' },
+  args: { ...businessFlowHorizontalHomepageDarkProps, mode: 'dark' },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageDarkProps) },
+  },
+};
+
+export const CurrentAppLight: Story = {
+  name: 'Current App (Light)',
+  globals: { theme: 'light' },
+  args: { ...businessFlowHorizontalHomepageLightProps, mode: 'light' },
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageLightProps) },
   },
 };

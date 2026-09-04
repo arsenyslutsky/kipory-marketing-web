@@ -1,10 +1,49 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from '../presets';
 import { businessFlowHorizontalPaths } from '../routes';
 import horizontalMeta from './BusinessFlowHorizontal.stories';
+import * as horizontalStories from './BusinessFlowHorizontal.stories';
 
 describe('BusinessFlowHorizontal Storybook preview', () => {
+  it('offers complete theme-pinned landing-page variants', () => {
+    expect(horizontalStories.CurrentNextjsApp.name).toBe('Current App (Dark)');
+    expect(horizontalStories.CurrentNextjsApp.globals).toEqual({ theme: 'dark' });
+    expect(horizontalStories.CurrentNextjsApp.args).toEqual({
+      ...businessFlowHorizontalHomepageDarkProps,
+      mode: 'dark',
+    });
+    expect(horizontalStories.CurrentNextjsApp.parameters).toEqual({
+      homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageDarkProps) },
+    });
+
+    expect(horizontalStories.CurrentAppLight.name).toBe('Current App (Light)');
+    expect(horizontalStories.CurrentAppLight.globals).toEqual({ theme: 'light' });
+    expect(horizontalStories.CurrentAppLight.args).toEqual({
+      ...businessFlowHorizontalHomepageLightProps,
+      mode: 'light',
+    });
+    expect(horizontalStories.CurrentAppLight.parameters).toEqual({
+      homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageLightProps) },
+    });
+  });
+
+  it('offers theme-safe mode and outline controls under Nodes', () => {
+    expect(horizontalMeta.argTypes.mode).toEqual({ table: { disable: true } });
+    expect(horizontalMeta.argTypes.outlineOpacity).toMatchObject({
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      table: { category: 'Nodes' },
+    });
+    expect(horizontalMeta.argTypes.outlineWidth).toMatchObject({
+      control: { type: 'range', min: 0, max: 5, step: 0.25 },
+      table: { category: 'Nodes' },
+    });
+  });
+
   it('offers bounded controls for left and right node counts', () => {
     expect(horizontalMeta.argTypes.numberOfNodesLeft).toMatchObject({
       control: { type: 'range', min: 0, max: 12, step: 1 },

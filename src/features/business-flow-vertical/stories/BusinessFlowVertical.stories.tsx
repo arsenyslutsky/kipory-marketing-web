@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
 import { iconColorArgTypes } from '@/features/icon-color-story-controls';
 import { BusinessFlowVertical } from '../components/BusinessFlowVertical';
-import { businessFlowVerticalHomepageProps } from '../presets';
+import {
+  businessFlowVerticalHomepageDarkProps,
+  businessFlowVerticalHomepageLightProps,
+} from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlowVertical',
@@ -15,6 +18,7 @@ const meta = {
     ...nodeShadowArgTypes,
     ...iconColorArgTypes,
     className: { table: { disable: true } },
+    mode: { table: { disable: true } },
 
     width: {
       control: 'text',
@@ -209,7 +213,7 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowVerticalHomepageProps,
+  args: businessFlowVerticalHomepageDarkProps,
 } satisfies Meta<typeof BusinessFlowVertical>;
 
 export default meta;
@@ -220,9 +224,19 @@ export const Foundation: Story = {
 };
 
 export const CurrentNextjsApp: Story = {
-  name: 'Current Next.js App',
-  args: businessFlowVerticalHomepageProps,
+  name: 'Current App (Dark)',
+  globals: { theme: 'dark' },
+  args: { ...businessFlowVerticalHomepageDarkProps, mode: 'dark' },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlowVerticalHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlowVerticalHomepageDarkProps) },
+  },
+};
+
+export const CurrentAppLight: Story = {
+  name: 'Current App (Light)',
+  globals: { theme: 'light' },
+  args: { ...businessFlowVerticalHomepageLightProps, mode: 'light' },
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlowVerticalHomepageLightProps) },
   },
 };
