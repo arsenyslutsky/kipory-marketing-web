@@ -6,7 +6,19 @@ import * as pageHeroStories from './PageHero.stories';
 
 vi.mock('@/features/business-flow-3d', () => ({
   BusinessFlow3D: () => <figure aria-label="Business workflow" />,
-  businessFlow3DHomepageProps: {},
+  businessFlow3DHomepageDarkProps: {},
+  businessFlow3DHomepageLightProps: {},
+  homepageFlow: {
+    root: 'core',
+    nodes: [],
+    branches: {},
+  },
+  defaultFlow: {
+    root: 'core',
+    nodes: [],
+    branches: {},
+    variants: { 'variant-2': { hiddenNodes: [] } },
+  },
 }));
 vi.mock('@/components/site/HeroScrollEffects', () => ({
   HeroScrollEffects: ({ children, scrollRange, ...props }: PropsWithChildren<ComponentPropsWithoutRef<'main'> & { scrollRange?: number }>) => {

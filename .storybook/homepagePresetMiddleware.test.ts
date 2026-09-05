@@ -68,7 +68,7 @@ it('reports local capability and saves through the real HTTP endpoint', async ()
     targetPath,
     `import type { Props } from './types';
 
-export const businessFlowHorizontalHomepageProps = {
+export const businessFlowHorizontalHomepageDarkProps = {
   connectorOpacity: 0.22,
   beamEnabled: true,
 } satisfies Props;
@@ -118,7 +118,7 @@ it('rejects non-local, malformed, oversized, and unregistered requests without c
   const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-preset-security-'));
   const target = getHomepagePresetTarget(horizontalStoryId);
   const targetPath = join(projectRoot, target.relativePath);
-  const initialSource = `export const businessFlowHorizontalHomepageProps = {
+  const initialSource = `export const businessFlowHorizontalHomepageDarkProps = {
   connectorOpacity: 0.22,
   beamEnabled: true,
 } satisfies Props;

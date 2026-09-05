@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
+import type { ResolvedTheme } from '@/theme/theme';
 
-export type Node3DMode = 'light' | 'dark';
+export type Node3DMode = ResolvedTheme;
 export type Node3DShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type Node3DProgressMode = 'bar' | 'outline';
 export type Node3DIconFillMode = 'solid' | 'gradient';
@@ -23,6 +24,7 @@ export type Node3DIconStyle = {
 
 export type Node3DProps = {
   assetBasePath?: string;
+  bodyColor?: string;
   cameraPitch?: number;
   cameraYaw?: number;
   cameraZoom?: number;
@@ -74,8 +76,8 @@ export type Node3DSceneElements = {
 };
 
 export type Node3DSceneOptions = Required<Omit<Node3DProps,
-  'className' | 'height' | 'width' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
->> & Pick<Node3DProps, 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
+  'className' | 'height' | 'width' | 'bodyColor' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'
+>> & Pick<Node3DProps, 'bodyColor' | 'iconColor' | 'iconStrokeColor' | 'iconStrokeOpacity' | 'iconStrokeWidth'> & {
   elements: Node3DSceneElements;
 };
 

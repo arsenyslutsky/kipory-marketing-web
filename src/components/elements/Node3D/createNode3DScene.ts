@@ -37,6 +37,7 @@ function nodeFootprint(nodeWidth: number, depth: number, shape: Node3DShape): [n
 export function createNode3DScene(options: Node3DSceneOptions): Node3DSceneController {
   const {
     assetBasePath,
+    bodyColor,
     cameraPitch,
     cameraYaw,
     cameraZoom,
@@ -218,6 +219,7 @@ export function createNode3DScene(options: Node3DSceneOptions): Node3DSceneContr
 
   const group = createNode3DObject({
     assetBasePath,
+    bodyColor,
     cardDepth,
     fogEnabled,
     frontGradient,

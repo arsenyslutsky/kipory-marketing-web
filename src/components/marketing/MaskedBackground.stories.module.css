@@ -1,0 +1,7 @@
+.stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 840px;
+  background: var(--surface-base);
+}

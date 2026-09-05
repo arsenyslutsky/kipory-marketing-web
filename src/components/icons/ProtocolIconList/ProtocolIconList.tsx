@@ -7,7 +7,6 @@ export type ProtocolIconListLayout = 'wrap' | 'scroll';
 
 export type ProtocolIconListProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   comingSoonFrom?: number;
-  comingSoonGap?: number;
   comingSoonLineFadeLength?: number;
   comingSoonLogosOpacity?: number;
   comingSoonOnNextLine?: boolean;
@@ -36,11 +35,12 @@ type ProtocolIconListStyle = CSSProperties & {
   '--protocol-icon-list-title-gap': string;
   '--protocol-icon-list-title-inline-gap': string;
   '--protocol-icon-list-title-rule-width': string;
-  '--protocol-icon-list-status-gap': string;
+  '--protocol-icon-list-status-offset': string;
   '--protocol-icon-list-status-fade-start': string;
   '--protocol-icon-list-status-line-width': string;
   '--protocol-icon-list-status-color': string;
   '--protocol-icon-list-status-opacity': string;
+  '--protocol-icon-list-status-size': string;
   '--protocol-icon-list-row-gap': string;
   '--protocol-icon-logo-opacity': string;
   '--protocol-icon-logo-text-gap': string;
@@ -56,7 +56,7 @@ type ProtocolIconItemStyle = CSSProperties & {
 const protocolItemPositionStyle = { position: 'relative' } satisfies CSSProperties;
 const comingSoonPositionStyle = {
   position: 'absolute',
-  bottom: 'calc(100% + var(--protocol-icon-list-status-gap, 6px))',
+  bottom: 'calc(100% + var(--protocol-icon-list-status-offset, 6px))',
   left: 0,
 } satisfies CSSProperties;
 
@@ -83,7 +83,6 @@ function formatContainerInline(value: number) {
 export function ProtocolIconList({
   className,
   comingSoonFrom = 0,
-  comingSoonGap,
   comingSoonLineFadeLength = 0.4,
   comingSoonLogosOpacity = 1,
   comingSoonOnNextLine = false,
@@ -114,22 +113,32 @@ export function ProtocolIconList({
     && comingSoonPosition <= variants.length;
   const comingSoonLineRemainder = 1 - clampOpacity(comingSoonLineFadeLength);
   const comingSoonItemsScale = clampScale(scaleOfComingSoonItems);
-  const statusGap = typeof comingSoonGap === 'number' && Number.isFinite(comingSoonGap)
-    ? Math.max(0, comingSoonGap)
-    : Math.max(4, Math.min(8, size / 8));
+  const titleGap = Math.max(12, size * (2 / 3));
+  const automaticStatusGap = Math.max(4, Math.min(8, size / 8));
+  const protocolItemHeight = size * Math.max(
+    clampScale(logoScale),
+    0.8 * clampScale(textScale),
+  );
+  const comingSoonItemTopOffset = Math.max(
+    0,
+    protocolItemHeight * (1 - comingSoonItemsScale),
+  );
+  const statusOffset = (title ? titleGap : automaticStatusGap)
+    + comingSoonItemTopOffset;
   const rowGap = typeof comingSoonRowGap === 'number' && Number.isFinite(comingSoonRowGap)
-    ? Math.max(statusGap + 18, comingSoonRowGap)
-    : Math.max(statusGap + 18, 40);
+    ? Math.max(28, comingSoonRowGap)
+    : 40;
+  const titleSize = Math.max(12, size * (8 / 15)) * clampScale(titleScale);
   const scaledStyle: ProtocolIconListStyle = {
     '--protocol-icon-list-coming-soon-scale': `${comingSoonItemsScale}`,
     '--protocol-icon-list-title-opacity': `${clampOpacity(titleOpacity)}`,
     '--protocol-icon-list-item-gap': formatPixels(
       Math.max(12, Math.min(48, size)) * clampScale(scaleOfSpaceItems),
     ),
-    '--protocol-icon-list-title-gap': `${Math.max(12, size * (2 / 3))}px`,
+    '--protocol-icon-list-title-gap': formatPixels(titleGap),
     '--protocol-icon-list-title-inline-gap': `${Math.max(8, size * (11 / 24))}px`,
     '--protocol-icon-list-title-rule-width': `${Math.max(24, size * (7 / 6))}px`,
-    '--protocol-icon-list-status-gap': formatPixels(statusGap),
+    '--protocol-icon-list-status-offset': formatPixels(statusOffset),
     '--protocol-icon-list-status-fade-start': formatPercentage(
       comingSoonLineRemainder * 100,
     ),
@@ -138,6 +147,7 @@ export function ProtocolIconList({
     ),
     '--protocol-icon-list-status-color': comingSoonTitleColor,
     '--protocol-icon-list-status-opacity': `${clampOpacity(comingSoonTitleOpacity)}`,
+    '--protocol-icon-list-status-size': formatPixels(titleSize),
     '--protocol-icon-list-row-gap': formatPixels(rowGap),
     '--protocol-icon-logo-opacity': `${clampOpacity(logoOpacity)}`,
     '--protocol-icon-logo-text-gap': formatPixels(
@@ -146,7 +156,6 @@ export function ProtocolIconList({
     '--protocol-icon-text-opacity': `${clampOpacity(textOpacity)}`,
     '--protocol-icon-text-size': formatPixels(size * 0.8 * clampScale(textScale)),
   };
-  const titleSize = Math.max(12, size * (8 / 15)) * clampScale(titleScale);
   const renderItems = (
     rowVariants: readonly ProtocolIconVariant[],
     indexOffset = 0,
@@ -169,7 +178,10 @@ export function ProtocolIconList({
     return (
       <li className={styles.item} key={variant} style={itemStyle}>
         {isComingSoon && index + 1 === comingSoonPosition ? (
-          <span className={styles.comingSoon} style={comingSoonPositionStyle}>
+          <span
+            className={styles.comingSoon}
+            style={{ ...comingSoonPositionStyle, fontSize: titleSize }}
+          >
             Coming soon
           </span>
         ) : null}

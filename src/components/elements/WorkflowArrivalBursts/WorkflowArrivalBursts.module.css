@@ -13,9 +13,10 @@
   opacity: calc(.1 * var(--workflow-burst-strength));
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--workflow-burst-color) 30%, transparent),
+    color-mix(in srgb, var(--workflow-burst-color, var(--signal)) 30%, transparent),
     transparent 68%
   );
+  box-shadow: var(--burst-shadow);
 }
 
 .burst {
@@ -26,8 +27,8 @@
   opacity: 0;
   background: radial-gradient(
     circle,
-    var(--workflow-burst-highlight) 0 8%,
-    color-mix(in srgb, var(--workflow-burst-color) 82%, transparent) 28%,
+    var(--workflow-burst-highlight, var(--text-inverse)) 0 8%,
+    color-mix(in srgb, var(--workflow-burst-color, var(--signal)) 82%, transparent) 28%,
     transparent 70%
   );
   transform: translate(-50%, -50%) scale(.25);

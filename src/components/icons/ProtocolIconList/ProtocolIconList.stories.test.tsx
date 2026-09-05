@@ -74,15 +74,15 @@ it('uses the canonical homepage preset in the Next.js-sync story', () => {
   expect(currentNextjsApp).toBeDefined();
   expect(currentNextjsApp?.name).toBe('Current Next.js App');
   expect(currentNextjsApp?.args).toEqual(protocolIconListHomepageProps);
-  expect(currentNextjsApp?.args?.comingSoonOnNextLine).toBe(true);
-  expect(currentNextjsApp?.args?.comingSoonRowGap).toBe(48);
-  expect(currentNextjsApp?.args?.comingSoonTitleColor).toBe('#449c40');
+  expect(currentNextjsApp?.args?.comingSoonOnNextLine).toBe(false);
+  expect(currentNextjsApp?.args?.comingSoonRowGap).toBe(49);
+  expect(currentNextjsApp?.args?.comingSoonTitleColor).toBe('var(--signal-copy)');
+  expect(currentNextjsApp?.args?.comingSoonTitleOpacity).toBe(1);
   expect(currentNextjsApp?.parameters).toEqual({
     controls: { disableSaveFromUI: true },
     homepagePreset: {
       keys: [
         'comingSoonFrom',
-        'comingSoonGap',
         'comingSoonOnNextLine',
         'comingSoonRowGap',
         'comingSoonTitleColor',
@@ -106,7 +106,7 @@ it('exposes a coming-soon item scale control', () => {
   expect(meta.args.scaleOfComingSoonItems).toBe(1);
   expect(meta.argTypes.scaleOfComingSoonItems).toEqual({
     control: { type: 'range', min: 0.5, max: 1.5, step: 0.05 },
-    description: 'Scale icons, names, and the marker from the coming-soon position onward.',
+    description: 'Scale icons and names from the coming-soon position onward.',
     table: { category: 'Scale' },
   });
 });
@@ -147,17 +147,13 @@ it('exposes a human-friendly coming-soon position control', () => {
   });
 });
 
-it('exposes coming-soon spacing and opacity controls', () => {
+it('exposes coming-soon opacity controls without a manual marker gap', () => {
   expect(meta.args).toMatchObject({
-    comingSoonGap: 6,
     comingSoonLogosOpacity: 1,
     comingSoonTitleOpacity: 0.8,
   });
-  expect(meta.argTypes.comingSoonGap).toEqual({
-    control: { type: 'range', min: 0, max: 48, step: 1 },
-    description: 'Vertical distance between the “Coming soon” marker and its logo.',
-    table: { category: 'Spacing' },
-  });
+  expect(meta.args).not.toHaveProperty('comingSoonGap');
+  expect(meta.argTypes).not.toHaveProperty('comingSoonGap');
   expect(meta.argTypes.comingSoonTitleOpacity).toEqual({
     control: { type: 'range', min: 0, max: 1, step: 0.05 },
     description: 'Opacity of the “Coming soon” marker and its line.',

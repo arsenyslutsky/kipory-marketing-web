@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { createNode3DScene } from './createNode3DScene';
 import styles from './Node3D.module.css';
 import type { Node3DProps, Node3DSceneOptions } from './types';
@@ -18,6 +19,7 @@ function cssSize(value: CSSProperties['width']): string {
 
 export function Node3D({
   assetBasePath = '/assets/nodes',
+  bodyColor: explicitBodyColor,
   cameraPitch = 33.19,
   cameraYaw = 28,
   cameraZoom = 1,
@@ -25,9 +27,9 @@ export function Node3D({
   depth = 2.2,
   floating = true,
   frontGradientAngle = 117,
-  frontGradientEndColor = businessFlowPalette.frontGradient.end,
-  frontGradientMidColor = businessFlowPalette.frontGradient.mid,
-  frontGradientStartColor = businessFlowPalette.frontGradient.start,
+  frontGradientEndColor: explicitFrontGradientEndColor,
+  frontGradientMidColor: explicitFrontGradientMidColor,
+  frontGradientStartColor: explicitFrontGradientStartColor,
   glowIntensity = 0.55,
   height = '38rem',
   icon = 'hexagon_default.svg',
@@ -37,7 +39,7 @@ export function Node3D({
   iconStrokeOpacity,
   iconStrokeWidth,
   interactive = true,
-  mode = 'dark',
+  mode: explicitMode,
   nodeCornerRadius = 10,
   nodeDepth = 20,
   nodeScale = 1,
@@ -52,15 +54,27 @@ export function Node3D({
   shape = 'hexagon',
   showProgress = true,
   sideXGradientAngle = 360,
-  sideXGradientEndColor = businessFlowPalette.sideXGradient.end,
-  sideXGradientMidColor = businessFlowPalette.sideXGradient.mid,
-  sideXGradientStartColor = businessFlowPalette.sideXGradient.start,
+  sideXGradientEndColor: explicitSideXGradientEndColor,
+  sideXGradientMidColor: explicitSideXGradientMidColor,
+  sideXGradientStartColor: explicitSideXGradientStartColor,
   sideZGradientAngle = 177,
-  sideZGradientEndColor = businessFlowPalette.sideZGradient.end,
-  sideZGradientMidColor = businessFlowPalette.sideZGradient.mid,
-  sideZGradientStartColor = businessFlowPalette.sideZGradient.start,
+  sideZGradientEndColor: explicitSideZGradientEndColor,
+  sideZGradientMidColor: explicitSideZGradientMidColor,
+  sideZGradientStartColor: explicitSideZGradientStartColor,
   width = 'min(100%, 48rem)',
 }: Node3DProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const bodyColor = explicitBodyColor ?? palette.nodeBody;
+  const frontGradientEndColor = explicitFrontGradientEndColor ?? palette.frontGradient.end;
+  const frontGradientMidColor = explicitFrontGradientMidColor ?? palette.frontGradient.mid;
+  const frontGradientStartColor = explicitFrontGradientStartColor ?? palette.frontGradient.start;
+  const sideXGradientEndColor = explicitSideXGradientEndColor ?? palette.sideXGradient.end;
+  const sideXGradientMidColor = explicitSideXGradientMidColor ?? palette.sideXGradient.mid;
+  const sideXGradientStartColor = explicitSideXGradientStartColor ?? palette.sideXGradient.start;
+  const sideZGradientEndColor = explicitSideZGradientEndColor ?? palette.sideZGradient.end;
+  const sideZGradientMidColor = explicitSideZGradientMidColor ?? palette.sideZGradient.mid;
+  const sideZGradientStartColor = explicitSideZGradientStartColor ?? palette.sideZGradient.start;
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
@@ -77,6 +91,7 @@ export function Node3D({
     try {
       const options: Node3DSceneOptions = {
         assetBasePath,
+        bodyColor,
         cameraPitch,
         cameraYaw,
         cameraZoom,
@@ -136,6 +151,7 @@ export function Node3D({
     };
   }, [
     assetBasePath,
+    bodyColor,
     cameraPitch,
     cameraYaw,
     cameraZoom,
@@ -187,6 +203,7 @@ export function Node3D({
     <figure
       ref={containerRef}
       className={rootClassName}
+      data-mode={mode}
       style={style}
       role="img"
       aria-label={`Three-dimensional ${shape} business-flow node`}

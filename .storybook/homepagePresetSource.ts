@@ -19,17 +19,53 @@ type HomepagePresetTarget = { relativePath: string; exportName: string };
 const presetSaveQueues = new Map<string, Promise<void>>();
 
 const HOMEPAGE_PRESET_TARGETS: Record<HomepagePresetStoryId, HomepagePresetTarget> = {
+  'marketing-masked-background--hero': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'heroBackgroundHomepageProps',
+  },
+  'marketing-masked-background--our-pillars': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'pillarsBackgroundHomepageProps',
+  },
+  'marketing-masked-background--delivery': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'deliveryBackgroundHomepageProps',
+  },
+  'marketing-masked-background--hero-light': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'heroBackgroundHomepageProps',
+  },
+  'marketing-masked-background--our-pillars-light': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'pillarsBackgroundHomepageProps',
+  },
+  'marketing-masked-background--delivery-light': {
+    relativePath: 'src/components/marketing/MaskedBackground.presets.ts',
+    exportName: 'deliveryBackgroundHomepageProps',
+  },
   'animated-illustrations-businessflow3d--current-nextjs-app': {
     relativePath: 'src/features/business-flow-3d/presets.ts',
-    exportName: 'businessFlow3DHomepageProps',
+    exportName: 'businessFlow3DHomepageDarkProps',
+  },
+  'animated-illustrations-businessflow3d--current-app-light': {
+    relativePath: 'src/features/business-flow-3d/presets.ts',
+    exportName: 'businessFlow3DHomepageLightProps',
   },
   'animated-illustrations-businessflowvertical--current-nextjs-app': {
     relativePath: 'src/features/business-flow-vertical/presets.ts',
-    exportName: 'businessFlowVerticalHomepageProps',
+    exportName: 'businessFlowVerticalHomepageDarkProps',
+  },
+  'animated-illustrations-businessflowvertical--current-app-light': {
+    relativePath: 'src/features/business-flow-vertical/presets.ts',
+    exportName: 'businessFlowVerticalHomepageLightProps',
   },
   'animated-illustrations-businessflowhorizontal--current-nextjs-app': {
     relativePath: 'src/features/business-flow-horizontal/presets.ts',
-    exportName: 'businessFlowHorizontalHomepageProps',
+    exportName: 'businessFlowHorizontalHomepageDarkProps',
+  },
+  'animated-illustrations-businessflowhorizontal--current-app-light': {
+    relativePath: 'src/features/business-flow-horizontal/presets.ts',
+    exportName: 'businessFlowHorizontalHomepageLightProps',
   },
   'animated-illustrations-businesscorenodeflow--current-nextjs-app': {
     relativePath: 'src/features/business-core-node-flow/presets.ts',
@@ -301,7 +337,23 @@ export async function saveHomepagePreset(
   const previousSave = presetSaveQueues.get(targetPath) ?? Promise.resolve();
   const currentSave = previousSave.catch(() => undefined).then(async () => {
     const source = await readFile(targetPath, 'utf8');
-    const updatedSource = rewriteHomepagePresetSource(source, target.exportName, args);
+    const baseExport = storyId === 'marketing-masked-background--hero'
+      ? 'heroBaseBackgroundDarkProps'
+      : storyId === 'marketing-masked-background--hero-light'
+        ? 'heroBaseBackgroundLightProps'
+        : undefined;
+    const baseKeys = new Set(['colorFrom', 'colorTo', 'style', 'angle']);
+    const maskArgs = baseExport
+      ? Object.fromEntries(Object.entries(args).filter(([key]) => !baseKeys.has(key)))
+      : args;
+    let updatedSource = rewriteHomepagePresetSource(source, target.exportName, maskArgs);
+    if (baseExport) {
+      const baseArgs = Object.fromEntries(Object.entries(args).filter(([key]) => baseKeys.has(key)));
+      if (Object.keys(baseArgs).length > 0) {
+        // Validate both groups before the single atomic write; themes share only the mask.
+        updatedSource = rewriteHomepagePresetSource(updatedSource, baseExport, baseArgs);
+      }
+    }
     const temporaryPath = `${targetPath}.${process.pid}-${randomUUID()}.tmp`;
 
     try {

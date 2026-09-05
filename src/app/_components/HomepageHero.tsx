@@ -1,36 +1,38 @@
 import Link from 'next/link';
+import { HeroBaseBackground } from '@/components/marketing/HeroBaseBackground';
 
 import { ProtocolIconList } from '@/components/icons/ProtocolIconList';
 import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import { protocolIconListHomepageProps } from '@/components/icons/ProtocolIconList/presets';
-import { SiteContainer } from '@/components/marketing';
+import { MaskedBackground, SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
+import { heroBackgroundHomepageProps } from '@/components/marketing/MaskedBackground.presets';
 import { GlowLink } from '@/components/ui/GlowLink';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
-import {
-  BusinessFlow3D,
-  businessFlow3DHomepageProps,
-} from '@/features/business-flow-3d';
 import styles from '../marketing.module.css';
+import { HomepageBusinessFlow3D } from './HomepageBusinessFlow3D';
 import { LearnMoreLink } from './LearnMoreLink';
 
 export function HomepageHero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
+      <HeroBaseBackground />
       <div className={styles.heroVisual} data-hero-workflow aria-hidden="true">
         <MobileWorkflowFallback
           alt=""
+          darkSrc="/images/workflows/mobile/hero-flow.png"
           fill
           fit="cover"
           height={780}
+          lightSrc="/images/workflows/mobile/hero-flow-light.png"
           name="hero"
-          src="/images/workflows/mobile/hero-flow.png"
           width={390}
         >
-          <BusinessFlow3D {...businessFlow3DHomepageProps} />
+          <HomepageBusinessFlow3D />
         </MobileWorkflowFallback>
       </div>
       <div className={styles.heroShade} />
+      <MaskedBackground {...heroBackgroundHomepageProps} variant="hero" />
       <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>
         <div className={styles.heroCopy}>
           <h1 id="hero-title" className={styles.heroTitle} data-scroll-parallax data-scroll-fade="false">
@@ -69,13 +71,13 @@ export function HomepageHero() {
               />
             </div>
           </div>
-          <LearnMoreLink
-            className={styles.heroLearnMore}
-            href="#pillars"
-            label="Explore our pillars"
-            scrollShiftRem={0}
-          />
         </div>
+        <LearnMoreLink
+          className={styles.heroLearnMore}
+          href="#pillars"
+          label="Explore our pillars"
+          scrollShiftRem={0}
+        />
       </SiteContainer>
     </section>
   );

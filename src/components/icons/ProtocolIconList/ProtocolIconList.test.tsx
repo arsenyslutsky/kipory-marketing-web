@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
 
 import { ProtocolIconList } from './ProtocolIconList';
+import { protocolIconListHomepageProps } from './presets';
 
 it('renders built-in protocol names in caller order', () => {
   render(<ProtocolIconList variants={['sockets', 'mcp', 'graphql']} />);
@@ -35,21 +36,74 @@ it('keeps coming-soon labels hidden when the position is zero', () => {
   expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
 });
 
-it('controls the coming-soon marker gap and opacity independently', () => {
+it('derives the coming-soon marker offset when no title is present', () => {
   render(
     <ProtocolIconList
       comingSoonFrom={2}
-      comingSoonGap={14}
       comingSoonTitleOpacity={0.35}
       data-testid="protocol-list"
+      logoScale={0.5}
+      scaleOfComingSoonItems={0.75}
       variants={['mcp', 'rest']}
     />,
   );
 
   const root = screen.getByTestId('protocol-list');
 
-  expect(root.style.getPropertyValue('--protocol-icon-list-status-gap')).toBe('14px');
+  expect(root.style.getPropertyValue('--protocol-icon-list-status-offset')).toBe('15.6px');
   expect(root.style.getPropertyValue('--protocol-icon-list-status-opacity')).toBe('0.35');
+});
+
+it('matches the coming-soon marker typography to the list title', () => {
+  render(
+    <ProtocolIconList
+      comingSoonFrom={2}
+      size={30}
+      title="Connect & Deliver"
+      variants={['mcp', 'rest']}
+    />,
+  );
+
+  const title = screen.getByText('Connect & Deliver');
+  const marker = screen.getByText('Coming soon');
+  const titleStyle = getComputedStyle(title);
+  const markerStyle = getComputedStyle(marker);
+
+  expect(marker).toHaveStyle({ fontSize: '16px' });
+  expect({
+    fontFamily: markerStyle.fontFamily,
+    fontWeight: markerStyle.fontWeight,
+    lineHeight: markerStyle.lineHeight,
+    letterSpacing: markerStyle.letterSpacing,
+    textTransform: markerStyle.textTransform,
+  }).toEqual({
+    fontFamily: titleStyle.fontFamily,
+    fontWeight: titleStyle.fontWeight,
+    lineHeight: titleStyle.lineHeight,
+    letterSpacing: titleStyle.letterSpacing,
+    textTransform: titleStyle.textTransform,
+  });
+});
+
+it('matches the homepage coming-soon marker intensity to its title', () => {
+  render(
+    <ProtocolIconList
+      {...protocolIconListHomepageProps}
+      data-testid="protocol-list"
+    />,
+  );
+
+  const root = screen.getByTestId('protocol-list');
+
+  expect(root.style.getPropertyValue('--protocol-icon-list-status-opacity')).toBe(
+    root.style.getPropertyValue('--protocol-icon-list-title-opacity'),
+  );
+  expect(root.style.getPropertyValue('--protocol-icon-list-status-color')).toBe(
+    'var(--signal-copy)',
+  );
+  expect(root.style.getPropertyValue('--protocol-icon-list-status-offset')).toBe(
+    '17.633px',
+  );
 });
 
 it('colors the coming-soon marker independently from the main title', () => {
@@ -73,7 +127,6 @@ it('keeps the coming-soon marker out of the logo row height', () => {
   render(
     <ProtocolIconList
       comingSoonFrom={2}
-      comingSoonGap={40}
       title="Connect & Deliver"
       variants={['mcp', 'rest']}
     />,
@@ -85,7 +138,7 @@ it('keeps the coming-soon marker out of the logo row height', () => {
   expect(getComputedStyle(item!).position).toBe('relative');
   expect(getComputedStyle(marker).position).toBe('absolute');
   expect(getComputedStyle(marker).bottom).toBe(
-    'calc(100% + var(--protocol-icon-list-status-gap, 6px))',
+    'calc(100% + var(--protocol-icon-list-status-offset, 6px))',
   );
 });
 
@@ -117,7 +170,6 @@ it('controls the gap between available and coming-soon rows independently', () =
   render(
     <ProtocolIconList
       comingSoonFrom={2}
-      comingSoonGap={11}
       comingSoonOnNextLine
       comingSoonRowGap={40}
       data-testid="protocol-list"
@@ -128,7 +180,6 @@ it('controls the gap between available and coming-soon rows independently', () =
   const root = screen.getByTestId('protocol-list');
 
   expect(root.style.getPropertyValue('--protocol-icon-list-row-gap')).toBe('40px');
-  expect(root.style.getPropertyValue('--protocol-icon-list-status-gap')).toBe('11px');
 });
 
 it.each([0, 1, 3])(
@@ -189,11 +240,10 @@ it('scales all coming-soon item content without changing available items', () =>
   expect(root.style.getPropertyValue('--protocol-icon-list-coming-soon-scale')).toBe('0.75');
 });
 
-it('clamps coming-soon spacing and opacity controls', () => {
+it('clamps coming-soon opacity controls', () => {
   const { container } = render(
     <ProtocolIconList
       comingSoonFrom={1}
-      comingSoonGap={-8}
       comingSoonLogosOpacity={2}
       comingSoonTitleOpacity={-1}
       data-testid="protocol-list"
@@ -203,7 +253,6 @@ it('clamps coming-soon spacing and opacity controls', () => {
 
   const root = screen.getByTestId('protocol-list');
 
-  expect(root.style.getPropertyValue('--protocol-icon-list-status-gap')).toBe('0px');
   expect(root.style.getPropertyValue('--protocol-icon-list-status-opacity')).toBe('0');
   expect(container.querySelector('svg')?.parentElement).toHaveStyle({ opacity: '1' });
 });

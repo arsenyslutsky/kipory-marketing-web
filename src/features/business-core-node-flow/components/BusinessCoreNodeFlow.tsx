@@ -4,6 +4,7 @@ import {
   FlowLayer3D,
   type FlowLayer3DArrivalEvent,
   type FlowLayer3DNodeStyle,
+  type NodeShadowProps,
 } from '@/components/elements/FlowLayer3D';
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
 import type { Node3DProgressMode } from '@/components/elements/Node3D';
@@ -12,7 +13,13 @@ import {
   WorkflowArrivalBursts,
   type WorkflowArrivalBurstsHandle,
 } from '@/components/elements/WorkflowArrivalBursts';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import {
+  resolveNodeAppearance,
+  type NodeAppearanceProps,
+} from '@/features/node-appearance';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -28,7 +35,7 @@ import {
 } from '../routes';
 import styles from './BusinessCoreNodeFlow.module.css';
 
-export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & {
+export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & NodeShadowProps & NodeAppearanceProps & {
   auxiliaryIcon?: BusinessCoreNodeFlowAuxiliaryIcon;
   auxiliaryIconFillColor?: string;
   beamColor?: string;
@@ -58,7 +65,9 @@ export type BusinessCoreNodeFlowProps = WorkflowRuntimeOptions & {
   gridDensity?: number;
   gridOpacity?: number;
   iconSize?: number;
+  iconStrokeColor?: string;
   maxConcurrentBeams?: number;
+  mode?: ResolvedTheme;
   nodeProgressMaxDelay?: number;
   nodeProgressMinDelay?: number;
   nodeProgressMode?: Node3DProgressMode;
@@ -104,15 +113,15 @@ function useReducedMotionPreference() {
 export function BusinessCoreNodeFlow({
   activityStrategy,
   auxiliaryIcon = 'mixed',
-  auxiliaryIconFillColor = businessFlowPalette.horizontalAuxiliaryIconFill,
-  beamColor = businessFlowPalette.beam,
+  auxiliaryIconFillColor: auxiliaryIconFillColorProp,
+  beamColor: beamColorProp,
   beamEmissionRandomness = 100,
   beamEnabled = true,
   beamGlowIntensity = 1,
   beamHeadGlowBlur = 2,
   beamHeadGlowOpacity = 1,
   beamHeadGlowRadius = 11,
-  beamHighlightColor = businessFlowPalette.beamHighlight,
+  beamHighlightColor: beamHighlightColorProp,
   beamSpeed = 1.4,
   beamTrailLength = 135,
   beamWidth = 1.4,
@@ -120,24 +129,48 @@ export function BusinessCoreNodeFlow({
   burstRadius = 24,
   burstStrength = 0.5,
   centralIcon = 'intelligence',
-  centralIconFillColor = businessFlowPalette.horizontalCentralIconFill,
+  centralIconFillColor: centralIconFillColorProp,
   centralIconStrokeOpacity = 1,
   className,
-  color = businessFlowPalette.horizontalIconStroke,
-  connectorColor = businessFlowPalette.connector,
+  color: colorProp,
+  connectorColor: connectorColorProp,
   connectorOpacity = 0.8,
   connectorStroke = 'dashed',
   connectorWidth = 1,
-  gridColor = businessFlowPalette.grid,
+  gridColor: gridColorProp,
   gridDensity = 30,
   gridOpacity = 0,
   iconSize = 44,
+  iconStrokeColor: iconStrokeColorProp,
   loadStrategy,
   maxConcurrentBeams = 6,
+  mode: explicitMode,
+  nodeBodyColor,
+  nodeFrontGradientAngle,
+  nodeFrontGradientEndColor,
+  nodeFrontGradientMidColor,
+  nodeFrontGradientStartColor,
   nodeProgressMaxDelay = 1800,
   nodeProgressMinDelay = 500,
   nodeProgressMode = 'outline',
   nodeProgressSize = 15,
+  nodeSideXGradientAngle,
+  nodeSideXGradientEndColor,
+  nodeSideXGradientMidColor,
+  nodeSideXGradientStartColor,
+  nodeSideZGradientAngle,
+  nodeSideZGradientEndColor,
+  nodeSideZGradientMidColor,
+  nodeSideZGradientStartColor,
+  nodeShadowBias,
+  nodeShadowBlurSamples,
+  nodeShadowColor,
+  nodeShadowLightX,
+  nodeShadowLightY,
+  nodeShadowLightZ,
+  nodeShadowNormalBias,
+  nodeShadowOpacity,
+  nodeShadowRadius,
   numberOfAuxiliaryConnections = 12,
   preloadMargin,
   resolutionScale,
@@ -145,6 +178,50 @@ export function BusinessCoreNodeFlow({
   size = 'min(42rem, 90vw)',
   strokeWidth = 2.25,
 }: BusinessCoreNodeFlowProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const auxiliaryIconFillColor = auxiliaryIconFillColorProp ?? palette.horizontalAuxiliaryIconFill;
+  const beamColor = beamColorProp ?? palette.beam;
+  const beamHighlightColor = beamHighlightColorProp ?? palette.beamHighlight;
+  const centralIconFillColor = centralIconFillColorProp ?? palette.horizontalCentralIconFill;
+  const iconStrokeColor = iconStrokeColorProp ?? colorProp ?? palette.horizontalIconStroke;
+  const connectorColor = connectorColorProp ?? palette.connector;
+  const gridColor = gridColorProp ?? palette.grid;
+  const nodeAppearance = useMemo(() => resolveNodeAppearance({
+    nodeBodyColor,
+    nodeFrontGradientAngle,
+    nodeFrontGradientEndColor,
+    nodeFrontGradientMidColor,
+    nodeFrontGradientStartColor,
+    nodeSideXGradientAngle,
+    nodeSideXGradientEndColor,
+    nodeSideXGradientMidColor,
+    nodeSideXGradientStartColor,
+    nodeSideZGradientAngle,
+    nodeSideZGradientEndColor,
+    nodeSideZGradientMidColor,
+    nodeSideZGradientStartColor,
+  }, {
+    bodyColor: palette.nodeBody,
+    frontGradient: { angle: 117, ...palette.frontGradient },
+    sideXGradient: { angle: 360, ...palette.sideXGradient },
+    sideZGradient: { angle: 177, ...palette.sideZGradient },
+  }), [
+    nodeBodyColor,
+    nodeFrontGradientAngle,
+    nodeFrontGradientEndColor,
+    nodeFrontGradientMidColor,
+    nodeFrontGradientStartColor,
+    nodeSideXGradientAngle,
+    nodeSideXGradientEndColor,
+    nodeSideXGradientMidColor,
+    nodeSideXGradientStartColor,
+    nodeSideZGradientAngle,
+    nodeSideZGradientEndColor,
+    nodeSideZGradientMidColor,
+    nodeSideZGradientStartColor,
+    palette,
+  ]);
   const reducedMotion = useReducedMotionPreference();
   const burstRef = useRef<WorkflowArrivalBurstsHandle>(null);
   const [flowActive, setFlowActive] = useState(false);
@@ -167,14 +244,14 @@ export function BusinessCoreNodeFlow({
     centralIconColor: centralIconFillColor,
     centralIconStrokeOpacity,
     iconSize,
-    iconStrokeColor: color,
+    iconStrokeColor,
     layoutNodes,
     strokeWidth,
   }), [
     auxiliaryIconFillColor,
     centralIconFillColor,
     centralIconStrokeOpacity,
-    color,
+    iconStrokeColor,
     iconSize,
     layoutNodes,
     strokeWidth,
@@ -221,9 +298,9 @@ export function BusinessCoreNodeFlow({
     showAuxiliaryNodes,
   ]);
   const nodeStyle = useMemo<FlowLayer3DNodeStyle>(() => ({
+    mode,
+    ...nodeAppearance,
     assetBasePath: '/assets/nodes',
-    frontGradient: { angle: 117, ...businessFlowPalette.frontGradient },
-    mode: 'dark',
     nodeCornerRadius: 10,
     outlineOpacity: 0,
     outlineWidth: 1,
@@ -232,9 +309,7 @@ export function BusinessCoreNodeFlow({
     progressMinDelay: nodeProgressMinDelay,
     progressMode: nodeProgressMode,
     progressPadding: 1,
-    sideXGradient: { angle: 360, ...businessFlowPalette.sideXGradient },
-    sideZGradient: { angle: 177, ...businessFlowPalette.sideZGradient },
-  }), [nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
+  }), [mode, nodeAppearance, nodeProgressMaxDelay, nodeProgressMinDelay, nodeProgressMode, nodeProgressSize]);
   const onArrival = useCallback((event: FlowLayer3DArrivalEvent) => {
     burstRef.current?.add(event);
   }, []);
@@ -249,7 +324,7 @@ export function BusinessCoreNodeFlow({
 
   const rootClassName = [styles.root, className].filter(Boolean).join(' ');
   const style: IllustrationStyle = {
-    '--camera-color': color,
+    '--camera-color': iconStrokeColor,
     '--camera-grid-color': gridColor,
     '--camera-grid-density': `${gridDensity}px`,
     '--camera-grid-opacity': String(gridOpacity),
@@ -270,8 +345,18 @@ export function BusinessCoreNodeFlow({
         className={styles.flowLayer}
         connector={connector}
         loadStrategy={loadStrategy}
+        mode={mode}
         nodes={nodes}
         nodeStyle={nodeStyle}
+        nodeShadowBias={nodeShadowBias}
+        nodeShadowBlurSamples={nodeShadowBlurSamples}
+        nodeShadowColor={nodeShadowColor}
+        nodeShadowLightX={nodeShadowLightX}
+        nodeShadowLightY={nodeShadowLightY}
+        nodeShadowLightZ={nodeShadowLightZ}
+        nodeShadowNormalBias={nodeShadowNormalBias}
+        nodeShadowOpacity={nodeShadowOpacity}
+        nodeShadowRadius={nodeShadowRadius}
         onActivityChange={onActivityChange}
         onArrival={onArrival}
         paths={paths}

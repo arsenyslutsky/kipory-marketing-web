@@ -1,4 +1,13 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import {
+  businessFlowPalettes,
+  getBusinessFlowPalette,
+} from '@/features/business-flow-palette';
+
+vi.mock('@/features/business-flow-palette', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/features/business-flow-palette')>();
+  return { ...actual, getBusinessFlowPalette: vi.fn(actual.getBusinessFlowPalette) };
+});
 
 const renderer = vi.hoisted(() => ({
   capabilities: { getMaxAnisotropy: vi.fn(() => 1) },
@@ -88,6 +97,66 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('uses the resolved node mode and matching flare stops for light beams', () => {
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver() {
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    createLinearGradient: () => ({ addColorStop: vi.fn() }),
+    createRadialGradient: () => ({ addColorStop: vi.fn() }),
+    fillRect: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
+
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40', beamHighlightColor: '#c9ebc7', beamWidth: 1,
+      enabled: true, glowIntensity: 1, trailLength: 0.38,
+    },
+    beamSource: {
+      slots: 1,
+      next: (_slot, generation) => generation === 0 ? {
+        delayMs: 0,
+        durationMs: 1000,
+        id: 'light-run',
+        path: { id: 'light-path', points: [[0, 0.5], [1, 0.5]] },
+      } : null,
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#33453a', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    nodeStyle: {
+      assetBasePath: '/assets/nodes',
+      frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      mode: 'light',
+      nodeCornerRadius: 12,
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      progressBarHeight: 8,
+      progressMode: 'outline',
+      progressPadding: 2,
+      sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+      sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
+    },
+    paths: [{ id: 'light-path', points: [[0, 0.5], [1, 0.5]] }],
+  });
+
+  expect(getBusinessFlowPalette).toHaveBeenCalledWith('light');
+  expect(createBeam3DFlareTexture).toHaveBeenCalledWith(businessFlowPalettes.light.flareStops);
+  expect(createBeam3DObject).toHaveBeenCalledWith(expect.objectContaining({
+    colors: expect.objectContaining({ flareStops: businessFlowPalettes.light.flareStops }),
+    mode: 'light',
+  }));
+  controller.destroy();
 });
 
 it('does not schedule frames until activated and cancels them when paused', () => {
@@ -482,6 +551,15 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
       sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
       sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
     },
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: -3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
     paths: [],
   });
 
@@ -506,13 +584,19 @@ it('renders and disposes soft lower-right shadows beneath flow nodes', () => {
   expect(renderer.shadowMap.needsUpdate).toBe(false);
   expect(renderer.shadowMap.type).toBe(THREE.VSMShadowMap);
   expect(light.castShadow).toBe(true);
-  expect(light.position.x).toBeLessThan(0);
-  expect(light.position.y).toBeGreaterThan(0);
-  expect(light.position.z).toBeLessThan(0);
+  const expectedLightDirection = new THREE.Vector3(-4, 9, -3).normalize();
+  expect(light.position.clone().normalize().x).toBeCloseTo(expectedLightDirection.x);
+  expect(light.position.clone().normalize().y).toBeCloseTo(expectedLightDirection.y);
+  expect(light.position.clone().normalize().z).toBeCloseTo(expectedLightDirection.z);
+  expect(light.shadow.bias).toBe(-0.001);
+  expect(light.shadow.normalBias).toBe(0.04);
+  expect(light.shadow.radius).toBe(6);
+  expect(light.shadow.blurSamples).toBe(11);
   expect(catcher.receiveShadow).toBe(true);
   expect(catcher.position.y).toBeLessThan(0.29);
   expect(catcher.material.transparent).toBe(true);
-  expect(catcher.material.opacity).toBeGreaterThan(0);
+  expect(catcher.material.color.getHexString()).toBe('123456');
+  expect(catcher.material.opacity).toBe(0.37);
 
   const flowNodes = vi.mocked(createFlowLayer3DNodes).mock.results[0]?.value?.nodes as FlowLayer3DNodes['nodes'] | undefined;
   if (!flowNodes) throw new Error('Expected the representative flow nodes to render.');
@@ -853,7 +937,7 @@ it('renders a completed path before assigning the next run and keeps the next ru
   controller.destroy();
 });
 
-it('applies a run-specific trail length and restores the shared fallback for later runs', () => {
+it('converts a run-specific CSS-pixel trail length and restores the shared fallback for later runs', () => {
   const animationFrames: FrameRequestCallback[] = [];
   vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
     animationFrames.push(callback);
@@ -867,6 +951,11 @@ it('applies a run-specific trail length and restores the shared fallback for lat
     new THREE.CanvasTexture(document.createElement('canvas')),
   );
   const path = { id: 'trail-route', points: [[0, 0.5], [1, 0.5]] } as const;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { value: 640 },
+    clientWidth: { value: 320 },
+  });
   const controller = createFlowLayer3DScene({
     beam: {
       beamColor: '#449c40',
@@ -883,19 +972,19 @@ it('applies a run-specific trail length and restores the shared fallback for lat
         durationMs: generation === 0 ? 100 : 1000,
         id: `trail-run:${generation}`,
         path,
-        ...(generation === 0 ? { trailLength: 0.25 } : {}),
+        ...(generation === 0 ? { trailLengthInPixels: 49 } : {}),
       }),
     },
     canvas: document.createElement('canvas'),
     connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
-    container: document.createElement('div'),
+    container,
     cssLayer: document.createElement('div'),
     paths: [path],
   });
   const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
   if (!beam) throw new Error('Expected the trail beam to be created.');
 
-  expect(beam.core.material.uniforms.uTrailLength.value).toBe(0.25);
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 320);
 
   const initialFrame = animationFrames.shift();
   if (!initialFrame) throw new Error('Expected the initial animation frame.');
@@ -909,6 +998,63 @@ it('applies a run-specific trail length and restores the shared fallback for lat
 
   expect(beam.core.material.uniforms.uTrailLength.value).toBe(0.38);
 
+  controller.destroy();
+});
+
+it('preserves CSS-pixel trail lengths when the viewport resizes without changing aspect ratio', () => {
+  let resizeCallback: ResizeObserverCallback | undefined;
+  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('ResizeObserver', vi.fn(function MockResizeObserver(callback: ResizeObserverCallback) {
+    resizeCallback = callback;
+    return { disconnect: vi.fn(), observe: vi.fn() };
+  }));
+  vi.mocked(createBeam3DFlareTexture).mockReturnValueOnce(
+    new THREE.CanvasTexture(document.createElement('canvas')),
+  );
+  const path = { id: 'resizable-trail-route', points: [[0, 0.5], [1, 0.5]] } as const;
+  let width = 320;
+  let height = 640;
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientHeight: { get: () => height },
+    clientWidth: { get: () => width },
+  });
+  const controller = createFlowLayer3DScene({
+    beam: {
+      beamColor: '#449c40',
+      beamHighlightColor: '#c9ebc7',
+      beamWidth: 1,
+      enabled: true,
+      glowIntensity: 1,
+      trailLength: 0.38,
+    },
+    beamSource: {
+      slots: 1,
+      next: () => ({
+        delayMs: 0,
+        durationMs: 1000,
+        id: 'resizable-trail-run',
+        path,
+        trailLengthInPixels: 49,
+      }),
+    },
+    canvas: document.createElement('canvas'),
+    connector: { color: '#fff', opacity: 0.5, stroke: 'dashed', width: 1.25 },
+    container,
+    cssLayer: document.createElement('div'),
+    paths: [path],
+  });
+  const beam = vi.mocked(createBeam3DObject).mock.results[0]?.value;
+  if (!beam || !resizeCallback) throw new Error('Expected the resizable trail beam and observer.');
+
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 320);
+
+  width = 640;
+  height = 1280;
+  resizeCallback([], {} as ResizeObserver);
+
+  expect(beam.core.material.uniforms.uTrailLength.value).toBeCloseTo(49 / 640);
   controller.destroy();
 });
 

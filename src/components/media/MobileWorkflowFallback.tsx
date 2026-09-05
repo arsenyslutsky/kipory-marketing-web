@@ -1,17 +1,27 @@
 'use client';
 
-import type { PropsWithChildren } from 'react';
+import type { CSSProperties, PropsWithChildren } from 'react';
 import { useSyncExternalStore } from 'react';
+import type { ResolvedTheme } from '@/theme/theme';
 import styles from './MobileWorkflowFallback.module.css';
 
 const desktopMediaQuery = '(min-width: 621px)';
+const transparentImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E";
+
+type FallbackImageStyle = CSSProperties & {
+  '--mobile-workflow-dark-image': string;
+  '--mobile-workflow-light-image': string;
+  '--mobile-workflow-selected-image'?: string;
+};
 
 type MobileWorkflowFallbackProps = PropsWithChildren<{
   alt: string;
   className?: string;
+  darkSrc: string;
   height: number;
+  lightSrc: string;
+  mode?: ResolvedTheme;
   name: string;
-  src: string;
   width: number;
   fill?: boolean;
   fit?: 'contain' | 'cover';
@@ -34,32 +44,43 @@ function useDesktopViewport() {
   return useSyncExternalStore(subscribeToDesktopViewport, isDesktopViewport, () => false);
 }
 
-function densitySourceSet(src: string) {
+function densityImageSet(src: string) {
   const extensionIndex = src.lastIndexOf('.');
   const stem = src.slice(0, extensionIndex);
   const extension = src.slice(extensionIndex);
-  return `${src} 1x, ${stem}@2x${extension} 2x, ${stem}@3x${extension} 3x`;
+  return `image-set(url(${JSON.stringify(src)}) 1x, url(${JSON.stringify(`${stem}@2x${extension}`)}) 2x, url(${JSON.stringify(`${stem}@3x${extension}`)}) 3x)`;
 }
 
 export function MobileWorkflowFallback({
   alt,
   children,
   className,
+  darkSrc,
   fill = false,
   fit = 'contain',
   height,
+  lightSrc,
+  mode,
   name,
-  src,
   width,
 }: MobileWorkflowFallbackProps) {
   const desktop = useDesktopViewport();
 
   if (desktop) return children;
 
+  const imageStyle: FallbackImageStyle = {
+    '--mobile-workflow-dark-image': densityImageSet(darkSrc),
+    '--mobile-workflow-light-image': densityImageSet(lightSrc),
+    ...(mode ? {
+      '--mobile-workflow-selected-image': `var(--mobile-workflow-${mode}-image)`,
+    } : {}),
+  };
+
   return (
     <picture
       className={`${styles.picture} ${fill ? styles.fill : ''} ${className ?? ''}`.trim()}
       data-mobile-workflow-fallback={name}
+      data-mode={mode}
       style={fill ? undefined : {
         aspectRatio: `${width} / ${height}`,
         width: `min(100%, ${width}px)`,
@@ -71,8 +92,8 @@ export function MobileWorkflowFallback({
         decoding="async"
         draggable="false"
         height={height}
-        src={src}
-        srcSet={densitySourceSet(src)}
+        src={transparentImage}
+        style={imageStyle}
         width={width}
       />
     </picture>

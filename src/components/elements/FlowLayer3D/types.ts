@@ -1,4 +1,5 @@
 import type { FlowPath3D, FlowPath3DPoint } from '../FlowPath3D/types';
+import type { ResolvedTheme } from '@/theme/theme';
 import type { Connector3DStroke } from '../Connector3D/types';
 import type {
   Node3DIconFillMode,
@@ -10,6 +11,18 @@ import type {
 import type { WorkflowRuntimeOptions } from '../workflow-runtime';
 
 export type FlowLayer3DPoint = readonly [x: number, y: number];
+
+export type NodeShadowProps = {
+  nodeShadowBias?: number;
+  nodeShadowBlurSamples?: number;
+  nodeShadowColor?: string;
+  nodeShadowLightX?: number;
+  nodeShadowLightY?: number;
+  nodeShadowLightZ?: number;
+  nodeShadowNormalBias?: number;
+  nodeShadowOpacity?: number;
+  nodeShadowRadius?: number;
+};
 
 export type FlowLayer3DNode = {
   cardDepth: number;
@@ -34,8 +47,9 @@ export type FlowLayer3DNode = {
 
 export type FlowLayer3DNodeStyle = {
   assetBasePath: string;
+  bodyColor?: string;
   frontGradient: Node3DResolvedGradient;
-  mode: Node3DMode;
+  mode?: Node3DMode;
   nodeCornerRadius: number;
   outlineOpacity: number;
   outlineWidth: number;
@@ -46,6 +60,10 @@ export type FlowLayer3DNodeStyle = {
   progressPadding: number;
   sideXGradient: Node3DResolvedGradient;
   sideZGradient: Node3DResolvedGradient;
+};
+
+export type ResolvedFlowLayer3DNodeStyle = Omit<FlowLayer3DNodeStyle, 'mode'> & {
+  mode: ResolvedTheme;
 };
 
 export type FlowLayer3DNodeFrame = {
@@ -128,6 +146,8 @@ export type FlowLayer3DBeamRun = {
   path: FlowLayer3DPath;
   /** Normalized fraction of the active path; falls back to the shared beam style. */
   trailLength?: number;
+  /** Visual trail length in CSS pixels; takes precedence over normalized trailLength. */
+  trailLengthInPixels?: number;
 };
 
 export type FlowLayer3DBeamSource = {
@@ -135,11 +155,12 @@ export type FlowLayer3DBeamSource = {
   next: (slot: number, generation: number) => FlowLayer3DBeamRun | null;
 };
 
-export type FlowLayer3DProps = WorkflowRuntimeOptions & {
+export type FlowLayer3DProps = WorkflowRuntimeOptions & NodeShadowProps & {
   beam: FlowLayer3DBeamStyle;
   beamSource: FlowLayer3DBeamSource;
   className?: string;
   connector: FlowLayer3DConnectorStyle;
+  mode?: ResolvedTheme;
   nodes?: readonly FlowLayer3DNode[];
   nodeStyle?: FlowLayer3DNodeStyle;
   onActivityChange?: (active: boolean) => void;
@@ -151,12 +172,13 @@ export type FlowLayer3DProps = WorkflowRuntimeOptions & {
 
 export type FlowLayer3DSceneOptions = Omit<
   FlowLayer3DProps,
-  'activityStrategy' | 'className' | 'loadStrategy' | 'onActivityChange' | 'preloadMargin'
+  'activityStrategy' | 'className' | 'loadStrategy' | 'nodeStyle' | 'onActivityChange' | 'preloadMargin'
 > & {
   active?: boolean;
   canvas: HTMLCanvasElement;
   container: HTMLElement;
   cssLayer: HTMLElement;
+  nodeStyle?: ResolvedFlowLayer3DNodeStyle;
   onError?: (error: unknown) => void;
   onReady?: () => void;
 };

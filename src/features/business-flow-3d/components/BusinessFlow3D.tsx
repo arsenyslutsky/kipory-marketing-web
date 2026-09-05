@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlowLoadingOverlay } from '@/components/elements/FlowLoadingOverlay/FlowLoadingOverlay';
 import { useWorkflowRuntime } from '@/components/elements/workflow-runtime';
 import { useScrollMotion } from '@/components/motion/ScrollMotionContext';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { cssVariablesForTheme, defaultColors, defaultFlow } from '../config';
 import type { SignalFlowSceneController } from '../scene/createSignalFlowScene';
+import { loadSignalFlowSceneFactory } from '../scene/loadSignalFlowScene';
 import type { BusinessFlow3DProps, SignalFlowMode } from '../types';
 import styles from './BusinessFlow3D.module.css';
 
@@ -25,7 +27,7 @@ function joinClasses(...classes: Array<string | false | undefined>) {
 export function BusinessFlow3D({
   activityStrategy,
   variant = 'variant-2',
-  mode = 'light',
+  mode: explicitMode,
   flow = defaultFlow,
   colors = defaultColors,
   assetBasePath = '/assets/nodes',
@@ -38,19 +40,23 @@ export function BusinessFlow3D({
   gridDensity = 30,
   gridMaskRadius = 320,
   gridMaskBlur = 240,
-  connectorOpacity = mode === 'dark' ? 0.92 : 0.82,
+  connectorOpacity: connectorOpacityProp,
   connectorStroke = 'solid',
   connectorWidth = 2,
+  connectorElevation = 0,
   showContinuationConnectors = true,
   pathCurve = 0,
   outlineOpacity = 1,
   outlineWidth = 3,
   nodeScale = 1,
+  nodeElevation = 0,
   nodeDepth = 12,
   nodeDepthRandom = 0,
   nodeShape = 'rectangle',
   nodeCornerRadius = 10,
-  nodeIconOpacity = mode === 'dark' ? 0.94 : 0.9,
+  nodeBodyColor,
+  nodeIconOpacity: nodeIconOpacityProp,
+  iconStrokeColor,
   nodeFrontGradientAngle = 32,
   nodeSideXGradientAngle = 18,
   nodeSideZGradientAngle = 18,
@@ -67,6 +73,7 @@ export function BusinessFlow3D({
   cameraPitch = 45,
   cameraYaw,
   cameraZoom = 1,
+  cameraTargetOffsetY = 0,
   emitterX = 0.45,
   emitterY = -4.25,
   scrollTilt = 0,
@@ -76,8 +83,19 @@ export function BusinessFlow3D({
   maxDelay = 0,
   speed = 1,
   nodeProgressMode = 'bar',
+  nodeShadowBias,
+  nodeShadowBlurSamples,
+  nodeShadowColor,
+  nodeShadowLightX,
+  nodeShadowLightY,
+  nodeShadowLightZ,
+  nodeShadowNormalBias,
+  nodeShadowOpacity,
+  nodeShadowRadius,
   progressPadding = 1,
   progressBarHeight = 8,
+  progressBarColor,
+  progressBarOpacity = 1,
   concurrentBeams = 1,
   minEmitDelay = 0,
   maxEmitDelay = 0,
@@ -86,6 +104,9 @@ export function BusinessFlow3D({
   resolutionScale,
   onModeChange,
 }: BusinessFlow3DProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const connectorOpacity = connectorOpacityProp ?? (mode === 'dark' ? 0.92 : 0.82);
+  const nodeIconOpacity = nodeIconOpacityProp ?? (mode === 'dark' ? 0.94 : 0.9);
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cssLayerRef = useRef<HTMLDivElement>(null);
@@ -135,7 +156,7 @@ export function BusinessFlow3D({
       const message = sceneError instanceof Error ? sceneError.message : 'WebGL is unavailable.';
       queueMicrotask(() => { if (mounted) setError(message); });
     };
-    void import('../scene/createSignalFlowScene').then(({ createSignalFlowScene }) => {
+    void loadSignalFlowSceneFactory().then((createSignalFlowScene) => {
       if (!mounted) return;
       try {
         controller = createSignalFlowScene({
@@ -154,16 +175,20 @@ export function BusinessFlow3D({
         connectorOpacity,
         connectorStroke,
         connectorWidth,
+        connectorElevation,
         showContinuationConnectors,
         pathCurve,
         outlineOpacity,
         outlineWidth,
         nodeScale,
+        nodeElevation,
         nodeDepth,
         nodeDepthRandom,
         nodeShape,
         nodeCornerRadius,
+        nodeBodyColor,
         nodeIconOpacity,
+        iconStrokeColor,
         nodeFrontGradientAngle,
         nodeSideXGradientAngle,
         nodeSideZGradientAngle,
@@ -180,14 +205,26 @@ export function BusinessFlow3D({
         cameraPitch,
         cameraYaw,
         cameraZoom,
+        cameraTargetOffsetY,
         emitterX,
         emitterY,
         minDelay,
         maxDelay,
         speed,
         nodeProgressMode,
+        nodeShadowBias,
+        nodeShadowBlurSamples,
+        nodeShadowColor,
+        nodeShadowLightX,
+        nodeShadowLightY,
+        nodeShadowLightZ,
+        nodeShadowNormalBias,
+        nodeShadowOpacity,
+        nodeShadowRadius,
         progressPadding,
         progressBarHeight,
+        progressBarColor,
+        progressBarOpacity,
         concurrentBeams,
         minEmitDelay,
         maxEmitDelay,
@@ -209,7 +246,7 @@ export function BusinessFlow3D({
       if (controllerRef.current === controller) controllerRef.current = null;
       controller?.destroy();
     };
-  }, [assetBasePath, cameraPitch, cameraYaw, cameraZoom, concurrentBeams, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarHeight, progressPadding, reducedMotion, resolutionScale, resolvedGridOpacity, runtime.shouldInitialize, showContinuationConnectors, speed, theme, variant]);
+  }, [assetBasePath, cameraPitch, cameraTargetOffsetY, cameraYaw, cameraZoom, concurrentBeams, connectorElevation, connectorOpacity, connectorStroke, connectorWidth, emitterX, emitterY, flow, fogEnabled, gridDensity, gridMaskBlur, gridMaskRadius, iconStrokeColor, interactive, maxDelay, maxEmitDelay, minDelay, minEmitDelay, mode, nodeBodyColor, nodeCornerRadius, nodeDepth, nodeDepthRandom, nodeElevation, nodeFrontGradientAngle, nodeFrontGradientEndColor, nodeFrontGradientMidColor, nodeFrontGradientStartColor, nodeIconOpacity, nodeProgressMode, nodeScale, nodeShadowBias, nodeShadowBlurSamples, nodeShadowColor, nodeShadowLightX, nodeShadowLightY, nodeShadowLightZ, nodeShadowNormalBias, nodeShadowOpacity, nodeShadowRadius, nodeShape, nodeSideXGradientAngle, nodeSideXGradientEndColor, nodeSideXGradientMidColor, nodeSideXGradientStartColor, nodeSideZGradientAngle, nodeSideZGradientEndColor, nodeSideZGradientMidColor, nodeSideZGradientStartColor, outlineOpacity, outlineWidth, pathCurve, perspectiveEffect, progressBarColor, progressBarHeight, progressBarOpacity, progressPadding, reducedMotion, resolutionScale, resolvedGridOpacity, runtime.shouldInitialize, showContinuationConnectors, speed, theme, variant]);
 
   useEffect(() => {
     const element = containerRef.current;

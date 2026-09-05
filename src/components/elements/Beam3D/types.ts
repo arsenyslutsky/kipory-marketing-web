@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
+import type { ResolvedTheme } from '@/theme/theme';
 import type { FlowPath3D, FlowPath3DDirection } from '../FlowPath3D/types';
 
-export type Beam3DMode = 'light' | 'dark';
+export type Beam3DMode = ResolvedTheme;
 export type Beam3DStyle = 'ribbon' | 'tube';
 export type PacketCoreShape = 'circle' | 'triangle' | 'arrow';
 

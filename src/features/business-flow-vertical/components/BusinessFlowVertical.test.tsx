@@ -1,38 +1,69 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { FlowLayer3DNode, FlowLayer3DNodeStyle } from '@/components/elements/FlowLayer3D';
-import { businessFlowVerticalHomepageProps } from '../presets';
+import type {
+  FlowLayer3DBeamStyle,
+  FlowLayer3DConnectorStyle,
+  FlowLayer3DNode,
+  FlowLayer3DNodeStyle,
+} from '@/components/elements/FlowLayer3D';
+import { businessFlowPalettes } from '@/features/business-flow-palette';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { ResolvedTheme } from '@/theme/theme';
+import { businessFlowVerticalHomepageDarkProps } from '../presets';
 import { BusinessFlowVertical } from './BusinessFlowVertical';
 
 let capturedNodes: readonly FlowLayer3DNode[] | undefined;
 let capturedNodeStyle: FlowLayer3DNodeStyle | undefined;
+let capturedBeam: FlowLayer3DBeamStyle | undefined;
+let capturedConnector: FlowLayer3DConnectorStyle | undefined;
+let capturedMode: ResolvedTheme | undefined;
+let capturedNodeShadow: Record<string, unknown> | undefined;
 
 vi.mock('@/components/elements/FlowLayer3D', () => ({
   FlowLayer3D: ({
     beam,
+    connector,
+    mode,
     paths,
     beamSource,
     nodes,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     nodeStyle,
     onActivityChange,
     onArrival,
     reducedMotion,
   }: {
-    beam: {
-      beamWidth: number;
-      headGlowBlur?: number;
-      headGlowOpacity?: number;
-      headGlowRadius?: number;
-      trailLength: number;
-    };
+    beam: FlowLayer3DBeamStyle;
+    connector: FlowLayer3DConnectorStyle;
+    mode?: ResolvedTheme;
     paths: Array<{ curve?: number }>;
     nodes?: readonly FlowLayer3DNode[];
+    nodeShadowBias?: number;
+    nodeShadowBlurSamples?: number;
+    nodeShadowColor?: string;
+    nodeShadowLightX?: number;
+    nodeShadowLightY?: number;
+    nodeShadowLightZ?: number;
+    nodeShadowNormalBias?: number;
+    nodeShadowOpacity?: number;
+    nodeShadowRadius?: number;
     nodeStyle?: FlowLayer3DNodeStyle;
     onActivityChange?: (active: boolean) => void;
     beamSource: {
       slots: number;
-      next: (slot: number, generation: number) => { trailLength?: number } | null;
+      next: (slot: number, generation: number) => {
+        trailLength?: number;
+        trailLengthInPixels?: number;
+      } | null;
     };
     onArrival?: (event: {
       arrival: { id: string; point: readonly [number, number]; progress: number };
@@ -48,11 +79,26 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
     }, [onActivityChange]);
     capturedNodes = nodes;
     capturedNodeStyle = nodeStyle;
+    capturedBeam = beam;
+    capturedConnector = connector;
+    capturedMode = mode;
+    capturedNodeShadow = {
+      nodeShadowBias,
+      nodeShadowBlurSamples,
+      nodeShadowColor,
+      nodeShadowLightX,
+      nodeShadowLightY,
+      nodeShadowLightZ,
+      nodeShadowNormalBias,
+      nodeShadowOpacity,
+      nodeShadowRadius,
+    };
     return (
       <button
         type="button"
         data-testid="flow-layer"
         data-beam-width={beam.beamWidth}
+        data-beam-glow-intensity={beam.glowIntensity}
         data-curve={paths[0]?.curve}
         data-head-glow-blur={beam.headGlowBlur}
         data-head-glow-opacity={beam.headGlowOpacity}
@@ -60,6 +106,7 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
         data-paths={paths.length}
         data-reduced-motion={String(reducedMotion)}
         data-run-trail={beamSource.next(0, 0)?.trailLength}
+        data-run-trail-pixels={beamSource.next(0, 0)?.trailLengthInPixels}
         data-slots={beamSource.slots}
         data-style-trail={beam.trailLength}
         onClick={() => onArrival?.({
@@ -76,7 +123,156 @@ vi.mock('@/components/elements/FlowLayer3D', () => ({
 afterEach(() => {
   capturedNodes = undefined;
   capturedNodeStyle = undefined;
+  capturedBeam = undefined;
+  capturedConnector = undefined;
+  capturedMode = undefined;
+  capturedNodeShadow = undefined;
   vi.unstubAllGlobals();
+});
+
+it('inherits the light palette from theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical />
+    </ThemeProvider>,
+  );
+
+  expect(capturedMode).toBe('light');
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'light',
+    frontGradient: { angle: 117, start: '#98c496', mid: '#449c40', end: '#449c40' },
+    sideXGradient: { angle: 360, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    sideZGradient: { angle: 177, start: '#449c40', mid: '#449c40', end: '#449c40' },
+    nodeCornerRadius: 0,
+    outlineOpacity: 0.3,
+    outlineWidth: 1.25,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: '#449c40',
+    stroke: 'solid',
+  });
+  expect(capturedBeam?.beamColor).toBe(businessFlowPalettes.light.beam);
+  expect(capturedNodes?.find((node) => node.id === 'server')).toMatchObject({
+    iconColor: '#182019',
+    iconStrokeColor: '#ffffff',
+  });
+  expect(capturedNodeShadow).toMatchObject({
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowOpacity: 0.38,
+    nodeShadowRadius: 8,
+  });
+});
+
+it('falls back to the dark palette outside theme context', () => {
+  render(<BusinessFlowVertical />);
+
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({
+    mode: 'dark',
+    frontGradient: { angle: 117, start: '#066b43', mid: '#03492b', end: '#052f24' },
+    nodeCornerRadius: 10,
+    outlineOpacity: 0,
+    outlineWidth: 1,
+  });
+  expect(capturedConnector).toMatchObject({
+    color: businessFlowPalettes.dark.connector,
+    stroke: 'dashed',
+  });
+  expect(capturedNodes?.find((node) => node.id === 'server')).toMatchObject({
+    iconColor: '#f3f5ef',
+    iconStrokeColor: '#f3f5ef',
+  });
+});
+
+it('passes public node-shadow parameters to the shared renderer', () => {
+  render(
+    <BusinessFlowVertical
+      nodeShadowBias={-0.001}
+      nodeShadowBlurSamples={11}
+      nodeShadowColor="#123456"
+      nodeShadowLightX={-4}
+      nodeShadowLightY={9}
+      nodeShadowLightZ={-3}
+      nodeShadowNormalBias={0.04}
+      nodeShadowOpacity={0.37}
+      nodeShadowRadius={6}
+    />,
+  );
+
+  expect(capturedNodeShadow).toEqual({
+    nodeShadowBias: -0.001,
+    nodeShadowBlurSamples: 11,
+    nodeShadowColor: '#123456',
+    nodeShadowLightX: -4,
+    nodeShadowLightY: 9,
+    nodeShadowLightZ: -3,
+    nodeShadowNormalBias: 0.04,
+    nodeShadowOpacity: 0.37,
+    nodeShadowRadius: 6,
+  });
+});
+
+it('honors an explicit dark mode over light theme context', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical mode="dark" />
+    </ThemeProvider>,
+  );
+  expect(capturedMode).toBe('dark');
+  expect(capturedNodeStyle).toMatchObject({ mode: 'dark' });
+  expect(capturedConnector?.color).toBe(businessFlowPalettes.dark.connector);
+});
+
+it('passes explicit front gradient colors to Node3D independently of the theme palette', () => {
+  render(
+    <ThemeProvider preference="light">
+      <BusinessFlowVertical
+        gradientStartColor="#102030"
+        gradientMidColor="#405060"
+        gradientEndColor="#708090"
+      />
+    </ThemeProvider>,
+  );
+
+  expect(capturedNodeStyle?.frontGradient).toEqual({
+    angle: 117,
+    start: '#102030',
+    mid: '#405060',
+    end: '#708090',
+  });
+  expect(capturedNodeStyle?.frontGradient).not.toEqual({
+    angle: 117,
+    ...businessFlowPalettes.light.frontGradient,
+  });
+});
+
+it('passes explicit node body and face gradients to the shared renderer', () => {
+  render(
+    <BusinessFlowVertical
+      nodeBodyColor="#010203"
+      nodeFrontGradientAngle={11}
+      nodeFrontGradientStartColor="#111111"
+      nodeFrontGradientMidColor="#222222"
+      nodeFrontGradientEndColor="#333333"
+      nodeSideXGradientAngle={22}
+      nodeSideXGradientStartColor="#444444"
+      nodeSideXGradientMidColor="#555555"
+      nodeSideXGradientEndColor="#666666"
+      nodeSideZGradientAngle={33}
+      nodeSideZGradientStartColor="#777777"
+      nodeSideZGradientMidColor="#888888"
+      nodeSideZGradientEndColor="#999999"
+    />,
+  );
+
+  expect(capturedNodeStyle).toMatchObject({
+    bodyColor: '#010203',
+    frontGradient: { angle: 11, start: '#111111', mid: '#222222', end: '#333333' },
+    sideXGradient: { angle: 22, start: '#444444', mid: '#555555', end: '#666666' },
+    sideZGradient: { angle: 33, start: '#777777', mid: '#888888', end: '#999999' },
+  });
 });
 
 it('renders the central hierarchy and satellite documents in one shared Node3D layer', () => {
@@ -109,7 +305,7 @@ it('renders the central hierarchy and satellite documents in one shared Node3D l
   ]);
 });
 
-it('maps its public color to every node stroke without changing central or satellite fills', () => {
+it('gives iconStrokeColor precedence for every node stroke without changing role fills', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -119,7 +315,8 @@ it('maps its public color to every node stroke without changing central or satel
     <BusinessFlowVertical
       auxiliaryIconFillColor="#111111"
       centralIconFillColor="#222222"
-      color="#abcdef"
+      color="#legacy"
+      iconStrokeColor="#abcdef"
       numberOfNodesBottom={1}
       numberOfNodesTop={1}
     />,
@@ -131,13 +328,33 @@ it('maps its public color to every node stroke without changing central or satel
   expect(capturedNodes?.slice(4).every((node) => node.iconColor === '#111111')).toBe(true);
 });
 
+it('passes independent icon opacities and outline treatment to the shared node renderer', () => {
+  render(
+    <BusinessFlowVertical
+      auxiliaryIconOpacity={0.31}
+      centralIconOpacity={0.84}
+      numberOfNodesBottom={1}
+      numberOfNodesTop={1}
+      outlineOpacity={0.27}
+      outlineWidth={2.5}
+    />,
+  );
+
+  expect(capturedNodes?.slice(0, 4).every((node) => node.iconOpacity === 0.84)).toBe(true);
+  expect(capturedNodes?.slice(4).every((node) => node.iconOpacity === 0.31)).toBe(true);
+  expect(capturedNodeStyle).toMatchObject({
+    outlineOpacity: 0.27,
+    outlineWidth: 2.5,
+  });
+});
+
 it('renders homepage node processing progress as outlines', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
     removeEventListener: vi.fn(),
   })));
-  render(<BusinessFlowVertical {...businessFlowVerticalHomepageProps} />);
+  render(<BusinessFlowVertical {...businessFlowVerticalHomepageDarkProps} />);
 
   expect(capturedNodeStyle).toMatchObject({
     progressBarHeight: 15,
@@ -191,7 +408,26 @@ it('preserves independent beam trail and head-glow controls', () => {
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-head-glow-radius', '48');
 });
 
-it('keeps a zero trail disabled and converts legacy trail units per complete route', () => {
+it('lets saved beam width and glow intensity override connector-derived defaults', () => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    addEventListener: vi.fn(),
+    matches: false,
+    removeEventListener: vi.fn(),
+  })));
+  render(
+    <BusinessFlowVertical
+      beamGlowIntensity={2.4}
+      beamWidth={3.2}
+      connectorWidth={0.5}
+    />,
+  );
+
+  const layer = screen.getByTestId('flow-layer');
+  expect(layer).toHaveAttribute('data-beam-width', '3.2');
+  expect(layer).toHaveAttribute('data-beam-glow-intensity', '2.4');
+});
+
+it('keeps CSS-pixel trail values independent of the pillars route length', () => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     addEventListener: vi.fn(),
     matches: false,
@@ -207,7 +443,7 @@ it('keeps a zero trail disabled and converts legacy trail units per complete rou
   );
 
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
-  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail-pixels', '0');
 
   view.rerender(
     <BusinessFlowVertical
@@ -219,7 +455,7 @@ it('keeps a zero trail disabled and converts legacy trail units per complete rou
   );
 
   expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-style-trail', '0');
-  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail', '0.25');
+  expect(screen.getByTestId('flow-layer')).toHaveAttribute('data-run-trail-pixels', '21');
 });
 
 it('passes live reduced-motion preference to the shared layer and cleans up its listener', () => {

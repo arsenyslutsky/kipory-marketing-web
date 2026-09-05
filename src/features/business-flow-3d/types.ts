@@ -1,8 +1,11 @@
 import type { Connector3DStroke } from '@/components/elements/Connector3D/types';
+import type { NodeShadowProps } from '@/components/elements/FlowLayer3D';
 import type { WorkflowRuntimeOptions } from '@/components/elements/workflow-runtime';
+import type { NodeAppearanceProps } from '@/features/node-appearance';
+import type { ResolvedTheme } from '@/theme/theme';
 
 export type SignalFlowVariant = 'variant-2';
-export type SignalFlowMode = 'light' | 'dark';
+export type SignalFlowMode = ResolvedTheme;
 export type ConnectorStrokeType = Connector3DStroke;
 export type NodeGeometryShape = 'rectangle' | 'circle' | 'square' | 'triangle' | 'hexagon';
 export type NodeShape =
@@ -27,6 +30,10 @@ export interface FlowConfig {
   root: string;
   nodes: FlowNodeConfig[];
   branches: Record<string, string[]>;
+  /** Nodes with outgoing continuations; defaults to all nodes on the final tier. */
+  terminalContinuationNodes?: string[];
+  /** Edges that descend along the source column before entering the target from the side. */
+  sideEntryEdges?: [string, string][];
   variants?: Partial<Record<SignalFlowVariant, { hiddenNodes?: string[] }>>;
 }
 
@@ -77,7 +84,7 @@ export interface SignalFlowTheme {
 
 export type SignalFlowColors = Record<SignalFlowMode, SignalFlowTheme>;
 
-export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
+export interface BusinessFlow3DProps extends WorkflowRuntimeOptions, NodeShadowProps, NodeAppearanceProps {
   variant?: SignalFlowVariant;
   mode?: SignalFlowMode;
   flow?: FlowConfig;
@@ -92,13 +99,15 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   fogEnabled?: boolean;
   /** Target grid-cell spacing in CSS pixels at the initial camera framing. */
   gridDensity?: number;
-  /** Radius of the white grid highlight in CSS pixels at the initial camera framing. */
+  /** Radius of the theme-aware major-grid emphasis in CSS pixels at the initial camera framing. */
   gridMaskRadius?: number;
-  /** Soft falloff beyond the white grid-highlight radius, in CSS pixels. */
+  /** Soft falloff beyond the theme-aware major-grid emphasis, in CSS pixels. */
   gridMaskBlur?: number;
   connectorOpacity?: number;
   connectorStroke?: ConnectorStrokeType;
   connectorWidth?: number;
+  /** Additive world-space elevation shared by connectors, junctions, and travelling beams. */
+  connectorElevation?: number;
   /** Show incoming and terminal connectors that continue beyond the graph. */
   showContinuationConnectors?: boolean;
   pathCurve?: number;
@@ -106,6 +115,8 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   outlineWidth?: number;
   /** Uniform visual scale applied to each node without changing its layout position. */
   nodeScale?: number;
+  /** Additive world-space elevation applied to every node and its animated base position. */
+  nodeElevation?: number;
   nodeDepth?: number;
   /** Per-node random depth variation, expressed as ± a percentage of nodeDepth. */
   nodeDepthRandom?: number;
@@ -113,25 +124,14 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   nodeCornerRadius?: number;
   /** Opacity of the SVG artwork on the icon-bearing node face. */
   nodeIconOpacity?: number;
-  /** Gradient angle for the icon-bearing node face, in degrees. */
-  nodeFrontGradientAngle?: number;
-  /** Gradient angle for node sides aligned to the X axis, in degrees. */
-  nodeSideXGradientAngle?: number;
-  /** Gradient angle for node sides aligned to the Z axis, in degrees. */
-  nodeSideZGradientAngle?: number;
-  nodeFrontGradientStartColor?: string;
-  nodeFrontGradientMidColor?: string;
-  nodeFrontGradientEndColor?: string;
-  nodeSideXGradientStartColor?: string;
-  nodeSideXGradientMidColor?: string;
-  nodeSideXGradientEndColor?: string;
-  nodeSideZGradientStartColor?: string;
-  nodeSideZGradientMidColor?: string;
-  nodeSideZGradientEndColor?: string;
+  /** Color of the SVG icon linework without overriding its fill treatment. */
+  iconStrokeColor?: string;
   perspectiveEffect?: number;
   cameraPitch?: number;
   cameraYaw?: number;
   cameraZoom?: number;
+  /** Additive world-space vertical offset for the camera target. */
+  cameraTargetOffsetY?: number;
   /** World-space X coordinate of the root emitter center. */
   emitterX?: number;
   /** World-space Y coordinate of the root emitter center on the flow plane. */
@@ -148,6 +148,10 @@ export interface BusinessFlow3DProps extends WorkflowRuntimeOptions {
   progressPadding?: number;
   /** Thickness used by both bar and outline node progress modes. */
   progressBarHeight?: number;
+  /** Color of the active progress fill; the inactive track remains theme-derived. */
+  progressBarColor?: string;
+  /** Opacity of the active progress fill; the inactive track remains theme-derived. */
+  progressBarOpacity?: number;
   concurrentBeams?: number;
   minEmitDelay?: number;
   maxEmitDelay?: number;

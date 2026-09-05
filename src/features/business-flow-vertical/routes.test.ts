@@ -147,14 +147,14 @@ it('clamps speed to one tenth and scales durations above that floor', () => {
   expect(doubleSpeedDuration * 20).toBeCloseTo(floorSpeedDuration);
 });
 
-it('converts legacy illustration-unit trail length into route progress', () => {
+it('keeps the configured trail length in CSS pixels for the shared renderer', () => {
   const source = createSource({
     connectorRadius: 0,
     satellitePoints: [[50, 18], [50, 82]],
-    trailLengthInIllustrationUnits: 21,
+    trailLengthInPixels: 21,
   });
 
-  expect(source.next(0, 0)?.trailLength).toBe(0.25);
+  expect(source.next(0, 0)?.trailLengthInPixels).toBe(21);
 });
 
 it('floors and caps concurrent beam slots', () => {

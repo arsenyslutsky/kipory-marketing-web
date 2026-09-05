@@ -10,6 +10,9 @@ import {
   createFadingConnector3DObject,
 } from '@/components/elements/Connector3D/createConnector3DObject';
 import { createRoundedFlowPath3DPoints } from '@/components/elements/FlowPath3D/resolveFlowPath3D';
+import { resolveNodeShadowProps } from '@/components/elements/FlowLayer3D/resolveNodeShadowProps';
+import type { NodeShadowProps } from '@/components/elements/FlowLayer3D';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import {
   createNode3DObject,
   type Node3DGlowState,
@@ -35,7 +38,7 @@ interface SceneElements {
   cssLayer: HTMLElement;
 }
 
-interface SceneOptions {
+interface SceneOptions extends NodeShadowProps {
   active?: boolean;
   variant: SignalFlowVariant;
   mode: SignalFlowMode;
@@ -51,16 +54,20 @@ interface SceneOptions {
   connectorOpacity: number;
   connectorStroke: ConnectorStrokeType;
   connectorWidth: number;
+  connectorElevation: number;
   showContinuationConnectors: boolean;
   pathCurve: number;
   outlineOpacity: number;
   outlineWidth: number;
   nodeScale: number;
+  nodeElevation: number;
   nodeDepth: number;
   nodeDepthRandom: number;
   nodeShape: NodeShape;
   nodeCornerRadius: number;
+  nodeBodyColor?: string;
   nodeIconOpacity: number;
+  iconStrokeColor?: string;
   nodeFrontGradientAngle: number;
   nodeSideXGradientAngle: number;
   nodeSideZGradientAngle: number;
@@ -77,6 +84,7 @@ interface SceneOptions {
   cameraPitch: number;
   cameraYaw?: number;
   cameraZoom: number;
+  cameraTargetOffsetY?: number;
   emitterX: number;
   emitterY: number;
   minDelay: number;
@@ -85,6 +93,8 @@ interface SceneOptions {
   nodeProgressMode: NodeProgressMode;
   progressPadding: number;
   progressBarHeight: number;
+  progressBarColor?: string;
+  progressBarOpacity?: number;
   concurrentBeams: number;
   minEmitDelay: number;
   maxEmitDelay: number;
@@ -114,6 +124,12 @@ interface RuntimeNode {
 type NodeGlowState = Node3DGlowState;
 type NodeProgressControl = Node3DProgressControl;
 type ResolvedNodeGradient = Node3DResolvedGradient;
+
+const NODE_FLOAT_AMPLITUDE = 0.012;
+const CONNECTOR_NODE_CLEARANCE = 0.02;
+const CONNECTOR_NODE_TUCK_RATIO = 0.08;
+const MINIMUM_RENDERED_NODE_GAP = 0.6;
+const ALIGNED_CONNECTOR_EPSILON = 0.000001;
 
 interface RouteStop {
   id: string;
@@ -173,16 +189,20 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     connectorOpacity,
     connectorStroke,
     connectorWidth,
+    connectorElevation,
     showContinuationConnectors,
     pathCurve,
     outlineOpacity,
     outlineWidth,
     nodeScale,
+    nodeElevation,
     nodeDepth,
     nodeDepthRandom,
     nodeShape,
     nodeCornerRadius,
+    nodeBodyColor,
     nodeIconOpacity,
+    iconStrokeColor,
     nodeFrontGradientAngle,
     nodeSideXGradientAngle,
     nodeSideZGradientAngle,
@@ -199,14 +219,26 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     cameraPitch,
     cameraYaw,
     cameraZoom,
+    cameraTargetOffsetY = 0,
     emitterX,
     emitterY,
     minDelay,
     maxDelay,
     speed,
     nodeProgressMode,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     progressPadding,
     progressBarHeight,
+    progressBarColor,
+    progressBarOpacity = 1,
     concurrentBeams,
     minEmitDelay,
     maxEmitDelay,
@@ -218,6 +250,28 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   const { container, canvas, cssLayer } = elements;
   const isVariant2 = variant === 'variant-2';
   const isDark = mode === 'dark';
+  const businessFlowPalette = getBusinessFlowPalette(mode);
+  const nodeShadow = resolveNodeShadowProps({
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
+  }, {
+    nodeShadowBias: -0.0003,
+    nodeShadowBlurSamples: isVariant2 ? 24 : 8,
+    nodeShadowColor: businessFlowPalette.nodeShadow,
+    nodeShadowLightX: -7,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: 7,
+    nodeShadowNormalBias: isVariant2 ? 0.025 : 0,
+    nodeShadowOpacity: isDark ? 0.42 : 0.24,
+    nodeShadowRadius: isVariant2 ? 9 : 1,
+  });
   const palette = theme.scene;
   const effects = theme.effects;
   const normalizeGradientAngle = (angle: number, fallback: number) => (
@@ -329,18 +383,22 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   rows.forEach((row) => {
     if (row.length < 2) return;
     row.sort(([, left], [, right]) => left.p[0] - right.p[0]);
-    const originalLeft = Math.min(...row.map(([, node]) => node.p[0] - nodeFootprint(node)[0] * 0.5));
-    const originalRight = Math.max(...row.map(([, node]) => node.p[0] + nodeFootprint(node)[0] * 0.5));
-    const rowCenter = (originalLeft + originalRight) * 0.5;
-    const occupiedWidth = row.reduce((total, [, node]) => total + nodeFootprint(node)[0], 0);
-    const minimumGap = 0.65;
-    const rowWidth = Math.max(originalRight - originalLeft, occupiedWidth + minimumGap * (row.length - 1));
-    const gap = (rowWidth - occupiedWidth) / (row.length - 1);
-    let cursor = rowCenter - rowWidth * 0.5;
+    const authoredCenter = (row[0][1].p[0] + row.at(-1)![1].p[0]) * 0.5;
+    for (let index = 1; index < row.length; index++) {
+      const previous = row[index - 1][1];
+      const current = row[index][1];
+      const previousWidth = nodeFootprint(previous)[0] * resolvedNodeScale;
+      const currentWidth = nodeFootprint(current)[0] * resolvedNodeScale;
+      const minimumX = previous.p[0]
+        + previousWidth * 0.5
+        + currentWidth * 0.5
+        + MINIMUM_RENDERED_NODE_GAP;
+      current.p[0] = Math.max(current.p[0], minimumX);
+    }
+    const resolvedCenter = (row[0][1].p[0] + row.at(-1)![1].p[0]) * 0.5;
+    const centerCorrection = authoredCenter - resolvedCenter;
     row.forEach(([, node]) => {
-      const [nodeWidth] = nodeFootprint(node);
-      node.p[0] = cursor + nodeWidth * 0.5;
-      cursor += nodeWidth + gap;
+      node.p[0] += centerCorrection;
     });
   });
 
@@ -397,7 +455,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
 
   const cameraTarget = new THREE.Vector3(
     (flowLeft + flowRight) * 0.5 + 0.3,
-    0,
+    cameraTargetOffsetY,
     (flowNear + flowFar) * 0.5 + 1.2,
   );
   const cameraHeading = cameraYaw === undefined
@@ -448,25 +506,32 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
 
   scene.add(new THREE.HemisphereLight(palette.sky, palette.bounce, isDark ? 1.25 : 2.2));
   const key = new THREE.DirectionalLight(palette.key, isDark ? 2.15 : 3.5);
-  key.position.set(-7, 14, 7);
+  key.position.set(
+    nodeShadow.nodeShadowLightX,
+    nodeShadow.nodeShadowLightY,
+    nodeShadow.nodeShadowLightZ,
+  );
   key.castShadow = true;
   key.shadow.mapSize.set(isVariant2 ? 1024 : 2048, isVariant2 ? 1024 : 2048);
   key.shadow.camera.left = -14;
   key.shadow.camera.right = 14;
   key.shadow.camera.top = 14;
   key.shadow.camera.bottom = -14;
-  key.shadow.bias = -0.0003;
-  key.shadow.normalBias = isVariant2 ? 0.025 : 0;
-  key.shadow.radius = isVariant2 ? 9 : 1;
-  key.shadow.blurSamples = isVariant2 ? 24 : 8;
+  key.shadow.bias = nodeShadow.nodeShadowBias;
+  key.shadow.normalBias = nodeShadow.nodeShadowNormalBias;
+  key.shadow.radius = nodeShadow.nodeShadowRadius;
+  key.shadow.blurSamples = nodeShadow.nodeShadowBlurSamples;
   scene.add(key);
 
   const greenLight = new THREE.PointLight(effects.greenLight, isVariant2 ? 0 : 1.6, isVariant2 ? 10 : 7, 2);
   greenLight.position.set(0, 2, 0);
   scene.add(greenLight);
 
+  // Ground and grid must share an extent: a smaller lit ground exposes a
+  // diagonal color seam beneath the grid in wide, low-angle hero views.
+  const groundSize = 200;
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 80),
+    new THREE.PlaneGeometry(groundSize, groundSize),
     new THREE.MeshStandardMaterial({
       color: palette.ground,
       roughness: 0.92,
@@ -479,8 +544,8 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   scene.add(ground);
 
   const shadowCatcherMaterial = new THREE.ShadowMaterial({
-    color: 0x000000,
-    opacity: isDark ? 0.42 : 0.24,
+    color: nodeShadow.nodeShadowColor,
+    opacity: nodeShadow.nodeShadowOpacity,
     transparent: true,
     depthWrite: false,
     toneMapped: false,
@@ -516,7 +581,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   if (resolvedGridOpacity > 0) {
     // Keep the physical grid edge beyond the fog range so it reads as an
     // unbounded tiled plane from every supported camera angle and zoom.
-    const gridSize = 200;
+    const gridSize = groundSize;
     const gridDivisions = THREE.MathUtils.clamp(
       Math.round(gridSize * initialPixelsPerWorldUnit / resolvedGridDensity),
       4,
@@ -531,7 +596,7 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
       uniforms: {
         ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
         uGridColor: { value: new THREE.Color(palette.gridMinor) },
-        uMaskColor: { value: new THREE.Color(0xffffff) },
+        uMaskColor: { value: new THREE.Color(isDark ? 0xffffff : palette.gridMajor) },
         uMaskCenter: { value: gridMaskCenter },
         uMaskRadius: { value: resolvedGridMaskRadius },
         uMaskBlur: { value: resolvedGridMaskBlur },
@@ -598,20 +663,25 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     const [width, cardDepth] = nodeFootprint(data);
     const group = createNode3DObject({
       assetBasePath,
+      bodyColor: nodeBodyColor,
       cardDepth,
       fogEnabled,
       frontGradient,
       height: data.height,
       icon: data.svg,
       iconOpacity: nodeIconOpacity,
+      iconStrokeColor,
       id,
       isDark,
       isVariant2,
       nodeCornerRadius,
+      nodeElevation,
       outlineOpacity,
       outlineWidth,
       position: data.p,
       progressBarHeight: resolvedProgressBarHeight,
+      progressBarColor,
+      progressBarOpacity,
       progressMode: resolvedNodeProgressMode,
       progressPadding: resolvedProgressPadding,
       renderer,
@@ -631,18 +701,80 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     if (!hiddenNodeIds.has(id)) createCard(id, data);
   });
 
-  const connectorLift = 0.06;
+  const nodeBodyBounds = Object.fromEntries(Object.entries(cardObjects).map(([id, card]) => {
+    const body = card.userData.body as THREE.Object3D;
+    body.updateWorldMatrix(true, false);
+    return [id, new THREE.Box3().setFromObject(body, true)];
+  }));
+  const nodeConnectorY = (id: string) => (
+    nodeBodyBounds[id].min.y
+    - network.position.y
+    - NODE_FLOAT_AMPLITUDE
+    - CONNECTOR_NODE_CLEARANCE
+  );
+  const requestedConnectorY = 0.11 + (Number.isFinite(connectorElevation) ? connectorElevation : 0);
+  const connectorY = Math.min(
+    requestedConnectorY,
+    ...Object.keys(cardObjects).map(nodeConnectorY),
+  );
 
-  function edgePoints(a: string, b: string, lift = connectorLift) {
-    const pointA = nodes[a].p;
-    const pointB = nodes[b].p;
-    const y = 0.05 + lift;
-    const midZ = (pointA[1] + pointB[1]) * 0.5;
+  function nodeEdgeZ(id: string, direction: -1 | 1) {
+    const node = nodes[id];
+    const bounds = nodeBodyBounds[id];
+    const boundaryZ = (direction === 1 ? bounds.max.z : bounds.min.z) - network.position.z;
+    return THREE.MathUtils.lerp(boundaryZ, node.p[1], CONNECTOR_NODE_TUCK_RATIO);
+  }
+
+  function nodeCenterPoint(id: string) {
+    const node = nodes[id];
+    return new THREE.Vector3(node.p[0], nodeConnectorY(id), node.p[1]);
+  }
+
+  function nodeEdgePoint(id: string, direction: -1 | 1) {
+    const node = nodes[id];
+    return new THREE.Vector3(node.p[0], nodeConnectorY(id), nodeEdgeZ(id, direction));
+  }
+
+  function edgePoints(a: string, b: string) {
+    const source = nodes[a];
+    const target = nodes[b];
+    const pointA = source.p;
+    const pointB = target.p;
+    if (Math.abs(pointB[1] - pointA[1]) < ALIGNED_CONNECTOR_EPSILON) {
+      const direction = Math.sign(pointB[0] - pointA[0]) || 1;
+      const sidePoint = (id: string, side: number) => {
+        const node = nodes[id];
+        const bounds = nodeBodyBounds[id];
+        const edgeX = (side > 0 ? bounds.max.x : bounds.min.x) - network.position.x;
+        return new THREE.Vector3(
+          THREE.MathUtils.lerp(edgeX, node.p[0], CONNECTOR_NODE_TUCK_RATIO),
+          nodeConnectorY(id),
+          node.p[1],
+        );
+      };
+      return [sidePoint(a, direction), sidePoint(b, -direction)];
+    }
+    const direction = (Math.sign(pointB[1] - pointA[1]) || 1) as -1 | 1;
+    if (flow.sideEntryEdges?.some(([sourceId, targetId]) => sourceId === a && targetId === b)) {
+      return [
+        nodeEdgePoint(a, direction),
+        new THREE.Vector3(pointA[0], connectorY, pointB[1]),
+        nodeCenterPoint(b),
+      ];
+    }
+    const targetDirection = direction === 1 ? -1 : 1;
+    const sourcePoint = nodeEdgePoint(a, direction);
+    const targetPoint = nodeEdgePoint(b, targetDirection);
+    const lateralRun = Math.abs(targetPoint.x - sourcePoint.x);
+    if (lateralRun < ALIGNED_CONNECTOR_EPSILON) {
+      return [sourcePoint, targetPoint];
+    }
+    const midZ = (sourcePoint.z + targetPoint.z) * 0.5;
     return [
-      new THREE.Vector3(pointA[0], y, pointA[1]),
-      new THREE.Vector3(pointA[0], y, midZ),
-      new THREE.Vector3(pointB[0], y, midZ),
-      new THREE.Vector3(pointB[0], y, pointB[1]),
+      sourcePoint,
+      new THREE.Vector3(pointA[0], connectorY, midZ),
+      new THREE.Vector3(pointB[0], connectorY, midZ),
+      targetPoint,
     ];
   }
 
@@ -703,28 +835,30 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
   }));
 
-  const continuationY = 0.05 + connectorLift;
+  const continuationY = connectorY;
   const continuationDistance = Math.max(initialCameraBase * 2.2, 16);
   const incomingFadeDistance = 100 / initialPixelsPerWorldUnit;
-  const [, rootDepth] = nodeFootprint(nodes[rootNodeId]);
   const incomingOriginX = nodes[rootNodeId].p[0];
-  const incomingOriginZ = nodes[rootNodeId].p[1] - rootDepth * 0.5 - incomingFadeDistance;
+  const incomingEdgeZ = nodeEdgeZ(rootNodeId, -1);
+  const incomingOriginZ = incomingEdgeZ - incomingFadeDistance;
   const incomingPoints = [
     new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ),
-    new THREE.Vector3(nodes[rootNodeId].p[0], continuationY, incomingOriginZ),
+    nodeEdgePoint(rootNodeId, -1),
   ];
   if (showContinuationConnectors) {
     network.add(createFadingConnectorObject(incomingPoints));
   }
 
   const terminalTier = Math.max(...visibleNodes.map(([, node]) => node.tier));
+  const terminalContinuationNodes = new Set(flow.terminalContinuationNodes
+    ?? visibleNodes.filter(([, node]) => node.tier === terminalTier).map(([id]) => id));
   const terminalEndZ = flowFar + continuationDistance;
   if (showContinuationConnectors) {
     visibleNodes
-      .filter(([, node]) => node.tier === terminalTier)
-      .forEach(([, node]) => {
+      .filter(([id]) => terminalContinuationNodes.has(id))
+      .forEach(([id, node]) => {
         const points = [
-          new THREE.Vector3(node.p[0], continuationY, node.p[1]),
+          nodeEdgePoint(id, 1),
           new THREE.Vector3(node.p[0], continuationY, terminalEndZ),
         ];
         const curve = makeCurve(points);
@@ -786,18 +920,23 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
   }
 
   function routePoints(route: string[]) {
-    const root = nodes[route[0]];
-    const rootPoint = new THREE.Vector3(root.p[0], continuationY, root.p[1]);
+    const rootId = route[0];
+    const terminalId = route.at(-1) || rootId;
     const all: THREE.Vector3[] = showContinuationConnectors
-      ? [new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ), rootPoint]
-      : [rootPoint];
+      ? [
+          new THREE.Vector3(incomingOriginX, continuationY, incomingOriginZ),
+          nodeEdgePoint(rootId, -1),
+          nodeCenterPoint(rootId),
+        ]
+      : [nodeCenterPoint(rootId)];
     for (let i = 0; i < route.length - 1; i++) {
       const points = edgePoints(route[i], route[i + 1]);
-      points.shift();
       all.push(...points);
+      all.push(nodeCenterPoint(route[i + 1]));
     }
-    if (showContinuationConnectors) {
-      const terminal = nodes[route.at(-1) || route[0]];
+    if (showContinuationConnectors && terminalContinuationNodes.has(terminalId)) {
+      const terminal = nodes[terminalId];
+      all.push(nodeEdgePoint(terminalId, 1));
       all.push(new THREE.Vector3(terminal.p[0], continuationY, terminalEndZ));
     }
     return all;
@@ -1101,7 +1240,9 @@ export function createSignalFlowScene(options: SceneOptions): SignalFlowSceneCon
     }
     Object.values(cardObjects).forEach((card) => {
       const hover = hit?.object === card.userData.body;
-      const targetY = card.userData.baseY + (hover ? 0.18 : 0) + Math.sin(time * 1.1 + card.position.x) * 0.012;
+      const targetY = card.userData.baseY
+        + (hover ? 0.18 : 0)
+        + Math.sin(time * 1.1 + card.position.x) * NODE_FLOAT_AMPLITUDE;
       card.position.y = THREE.MathUtils.lerp(card.position.y, targetY, 0.08);
     });
 

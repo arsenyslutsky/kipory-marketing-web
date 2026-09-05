@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
+import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessFlowHorizontal } from '../components/BusinessFlowHorizontal';
-import { businessFlowHorizontalHomepageProps } from '../presets';
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from '../presets';
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlowHorizontal',
@@ -17,7 +23,11 @@ const meta = {
     controls: { sort: 'none' },
   },
   argTypes: {
+    ...nodeShadowArgTypes,
+    ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     className: { table: { disable: true } },
+    mode: { table: { disable: true } },
     width: {
       control: 'text',
       table: { category: 'Layout' },
@@ -40,18 +50,31 @@ const meta = {
       control: 'color',
       table: { category: 'Nodes' },
     },
+    auxiliaryIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
+      table: { category: 'Nodes' },
+    },
     centralIconFillColor: {
       control: 'color',
+      table: { category: 'Nodes' },
+    },
+    centralIconOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.01 },
       table: { category: 'Nodes' },
     },
     centralIconStrokeOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       table: { category: 'Nodes' },
     },
-    color: {
-      control: 'color',
+    outlineOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
       table: { category: 'Nodes' },
     },
+    outlineWidth: {
+      control: { type: 'range', min: 0, max: 5, step: 0.25 },
+      table: { category: 'Nodes' },
+    },
+    color: { table: { disable: true } },
     iconSize: {
       control: { type: 'range', min: 24, max: 80, step: 1 },
       table: { category: 'Nodes' },
@@ -105,6 +128,15 @@ const meta = {
       control: 'color',
       table: { category: 'Beams' },
     },
+    beamWidth: {
+      control: { type: 'range', min: 0.1, max: 4, step: 0.1 },
+      table: { category: 'Beams' },
+    },
+    beamGlowIntensity: {
+      control: { type: 'range', min: 0, max: 3, step: 0.05 },
+      description: 'Controls beam glow spread and the leading-packet halo strength.',
+      table: { category: 'Beams' },
+    },
     beamSpeed: {
       control: { type: 'range', min: 0.25, max: 3, step: 0.05 },
       table: { category: 'Beams' },
@@ -134,7 +166,7 @@ const meta = {
     beamTrailLength: {
       control: { type: 'range', min: 0, max: 320, step: 1 },
       description:
-        'Length of the glowing trail behind each beam, measured along its connector path in illustration pixels. Use 0 for an orb only.',
+        'Length of the glowing trail behind each beam, measured along its connector path in CSS pixels. Use 0 for an orb only.',
       table: { category: 'Beams' },
     },
     maxConcurrentBeams: {
@@ -170,7 +202,6 @@ const meta = {
       table: { category: 'Grid' },
     },
   },
-  args: businessFlowHorizontalHomepageProps,
 } satisfies Meta<typeof BusinessFlowHorizontal>;
 
 export default meta;
@@ -179,9 +210,19 @@ type Story = StoryObj<typeof meta>;
 export const Foundation: Story = {};
 
 export const CurrentNextjsApp: Story = {
-  name: 'Current Next.js App',
-  args: businessFlowHorizontalHomepageProps,
+  name: 'Current App (Dark)',
+  globals: { theme: 'dark' },
+  args: { ...businessFlowHorizontalHomepageDarkProps, mode: 'dark' },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageDarkProps) },
+  },
+};
+
+export const CurrentAppLight: Story = {
+  name: 'Current App (Light)',
+  globals: { theme: 'light' },
+  args: { ...businessFlowHorizontalHomepageLightProps, mode: 'light' },
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlowHorizontalHomepageLightProps) },
   },
 };

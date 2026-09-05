@@ -1,14 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import { resolveFlowPath3D } from '../FlowPath3D/resolveFlowPath3D';
 import {
   createBeam3DFlareTexture,
   createBeam3DObject,
 } from './createBeam3DObject';
 import type { Beam3DColors, Beam3DSceneController, Beam3DSceneOptions } from './types';
-
-const flareStops = businessFlowPalette.flareStops;
 
 export function createBeam3DScene(options: Beam3DSceneOptions): Beam3DSceneController {
   const {
@@ -45,6 +43,7 @@ export function createBeam3DScene(options: Beam3DSceneOptions): Beam3DSceneContr
     visibility,
   } = options;
   const { canvas, container } = elements;
+  const flareStops = getBusinessFlowPalette(mode).flareStops;
   const resolvedPath = resolveFlowPath3D(path, direction);
   const colors: Beam3DColors = {
     beam: beamColor,

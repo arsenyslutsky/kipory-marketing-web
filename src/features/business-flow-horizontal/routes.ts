@@ -18,7 +18,7 @@ export type HorizontalBeamSourceOptions = {
   paths?: readonly BusinessFlowHorizontalRoute[];
   random?: () => number;
   speed: number;
-  trailLengthInIllustrationUnits?: number;
+  trailLengthInPixels?: number;
 };
 
 const curve = 48;
@@ -172,25 +172,6 @@ function emissionDelay(
   return deterministicDelay + (randomizedDelay - deterministicDelay) * randomness;
 }
 
-function routeLengthInIllustrationUnits(route: BusinessFlowHorizontalRoute) {
-  return route.points.slice(1).reduce((length, [x, y], index) => {
-    const [previousX, previousY] = route.points[index];
-    return length + Math.hypot(
-      (x - previousX) * businessFlowHorizontalIllustrationWidth,
-      (y - previousY) * businessFlowHorizontalIllustrationHeight,
-    );
-  }, 0);
-}
-
-function trailLengthToProgress(
-  trailLengthInIllustrationUnits: number,
-  route: BusinessFlowHorizontalRoute,
-) {
-  const routeLength = routeLengthInIllustrationUnits(route);
-  if (routeLength === 0) return 0;
-  return Math.min(1, Math.max(0, trailLengthInIllustrationUnits) / routeLength);
-}
-
 export function createBusinessFlowHorizontalBeamSource({
   emissionRandomness,
   layoutNodes = businessFlowHorizontalLayoutNodes,
@@ -198,7 +179,7 @@ export function createBusinessFlowHorizontalBeamSource({
   paths = businessFlowHorizontalPaths,
   random = Math.random,
   speed,
-  trailLengthInIllustrationUnits = 0,
+  trailLengthInPixels = 0,
 }: HorizontalBeamSourceOptions): FlowLayer3DBeamSource {
   const resolvedSpeed = Math.max(0.1, speed);
   const cycleMs = 5200 / resolvedSpeed;
@@ -222,7 +203,7 @@ export function createBusinessFlowHorizontalBeamSource({
         durationMs,
         path: route,
         arrivals: [{ id: targetNode?.id ?? route.id, point: destinationPoint, progress: 1 }],
-        trailLength: trailLengthToProgress(trailLengthInIllustrationUnits, route),
+        trailLengthInPixels: Math.max(0, trailLengthInPixels),
       };
     },
   };

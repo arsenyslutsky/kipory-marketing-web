@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import {
   MarketingSection,
+  MaskedBackground,
   NumberedRow,
   SectionHeader,
   SiteContainer,
@@ -16,17 +17,12 @@ import {
   splitLayoutHomepageProps,
 } from '@/components/marketing/presets';
 import { BackToTop } from '@/components/site/BackToTop';
+import { deliveryBackgroundHomepageProps, pillarsBackgroundHomepageProps } from '@/components/marketing/MaskedBackground.presets';
 import { HeroScrollEffects } from '@/components/site/HeroScrollEffects';
 import { RouteTransition } from '@/components/site/RouteTransition';
-import {
-  BusinessFlowVertical,
-  businessFlowVerticalHomepageProps,
-} from '@/features/business-flow-vertical';
-import {
-  BusinessFlowHorizontal,
-  businessFlowHorizontalHomepageProps,
-} from '@/features/business-flow-horizontal';
 import { createPageMetadata, siteConfig } from '@/lib/siteMetadata';
+import { HomepageBusinessFlowHorizontal } from './_components/HomepageBusinessFlowHorizontal';
+import { HomepageBusinessFlowVertical } from './_components/HomepageBusinessFlowVertical';
 import { HomepageHero } from './_components/HomepageHero';
 import { LearnMoreLink } from './_components/LearnMoreLink';
 import styles from './marketing.module.css';
@@ -101,10 +97,11 @@ export default function HomePage() {
         aria-labelledby="pillars-title"
         data-section-reveal
         tone="alternate-to-base"
-        gridFade="none"
+        grid={false}
         paddingTop={32}
         paddingBottom={12}
       >
+        <MaskedBackground {...pillarsBackgroundHomepageProps} variant="pillars" />
         <SiteContainer {...siteContainerHomepageProps}>
           <SplitLayout
             {...splitLayoutHomepageProps}
@@ -136,18 +133,16 @@ export default function HomePage() {
               </div>
             )}
             visual={(
-              <div className={styles.capabilityVisual}>
+              <div className={styles.deliveryIllustration}>
                 <MobileWorkflowFallback
-                  alt="Vertical business flow"
-                  height={360}
+                  alt="Horizontal business flow"
+                  darkSrc="/images/workflows/mobile/delivery-flow.png"
+                  height={608}
+                  lightSrc="/images/workflows/mobile/delivery-flow-light.png"
                   name="pillars"
-                  src="/images/workflows/mobile/pillars-flow.png"
                   width={360}
                 >
-                  <BusinessFlowVertical
-                    {...businessFlowVerticalHomepageProps}
-                    className={styles.pillarsIllustration}
-                  />
+                  <HomepageBusinessFlowHorizontal />
                 </MobileWorkflowFallback>
               </div>
             )}
@@ -169,10 +164,11 @@ export default function HomePage() {
         aria-labelledby="delivery-title"
         data-section-reveal
         tone="alternate-to-base"
-        gridFade="none"
+        grid={false}
         paddingTop={60}
         paddingBottom={60}
       >
+        <MaskedBackground {...deliveryBackgroundHomepageProps} variant="delivery" />
         <SiteContainer {...siteContainerHomepageProps}>
           <SplitLayout
             {...splitLayoutHomepageProps}
@@ -213,15 +209,16 @@ export default function HomePage() {
               </div>
             )}
             visual={(
-              <div className={styles.deliveryIllustration}>
+              <div className={styles.capabilityVisual}>
                 <MobileWorkflowFallback
-                  alt="Horizontal business flow"
-                  height={608}
+                  alt="Vertical business flow"
+                  darkSrc="/images/workflows/mobile/pillars-flow.png"
+                  height={360}
+                  lightSrc="/images/workflows/mobile/pillars-flow-light.png"
                   name="delivery"
-                  src="/images/workflows/mobile/delivery-flow.png"
                   width={360}
                 >
-                  <BusinessFlowHorizontal {...businessFlowHorizontalHomepageProps} />
+                  <HomepageBusinessFlowVertical className={styles.pillarsIllustration} />
                 </MobileWorkflowFallback>
               </div>
             )}

@@ -1,0 +1,88 @@
+.root {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.desktop {
+  height: 34px;
+  padding: 1px;
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--theme-toggle-border);
+  background: var(--theme-toggle-surface);
+}
+
+.desktop button,
+.mobile {
+  border: 0;
+  color: var(--theme-toggle-text);
+  background: transparent;
+  font: var(--type-control-weight) var(--type-control-size-xs)/var(--type-control-leading) var(--type-control-family);
+  letter-spacing: var(--type-control-tracking);
+  text-transform: uppercase;
+  transition: color .2s ease, background-color .2s ease;
+}
+
+.desktop button {
+  position: relative;
+  min-width: 0;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.selectedIndicator {
+  position: absolute;
+  right: 7px;
+  bottom: 3px;
+  left: 7px;
+  height: 2px;
+  background: currentColor;
+}
+
+.desktop button:hover,
+.mobile:hover {
+  background: var(--theme-toggle-hover);
+}
+
+.desktop button[aria-pressed='true'] {
+  color: var(--theme-toggle-selected-text);
+  background: var(--theme-toggle-selected-surface);
+}
+
+.desktop button:focus-visible,
+.mobile:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--theme-toggle-focus);
+  outline-offset: 2px;
+}
+
+.desktop svg,
+.mobile svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mobile {
+  width: 44px;
+  height: 44px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--theme-toggle-border);
+}
+
+@media (max-width: 760px) {
+  .desktop { display: none; }
+  .mobile { display: inline-flex; }
+}

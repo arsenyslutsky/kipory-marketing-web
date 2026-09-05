@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The production build is emitted to `out/`.
+Always use `http://localhost:3005` for local site previews (`npm run dev` sets this port). Do not use port 3000 for this site. The production build is emitted to `out/`.
 
 ## Run Storybook
 

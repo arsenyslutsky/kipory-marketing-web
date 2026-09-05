@@ -1,39 +1,562 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { businessFlow3DHomepageProps } from './business-flow-3d/presets';
-import { businessFlowHorizontalHomepageProps } from './business-flow-horizontal/presets';
-import { businessFlowVerticalHomepageProps } from './business-flow-vertical/presets';
+import {
+  businessCoreNodeFlowContactProps,
+  businessCoreNodeFlowWaitlistProps,
+} from './business-core-node-flow/presets';
+import { defaultColors } from './business-flow-3d/config';
+import {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from './business-flow-3d/presets';
+import {
+  CurrentAppLight as businessFlow3DCurrentAppLight,
+  CurrentNextjsApp as businessFlow3DCurrentAppDark,
+} from './business-flow-3d/stories/BusinessFlow3D.stories';
+import {
+  businessFlowHorizontalHomepageDarkProps,
+  businessFlowHorizontalHomepageLightProps,
+} from './business-flow-horizontal/presets';
+import {
+  CurrentAppLight as businessFlowHorizontalCurrentAppLight,
+  CurrentNextjsApp as businessFlowHorizontalCurrentAppDark,
+} from './business-flow-horizontal/stories/BusinessFlowHorizontal.stories';
+import {
+  businessFlowVerticalHomepageDarkProps,
+  businessFlowVerticalHomepageLightProps,
+} from './business-flow-vertical/presets';
+import {
+  CurrentAppLight as businessFlowVerticalCurrentAppLight,
+  CurrentNextjsApp as businessFlowVerticalCurrentAppDark,
+} from './business-flow-vertical/stories/BusinessFlowVertical.stories';
 
 const cases = [
   {
     feature: 'business-flow-3d',
-    preset: 'businessFlow3DHomepageProps',
+    preset: 'businessFlow3DHomepageDarkProps',
+    presetValue: businessFlow3DHomepageDarkProps,
     story: 'BusinessFlow3D',
+    storyArgs: businessFlow3DCurrentAppDark.args ?? {},
   },
   {
-    feature: 'business-flow-vertical',
-    preset: 'businessFlowVerticalHomepageProps',
-    story: 'BusinessFlowVertical',
+    feature: 'business-flow-3d',
+    preset: 'businessFlow3DHomepageLightProps',
+    presetValue: businessFlow3DHomepageLightProps,
+    story: 'BusinessFlow3D',
+    storyArgs: businessFlow3DCurrentAppLight.args ?? {},
   },
   {
     feature: 'business-flow-horizontal',
-    preset: 'businessFlowHorizontalHomepageProps',
+    preset: 'businessFlowHorizontalHomepageDarkProps',
+    presetValue: businessFlowHorizontalHomepageDarkProps,
     story: 'BusinessFlowHorizontal',
+    storyArgs: businessFlowHorizontalCurrentAppDark.args ?? {},
   },
+  {
+    feature: 'business-flow-horizontal',
+    preset: 'businessFlowHorizontalHomepageLightProps',
+    presetValue: businessFlowHorizontalHomepageLightProps,
+    story: 'BusinessFlowHorizontal',
+    storyArgs: businessFlowHorizontalCurrentAppLight.args ?? {},
+  },
+  {
+    feature: 'business-flow-vertical',
+    preset: 'businessFlowVerticalHomepageDarkProps',
+    presetValue: businessFlowVerticalHomepageDarkProps,
+    story: 'BusinessFlowVertical',
+    storyArgs: businessFlowVerticalCurrentAppDark.args ?? {},
+  },
+  {
+    feature: 'business-flow-vertical',
+    preset: 'businessFlowVerticalHomepageLightProps',
+    presetValue: businessFlowVerticalHomepageLightProps,
+    story: 'BusinessFlowVertical',
+    storyArgs: businessFlowVerticalCurrentAppLight.args ?? {},
+  },
+] as const;
+
+const themeDerivedKeys = [
+  'auxiliaryIconFillColor',
+  'beamColor',
+  'beamHighlightColor',
+  'centralIconFillColor',
+  'color',
+  'connectorColor',
+  'gradientEndColor',
+  'gradientMidColor',
+  'gradientStartColor',
+  'gridColor',
+  'mode',
+  'nodeBodyColor',
+  'nodeFrontGradientEndColor',
+  'nodeFrontGradientMidColor',
+  'nodeFrontGradientStartColor',
+  'nodeSideXGradientEndColor',
+  'nodeSideXGradientMidColor',
+  'nodeSideXGradientStartColor',
+  'nodeSideZGradientEndColor',
+  'nodeSideZGradientMidColor',
+  'nodeSideZGradientStartColor',
 ] as const;
 
 function source(path: string) {
   return readFileSync(new URL(path, import.meta.url), 'utf8');
 }
 
+function compositeHex(foreground: string, background: string, alpha: number) {
+  const channels = (hex: string) => [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
+  const foregroundChannels = channels(foreground);
+  const backgroundChannels = channels(background);
+  return foregroundChannels.map((channel, index) => (
+    Math.round(channel * alpha + backgroundChannels[index]! * (1 - alpha))
+  ));
+}
+
+function contrastRatio(foreground: number[], background: number[]) {
+  const luminance = (channels: number[]) => channels
+    .map((channel) => channel / 255)
+    .map((channel) => (channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index]!, 0);
+  const foregroundLuminance = luminance(foreground);
+  const backgroundLuminance = luminance(background);
+  return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05)
+    / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
+}
+
 describe('homepage illustration preset contract', () => {
-  it('eagerly loads only the hero and defers both lower workflows near the viewport', () => {
-    expect(businessFlow3DHomepageProps).toMatchObject({
-      activityStrategy: 'visible',
-      loadStrategy: 'eager',
-      resolutionScale: 'display',
+  it('keeps core flows theme-derived while both 3D homepage variants own their saved node palette', () => {
+    const presets: ReadonlyArray<Record<string, unknown>> = [
+      businessCoreNodeFlowContactProps,
+      businessCoreNodeFlowWaitlistProps,
+    ];
+
+    presets.forEach((preset) => {
+      themeDerivedKeys.forEach((key) => expect(preset).not.toHaveProperty(key));
     });
-    [businessFlowHorizontalHomepageProps, businessFlowVerticalHomepageProps].forEach((preset) => {
+
+    expect(businessFlow3DHomepageDarkProps).toMatchObject({
+      nodeBodyColor: '#020605',
+      nodeFrontGradientEndColor: '#052f24',
+      nodeFrontGradientMidColor: '#03492b',
+      nodeFrontGradientStartColor: '#066b43',
+      nodeSideXGradientEndColor: '#5c899b',
+      nodeSideXGradientMidColor: '#10402e',
+      nodeSideXGradientStartColor: '#31775a',
+      nodeSideZGradientEndColor: '#0e4b81',
+      nodeSideZGradientMidColor: '#366480',
+      nodeSideZGradientStartColor: '#427298',
+    });
+    expect(businessFlow3DHomepageLightProps).toMatchObject({
+      nodeBodyColor: '#9cac9d',
+      nodeFrontGradientEndColor: '#449c40',
+      nodeFrontGradientMidColor: '#449c40',
+      nodeFrontGradientStartColor: '#98c496',
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
+    });
+  });
+
+  it('preserves the hero camera, topology, opacity, timing, and runtime preset values', () => {
+    const expected = {
+      activityStrategy: 'visible',
+      cameraPitch: 33.19,
+      cameraYaw: 0.35,
+      cameraZoom: 1.1,
+      cameraTargetOffsetY: -3,
+      concurrentBeams: 10,
+      connectorOpacity: 0.62,
+      connectorStroke: 'dashed',
+      connectorWidth: 1.25,
+      emitterX: 6,
+      emitterY: -3.5,
+      fogEnabled: true,
+      gridDensity: 8,
+      gridMaskBlur: 480,
+      gridMaskRadius: 1200,
+      gridOpacity: 0.1,
+      interactive: false,
+      loadStrategy: 'eager',
+      maxDelay: 800,
+      maxEmitDelay: 500,
+      minDelay: 200,
+      minEmitDelay: 150,
+      nodeCornerRadius: 10,
+      nodeBodyColor: '#020605',
+      nodeDepth: 20,
+      nodeDepthRandom: 42,
+      nodeFrontGradientAngle: 117,
+      nodeFrontGradientEndColor: '#052f24',
+      nodeFrontGradientMidColor: '#03492b',
+      nodeFrontGradientStartColor: '#066b43',
+      nodeIconOpacity: 0.5,
+      nodeProgressMode: 'outline',
+      nodeScale: 1.1,
+      nodeShape: 'custom',
+      nodeSideXGradientAngle: 360,
+      nodeSideXGradientEndColor: '#5c899b',
+      nodeSideXGradientMidColor: '#10402e',
+      nodeSideXGradientStartColor: '#31775a',
+      nodeSideZGradientAngle: 177,
+      nodeSideZGradientEndColor: '#0e4b81',
+      nodeSideZGradientMidColor: '#366480',
+      nodeSideZGradientStartColor: '#427298',
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      pathCurve: 86,
+      perspectiveEffect: 75,
+      progressBarHeight: 15,
+      progressBarOpacity: 1,
+      progressPadding: 1,
+      resolutionScale: 'display',
+      scrollRange: 700,
+      scrollTilt: 12,
+      showContinuationConnectors: true,
+      showInterface: false,
+      speed: 0.8,
+    };
+
+    expect(businessFlow3DHomepageDarkProps).toEqual(expected);
+    expect(businessFlow3DHomepageLightProps).toEqual({
+      ...expected,
+      connectorElevation: 2,
+      connectorStroke: 'solid',
+      iconStrokeColor: '#ffffff',
+      nodeBodyColor: '#9cac9d',
+      nodeFrontGradientEndColor: '#449c40',
+      nodeFrontGradientMidColor: '#449c40',
+      nodeFrontGradientStartColor: '#98c496',
+      nodeCornerRadius: 0,
+      nodeDepthRandom: 0,
+      nodeIconOpacity: 0.9,
+      nodeShadowLightX: 0,
+      nodeShadowLightZ: 16.5,
+      nodeShadowRadius: 8,
+      nodeScale: 0.9,
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
+      outlineOpacity: 0.3,
+      outlineWidth: 1.25,
+      pathCurve: 100,
+      progressBarHeight: 10,
+    });
+
+    expect(businessFlow3DHomepageDarkProps).toMatchObject({
+      cameraTargetOffsetY: -3,
+      emitterX: 6,
+      emitterY: -3.5,
+    });
+    expect(businessFlow3DHomepageLightProps).toMatchObject({
+      cameraTargetOffsetY: -3,
+      emitterX: 6,
+      emitterY: -3.5,
+    });
+
+    const spatialKeys = [
+      'cameraPitch',
+      'cameraYaw',
+      'cameraZoom',
+      'cameraTargetOffsetY',
+      'emitterX',
+      'emitterY',
+      'perspectiveEffect',
+    ] as const;
+
+    spatialKeys.forEach((key) => {
+      expect(businessFlow3DHomepageLightProps[key]).toBe(businessFlow3DHomepageDarkProps[key]);
+    });
+  });
+
+  it('keeps the light hero grid perceptible at the homepage opacity', () => {
+    const ground = compositeHex(
+      defaultColors.light.scene.ground,
+      defaultColors.light.scene.ground,
+      1,
+    );
+    const compositedGrid = compositeHex(
+      defaultColors.light.scene.gridMajor,
+      defaultColors.light.scene.ground,
+      businessFlow3DHomepageLightProps.gridOpacity,
+    );
+
+    expect(contrastRatio(compositedGrid, ground)).toBeGreaterThanOrEqual(1.1);
+  });
+
+  it('preserves lower-flow layout, topology, opacity, timing, and runtime preset values for both themes', () => {
+    const horizontalStructure = {
+      activityStrategy: 'visible',
+      auxiliaryIconOpacity: 0.72,
+      beamEmissionRandomness: 100,
+      beamEnabled: true,
+      beamHeadGlowRadius: 11,
+      beamSpeed: 1.4,
+      burstFadeTime: 900,
+      burstRadius: 24,
+      burstStrength: 0.5,
+      centralIconOpacity: 1,
+      centralIconStrokeOpacity: 1,
+      gridDensity: 30,
+      gridOpacity: 0,
+      height: '50rem',
+      loadStrategy: 'near-viewport',
+      maxConcurrentBeams: 5,
+      nodeProgressMaxDelay: 1800,
+      nodeProgressMinDelay: 500,
+      nodeProgressMode: 'outline',
+      nodeProgressSize: 15,
+      numberOfNodesLeft: 8,
+      numberOfNodesRight: 8,
+      preloadMargin: '600px 0px',
+      resolutionScale: 'display',
+      width: 'min(28.8rem, 100%)',
+    };
+    const verticalStructure = {
+      activityStrategy: 'visible',
+      auxiliaryNodeSpacing: 0.6,
+      centralIconFillMode: 'black',
+      connectorRadius: 10,
+      height: '45rem',
+      loadStrategy: 'near-viewport',
+      numberOfNodesBottom: 5,
+      numberOfNodesTop: 4,
+      preloadMargin: '600px 0px',
+      resolutionScale: 'display',
+      showContinuationConnectors: true,
+      width: '20rem',
+    };
+
+    [businessFlowHorizontalHomepageDarkProps, businessFlowHorizontalHomepageLightProps]
+      .forEach((preset) => expect(preset).toMatchObject(horizontalStructure));
+    expect(businessFlowHorizontalHomepageDarkProps.strokeWidth).toBe(2.25);
+    expect(businessFlowHorizontalHomepageLightProps.strokeWidth).toBe(3);
+    [businessFlowVerticalHomepageDarkProps, businessFlowVerticalHomepageLightProps]
+      .forEach((preset) => expect(preset).toMatchObject(verticalStructure));
+  });
+
+  it('uses the delivery flow visual treatment for the pillars flow without sharing topology', () => {
+    const sharedVisualKeys = [
+      'auxiliaryIconFillColor',
+      'auxiliaryIconOpacity',
+      'beamColor',
+      'beamEmissionRandomness',
+      'beamEnabled',
+      'beamGlowIntensity',
+      'beamHeadGlowBlur',
+      'beamHeadGlowOpacity',
+      'beamHeadGlowRadius',
+      'beamHighlightColor',
+      'beamSpeed',
+      'beamTrailLength',
+      'beamWidth',
+      'burstFadeTime',
+      'burstRadius',
+      'burstStrength',
+      'centralIconFillColor',
+      'centralIconOpacity',
+      'centralIconStrokeOpacity',
+      'connectorColor',
+      'connectorOpacity',
+      'connectorWidth',
+      'gridColor',
+      'gridDensity',
+      'gridOpacity',
+      'iconSize',
+      'iconStrokeColor',
+      'maxConcurrentBeams',
+      'nodeBodyColor',
+      'nodeFrontGradientAngle',
+      'nodeFrontGradientEndColor',
+      'nodeFrontGradientMidColor',
+      'nodeFrontGradientStartColor',
+      'nodeProgressMaxDelay',
+      'nodeProgressMinDelay',
+      'nodeProgressMode',
+      'nodeProgressSize',
+      'nodeShadowBias',
+      'nodeShadowBlurSamples',
+      'nodeShadowColor',
+      'nodeShadowLightX',
+      'nodeShadowLightY',
+      'nodeShadowLightZ',
+      'nodeShadowNormalBias',
+      'nodeShadowOpacity',
+      'nodeShadowRadius',
+      'nodeSideXGradientAngle',
+      'nodeSideXGradientEndColor',
+      'nodeSideXGradientMidColor',
+      'nodeSideXGradientStartColor',
+      'nodeSideZGradientAngle',
+      'nodeSideZGradientEndColor',
+      'nodeSideZGradientMidColor',
+      'nodeSideZGradientStartColor',
+      'outlineOpacity',
+      'outlineWidth',
+      'strokeWidth',
+    ] as const;
+
+    for (const [pillars, delivery] of [
+      [businessFlowVerticalHomepageDarkProps, businessFlowHorizontalHomepageDarkProps],
+      [businessFlowVerticalHomepageLightProps, businessFlowHorizontalHomepageLightProps],
+    ] as const) {
+      for (const key of sharedVisualKeys) {
+        expect(pillars[key], key).toBe(delivery[key]);
+      }
+    }
+
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({
+      auxiliaryNodeSpacing: 0.6,
+      connectorRadius: 10,
+      height: '45rem',
+      numberOfNodesBottom: 5,
+      numberOfNodesTop: 4,
+      showContinuationConnectors: true,
+      width: '20rem',
+    });
+  });
+
+  it('promotes the linked light horizontal treatment without changing its flow topology', () => {
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      auxiliaryIconFillColor: '#ffffff',
+      auxiliaryIconOpacity: 0.72,
+      beamColor: '#449c40',
+      beamHeadGlowBlur: 32,
+      beamHeadGlowOpacity: 0.6,
+      beamHighlightColor: '#ffffff',
+      beamTrailLength: 49,
+      centralIconFillColor: '#ffffff',
+      centralIconOpacity: 1,
+      centralIconStrokeOpacity: 1,
+      connectorColor: '#449c40',
+      connectorOpacity: 1,
+      connectorWidth: 1.5,
+      gridColor: '#a7b5a8',
+      gridOpacity: 0,
+      iconSize: 40,
+      iconStrokeColor: '#449c40',
+      nodeBodyColor: '#9cac9d',
+      nodeFrontGradientEndColor: '#98c496',
+      nodeFrontGradientMidColor: '#ffffff',
+      nodeFrontGradientStartColor: '#ffffff',
+      nodeShadowColor: '#000000',
+      nodeShadowOpacity: 0.15,
+      nodeSideXGradientEndColor: '#449c40',
+      nodeSideXGradientMidColor: '#449c40',
+      nodeSideXGradientStartColor: '#449c40',
+      nodeSideZGradientEndColor: '#449c40',
+      nodeSideZGradientMidColor: '#449c40',
+      nodeSideZGradientStartColor: '#449c40',
+      outlineOpacity: 0.25,
+      strokeWidth: 3,
+    });
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      height: '50rem',
+      maxConcurrentBeams: 5,
+      numberOfNodesLeft: 8,
+      numberOfNodesRight: 8,
+      width: 'min(28.8rem, 100%)',
+    });
+  });
+
+  it('supplies complete theme-specific node shadows and outline treatment to each flat-flow preset', () => {
+    const nodeShadowKeys = [
+      'nodeShadowBias',
+      'nodeShadowBlurSamples',
+      'nodeShadowColor',
+      'nodeShadowLightX',
+      'nodeShadowLightY',
+      'nodeShadowLightZ',
+      'nodeShadowNormalBias',
+      'nodeShadowOpacity',
+      'nodeShadowRadius',
+    ] as const;
+
+    for (const preset of [
+      businessFlowHorizontalHomepageDarkProps,
+      businessFlowHorizontalHomepageLightProps,
+      businessFlowVerticalHomepageDarkProps,
+      businessFlowVerticalHomepageLightProps,
+    ]) {
+      for (const key of nodeShadowKeys) expect(preset).toHaveProperty(key);
+    }
+
+    expect(businessFlowHorizontalHomepageDarkProps).toMatchObject({
+      outlineOpacity: 0,
+      outlineWidth: 1,
+      nodeShadowOpacity: 0.5,
+    });
+    expect(businessFlowHorizontalHomepageLightProps).toMatchObject({
+      outlineOpacity: 0.25,
+      outlineWidth: 1.25,
+      nodeShadowOpacity: 0.15,
+    });
+    expect(businessFlowVerticalHomepageDarkProps).toMatchObject({ nodeShadowOpacity: 0.5 });
+    expect(businessFlowVerticalHomepageLightProps).toMatchObject({ nodeShadowOpacity: 0.15 });
+  });
+
+  it('preserves contact and waitlist flow structure without freezing their colors', () => {
+    const expected = {
+      activityStrategy: 'visible',
+      auxiliaryIcon: 'mixed',
+      beamEmissionRandomness: 100,
+      beamEnabled: true,
+      beamGlowIntensity: 1,
+      beamHeadGlowBlur: 2,
+      beamHeadGlowOpacity: 1,
+      beamHeadGlowRadius: 11,
+      beamSpeed: 1.4,
+      beamTrailLength: 135,
+      beamWidth: 1.4,
+      burstFadeTime: 900,
+      burstRadius: 24,
+      burstStrength: 0.5,
+      centralIcon: 'profile',
+      centralIconStrokeOpacity: 1,
+      connectorOpacity: 0.8,
+      connectorStroke: 'dashed',
+      connectorWidth: 1,
+      gridDensity: 30,
+      gridOpacity: 0,
+      iconSize: 44,
+      loadStrategy: 'near-viewport',
+      maxConcurrentBeams: 6,
+      nodeProgressMaxDelay: 1800,
+      nodeProgressMinDelay: 500,
+      nodeProgressMode: 'outline',
+      nodeProgressSize: 15,
+      numberOfAuxiliaryConnections: 12,
+      resolutionScale: 'display',
+      showAuxiliaryNodes: false,
+      size: 'min(22rem, 100%)',
+      strokeWidth: 0.5,
+    };
+
+    expect(businessCoreNodeFlowContactProps).toEqual(expected);
+    expect(businessCoreNodeFlowWaitlistProps).toEqual(expected);
+  });
+
+  it('eagerly loads only the hero and defers both lower workflows near the viewport', () => {
+    [businessFlow3DHomepageDarkProps, businessFlow3DHomepageLightProps].forEach((preset) => {
+      expect(preset).toMatchObject({
+        activityStrategy: 'visible',
+        loadStrategy: 'eager',
+        resolutionScale: 'display',
+      });
+    });
+    [
+      businessFlowHorizontalHomepageDarkProps,
+      businessFlowHorizontalHomepageLightProps,
+      businessFlowVerticalHomepageDarkProps,
+      businessFlowVerticalHomepageLightProps,
+    ].forEach((preset) => {
       expect(preset).toMatchObject({
         activityStrategy: 'visible',
         loadStrategy: 'near-viewport',
@@ -44,11 +567,13 @@ describe('homepage illustration preset contract', () => {
   });
 
   it('keeps the hero beam cadence and node progress pauses responsive', () => {
-    const speed = businessFlow3DHomepageProps.speed;
+    [businessFlow3DHomepageDarkProps, businessFlow3DHomepageLightProps].forEach((preset) => {
+      const speed = preset.speed;
 
-    expect(320 / speed).toBeLessThanOrEqual(400);
-    expect(businessFlow3DHomepageProps.maxEmitDelay / speed).toBeLessThanOrEqual(625);
-    expect(businessFlow3DHomepageProps.maxDelay / speed).toBeLessThanOrEqual(1000);
+      expect(320 / speed).toBeLessThanOrEqual(400);
+      expect(preset.maxEmitDelay / speed).toBeLessThanOrEqual(625);
+      expect(preset.maxDelay / speed).toBeLessThanOrEqual(1000);
+    });
   });
 
   it('keeps the pillars section out of progress-driven document geometry', () => {
@@ -75,22 +600,16 @@ describe('homepage illustration preset contract', () => {
       .toBeGreaterThan(countClassAndAttributeSelectors(rootRule[0]));
   });
 
-  it('keeps the hero workflow close to the copy on ultra-wide screens', () => {
+  it('keeps Storybook framing while bottom-aligning the desktop hero workflow clear of the copy', () => {
     const marketingCss = source('../app/marketing.module.css');
     const heroVisualRule = marketingCss.match(/\.heroVisual\s*\{([^}]*)\}/)?.[1] ?? '';
-    const responsiveShift = heroVisualRule.match(
-      /translateX\(clamp\((\d+)px,\s*calc\((\d+)px\s*-\s*(\d+(?:\.\d+)?)vw\),\s*(\d+)px\)\)/,
-    );
-    expect(responsiveShift).toBeTruthy();
 
-    const [, minimum, base, viewportRate, maximum] = responsiveShift ?? [];
-    const shiftAt = (viewportWidth: number) => Math.min(
-      Number(maximum),
-      Math.max(Number(minimum), Number(base) - (Number(viewportRate) / 100) * viewportWidth),
+    expect(heroVisualRule).toMatch(/inset:\s*auto\s+0\s+0/);
+    expect(heroVisualRule).toMatch(/height:\s*840px/);
+    expect(heroVisualRule).toMatch(
+      /transform:\s*translateX\(calc\(clamp\(264px,\s*13vw,\s*284px\)\s*-\s*240px\)\)/,
     );
-
-    expect(shiftAt(1440)).toBe(650);
-    expect(shiftAt(2696)).toBe(630);
+    expect(heroVisualRule).not.toMatch(/scale\(/);
   });
 
   it('releases the CTA reveal mask after the entrance animation', () => {
@@ -113,16 +632,20 @@ describe('homepage illustration preset contract', () => {
     expect(illustrationRule).toMatch(/height:\s*100%/);
   });
 
-  it.each(cases)('$feature exports one preset used by its website story', ({ feature, preset, story }) => {
+  it.each(cases)('$feature exports one preset used by its website story', ({
+    feature,
+    preset,
+    presetValue,
+    story,
+    storyArgs,
+  }) => {
     const presetSource = source(`./${feature}/presets.ts`);
     const indexSource = source(`./${feature}/index.ts`);
     const storySource = source(`./${feature}/stories/${story}.stories.tsx`);
 
     expect(presetSource).toContain(`export const ${preset} =`);
-    expect(indexSource).toContain(`export { ${preset} } from './presets';`);
-    expect(storySource).toContain(`import { ${preset} } from '../presets';`);
-    expect(storySource).toMatch(new RegExp(
-      `export const CurrentNextjsApp: Story = \\{[\\s\\S]*?args: ${preset}`,
-    ));
+    expect(indexSource).toContain(preset);
+    expect(storySource).toContain(preset);
+    expect(storyArgs).toMatchObject(presetValue);
   });
 });

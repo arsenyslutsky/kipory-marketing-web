@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
+import { useResolvedTheme } from '@/theme/ThemeProvider';
 import { createBeam3DScene } from './createBeam3DScene';
 import styles from './Beam3D.module.css';
 import type { Beam3DProps, Beam3DSceneOptions } from './types';
@@ -28,7 +29,7 @@ function cssSize(value: CSSProperties['width']): string {
 }
 
 export function Beam3D({
-  beamColor = businessFlowPalette.beam,
+  beamColor: explicitBeamColor,
   beamWidth = 1,
   cameraPitch = 33.19,
   cameraYaw = 0,
@@ -36,17 +37,17 @@ export function Beam3D({
   className,
   delayBeforeDissapear = 0,
   direction = 'forward',
-  flareColor = businessFlowPalette.flare,
+  flareColor: explicitFlareColor,
   glowIntensity = 1,
   height = '28rem',
-  highlightColor = businessFlowPalette.beamHighlight,
+  highlightColor: explicitHighlightColor,
   interactive = true,
-  mode = 'dark',
-  packetColor = businessFlowPalette.packetCore,
+  mode: explicitMode,
+  packetColor: explicitPacketColor,
   packetCoreShape = 'circle',
   packetCoreSize = 1,
   packetHaloBlur = 0,
-  packetHaloColor = businessFlowPalette.packetHalo,
+  packetHaloColor: explicitPacketHaloColor,
   packetHaloSize = 1,
   packetShadow = 0,
   packetVisible = true,
@@ -62,6 +63,13 @@ export function Beam3D({
   visibility = 1,
   width = 'min(100%, 48rem)',
 }: Beam3DProps) {
+  const mode = useResolvedTheme(explicitMode);
+  const palette = getBusinessFlowPalette(mode);
+  const beamColor = explicitBeamColor ?? palette.beam;
+  const flareColor = explicitFlareColor ?? palette.flare;
+  const highlightColor = explicitHighlightColor ?? palette.beamHighlight;
+  const packetColor = explicitPacketColor ?? palette.packetCore;
+  const packetHaloColor = explicitPacketHaloColor ?? palette.packetHalo;
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState('');
@@ -166,6 +174,7 @@ export function Beam3D({
     <figure
       ref={containerRef}
       className={rootClassName}
+      data-mode={mode}
       style={componentStyle}
       role="img"
       aria-label={`Three-dimensional ${style} beam traveling ${direction}`}

@@ -1,6 +1,7 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import { businessFlowHorizontalHomepageProps } from '@/features/business-flow-horizontal/presets';
+import { businessFlowPalettes } from '@/features/business-flow-palette';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FlowLayer3D } from './FlowLayer3D';
 import { createFlowLayer3DScene } from './createFlowLayer3DScene';
 
@@ -70,17 +71,16 @@ const productionFallbackNodes = [{
   ...nodes[0],
   cardDepth: 34,
   icon: 'download.svg',
-  iconColor: businessFlowHorizontalHomepageProps.auxiliaryIconFillColor,
+  iconColor: businessFlowPalettes.dark.horizontalAuxiliaryIconFill,
   iconOpacity: 0.72,
-  iconStrokeColor: businessFlowHorizontalHomepageProps.color,
+  iconStrokeColor: businessFlowPalettes.dark.horizontalIconStroke,
   id: 'terminal-1',
   shape: 'rectangle' as const,
   width: 30,
 }];
-const nodeStyle = {
+const nodeStyleWithoutMode = {
   assetBasePath: '/assets/nodes',
   frontGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
-  mode: 'dark' as const,
   nodeCornerRadius: 12,
   outlineOpacity: 0.5,
   outlineWidth: 1,
@@ -90,6 +90,137 @@ const nodeStyle = {
   sideXGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
   sideZGradient: { angle: 0, end: '#111', mid: '#222', start: '#333' },
 };
+const nodeStyle = { ...nodeStyleWithoutMode, mode: 'dark' as const };
+
+it('defaults to dark mode outside a theme provider', async () => {
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn(), setActive: vi.fn() });
+  const view = render(<FlowLayer3D
+    beam={beam}
+    beamSource={beamSource}
+    connector={connector}
+    nodeStyle={nodeStyleWithoutMode}
+    paths={emptyPaths}
+  />);
+
+  expect(view.container.firstElementChild).toHaveAttribute('data-mode', 'dark');
+  await waitFor(() => {
+    expect(createFlowLayer3DScene).toHaveBeenLastCalledWith(expect.objectContaining({
+      mode: 'dark',
+      nodeStyle: expect.objectContaining({ mode: 'dark' }),
+    }));
+  });
+});
+
+it('inherits light mode in the scene node style from the theme provider', async () => {
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn(), setActive: vi.fn() });
+  const view = render(
+    <ThemeProvider preference="light">
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        connector={connector}
+        nodeStyle={nodeStyleWithoutMode}
+        paths={emptyPaths}
+      />
+    </ThemeProvider>,
+  );
+
+  expect(view.container.firstElementChild).toHaveAttribute('data-mode', 'light');
+  await waitFor(() => {
+    expect(createFlowLayer3DScene).toHaveBeenLastCalledWith(expect.objectContaining({
+      mode: 'light',
+      nodeStyle: expect.objectContaining({ mode: 'light' }),
+    }));
+  });
+});
+
+it('prefers an explicit dark mode over a light theme provider', async () => {
+  vi.mocked(createFlowLayer3DScene).mockReturnValue({ destroy: vi.fn(), setActive: vi.fn() });
+  const view = render(
+    <ThemeProvider preference="light">
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        connector={connector}
+        mode="dark"
+        nodeStyle={nodeStyleWithoutMode}
+        paths={emptyPaths}
+      />
+    </ThemeProvider>,
+  );
+
+  expect(view.container.firstElementChild).toHaveAttribute('data-mode', 'dark');
+  await waitFor(() => {
+    expect(createFlowLayer3DScene).toHaveBeenLastCalledWith(expect.objectContaining({
+      mode: 'dark',
+      nodeStyle: expect.objectContaining({ mode: 'dark' }),
+    }));
+  });
+});
+
+it('uses light palette defaults in the DOM fallback', async () => {
+  vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  vi.mocked(createFlowLayer3DScene).mockImplementation(() => {
+    throw new Error('WebGL unavailable');
+  });
+  const view = render(
+    <ThemeProvider preference="light">
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        connector={connector}
+        nodes={nodes}
+        paths={emptyPaths}
+      />
+    </ThemeProvider>,
+  );
+
+  const fallback = await view.findByTestId('flow-layer-node-fallback');
+  expect(fallback.querySelector('[data-flow-node-fallback-body]')).toHaveStyle({
+    '--flow-node-body-end': businessFlowPalettes.light.frontGradient.end,
+    '--flow-node-body-mid': businessFlowPalettes.light.frontGradient.mid,
+    '--flow-node-body-start': businessFlowPalettes.light.frontGradient.start,
+    '--flow-node-icon-color': businessFlowPalettes.light.iconStroke,
+  });
+});
+
+it('destroys the previous scene before constructing a replacement for a provider mode change', async () => {
+  const events: string[] = [];
+  vi.mocked(createFlowLayer3DScene).mockImplementation((options) => {
+    events.push(`create:${options.mode}`);
+    return {
+      destroy: vi.fn(() => events.push(`destroy:${options.mode}`)),
+      setActive: vi.fn(),
+    };
+  });
+  const view = render(
+    <ThemeProvider preference="light">
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        connector={connector}
+        nodeStyle={nodeStyleWithoutMode}
+        paths={emptyPaths}
+      />
+    </ThemeProvider>,
+  );
+  await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledOnce());
+
+  view.rerender(
+    <ThemeProvider preference="dark">
+      <FlowLayer3D
+        beam={beam}
+        beamSource={beamSource}
+        connector={connector}
+        nodeStyle={nodeStyleWithoutMode}
+        paths={emptyPaths}
+      />
+    </ThemeProvider>,
+  );
+
+  await waitFor(() => expect(createFlowLayer3DScene).toHaveBeenCalledTimes(2));
+  expect(events).toEqual(['create:light', 'destroy:light', 'create:dark']);
+});
 
 it('initializes near the viewport and pauses the scene when it leaves', async () => {
   const observers = installIntersectionObservers();
@@ -325,7 +456,7 @@ it('renders a visible fallback body and a separate contrasting icon with product
     '--flow-node-body-end': '#111',
     '--flow-node-body-mid': '#222',
     '--flow-node-body-start': '#333',
-    '--flow-node-icon-color': businessFlowHorizontalHomepageProps.color,
+    '--flow-node-icon-color': businessFlowPalettes.dark.horizontalIconStroke,
   });
   expect(icon).toBeInTheDocument();
   expect(icon).toHaveStyle({

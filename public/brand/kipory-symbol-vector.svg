@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.68 40.22" role="img" aria-labelledby="kipory-symbol-title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.7 40.2" role="img" aria-labelledby="kipory-symbol-title">
   <title id="kipory-symbol-title">Kipory</title>
   <defs>
-    <linearGradient id="kipory-left" x1="0" y1="20.23" x2="12.12" y2="20.23" gradientUnits="userSpaceOnUse">
+    <linearGradient id="kipory-left" x1="0" y1="20.22" x2="12.1" y2="20.22" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#449c40" />
       <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
-    <linearGradient id="kipory-lower" x1="38.87" y1="26.93" x2="16.31" y2="33.4" gradientUnits="userSpaceOnUse">
+    <linearGradient id="kipory-lower" x1="38.9" y1="26.92" x2="16.3" y2="33.42" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#449c40" />
       <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
-    <linearGradient id="kipory-upper" x1="12.5" y1="10.05" x2="42.68" y2="10.05" gradientUnits="userSpaceOnUse">
+    <linearGradient id="kipory-upper" x1="12.5" y1="10.02" x2="42.7" y2="10.02" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#449c40" />
       <stop offset="1" stop-color="#2f702c" />
     </linearGradient>
   </defs>
-  <polygon fill="url(#kipory-left)" points="12.12 30.24 12.12 .77 .12 10.64 0 39.7 12.12 30.24" />
-  <polygon fill="url(#kipory-lower)" points="42.68 40.22 25.24 37.08 12.5 20.11 27.6 20.11 42.68 40.22" />
-  <polygon fill="url(#kipory-upper)" points="42.68 0 24.77 3.77 12.5 20.11 27.6 20.11 42.68 0" />
+  <polygon fill="url(#kipory-left)" points="12.1 30.2 12.1 .8 .1 10.6 0 39.7 12.1 30.2" />
+  <polygon fill="url(#kipory-lower)" points="42.7 40.2 25.2 37.1 12.5 20.1 27.6 20.1 42.7 40.2" />
+  <polygon fill="url(#kipory-upper)" points="42.7 0 24.8 3.8 12.5 20.1 27.6 20.1 42.7 0" />
 </svg>

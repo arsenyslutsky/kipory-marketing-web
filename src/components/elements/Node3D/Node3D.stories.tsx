@@ -86,6 +86,11 @@ const meta = {
       table: { category: 'Icon' },
     },
     assetBasePath: { control: 'text', table: { category: 'Icon' } },
+    bodyColor: {
+      control: 'color',
+      description: 'Color of the bottom/base face of the node body.',
+      table: { category: 'Node Body' },
+    },
     iconColor: { control: 'color', table: { category: 'Icon' } },
     iconOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
@@ -161,6 +166,7 @@ const meta = {
   },
   args: {
     assetBasePath: '/assets/nodes',
+    bodyColor: '#020605',
     cameraPitch: 33.19,
     cameraYaw: 28,
     cameraZoom: 1,
@@ -175,7 +181,6 @@ const meta = {
     icon: 'hexagon_default.svg',
     iconOpacity: 0.5,
     interactive: true,
-    mode: 'dark',
     nodeCornerRadius: 10,
     nodeDepth: 20,
     nodeScale: 1,

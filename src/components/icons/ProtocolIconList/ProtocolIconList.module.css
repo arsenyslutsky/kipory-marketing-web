@@ -1,10 +1,8 @@
 .root {
-  --protocol-icon-list-status-size: calc(
-    var(--type-control-size-2xs) * var(--protocol-icon-list-coming-soon-scale, 1)
-  );
+  --protocol-icon-list-status-size: var(--type-accent-size-page);
 
   min-width: 0;
-  color: inherit;
+  color: var(--text-primary);
   overflow: hidden;
 }
 
@@ -13,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: var(--protocol-icon-list-title-inline-gap, 22px);
-  color: var(--accent);
+  color: var(--signal-copy);
   font-family: var(--type-accent-family);
   font-size: var(--type-accent-size-page);
   font-weight: var(--type-accent-weight);
@@ -47,7 +45,7 @@
   row-gap: max(
     var(--protocol-icon-list-item-gap, clamp(24px, 4vw, 48px)),
     calc(
-      var(--protocol-icon-list-status-gap, 6px) +
+      var(--protocol-icon-list-status-offset, 6px) +
       var(--protocol-icon-list-status-size, var(--type-control-size-2xs)) +
       8px
     )
@@ -64,23 +62,22 @@
 }
 
 .comingSoon {
-  color: var(--protocol-icon-list-status-color, var(--accent));
-  font-family: var(--type-control-family);
-  font-size: var(--type-control-size-2xs);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  letter-spacing: var(--type-control-tracking);
+  color: var(--protocol-icon-list-status-color, var(--signal-copy));
+  font-family: var(--type-accent-family);
+  font-size: var(--type-accent-size-page);
+  font-weight: var(--type-accent-weight);
+  line-height: var(--type-accent-leading-page);
+  letter-spacing: var(--type-accent-tracking);
   opacity: var(--protocol-icon-list-status-opacity, 0.8);
   text-transform: uppercase;
   white-space: nowrap;
-  zoom: var(--protocol-icon-list-coming-soon-scale, 1);
 }
 
 .comingSoon::after {
   content: '';
   position: absolute;
   top: 50%;
-  left: calc(100% + var(--protocol-icon-list-status-gap, 6px));
+  left: calc(100% + var(--protocol-icon-list-title-inline-gap, 22px));
   width: var(--protocol-icon-list-status-line-width, 60cqi);
   height: 1px;
   background: linear-gradient(
@@ -101,17 +98,17 @@
 .root[data-layout='scroll'] .list {
   margin-top: calc(
     -1 * (
-      var(--protocol-icon-list-status-gap, 6px) +
+      var(--protocol-icon-list-status-offset, 6px) +
       var(--protocol-icon-list-status-size, var(--type-control-size-2xs))
     )
   );
   padding-top: calc(
-    var(--protocol-icon-list-status-gap, 6px) +
+    var(--protocol-icon-list-status-offset, 6px) +
     var(--protocol-icon-list-status-size, var(--type-control-size-2xs))
   );
   overflow-x: auto;
   overscroll-behavior-inline: contain;
-  scrollbar-color: var(--accent-dark) color-mix(in srgb, var(--paper) 8%, transparent);
+  scrollbar-color: var(--signal-strong) color-mix(in srgb, var(--line-default) 60%, transparent);
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }

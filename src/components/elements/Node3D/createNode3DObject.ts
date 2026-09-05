@@ -40,6 +40,7 @@ export type Node3DProgressControl = {
 
 export type CreateNode3DObjectOptions = {
   assetBasePath: string;
+  bodyColor?: string;
   cardDepth: number;
   fogEnabled: boolean;
   frontGradient: Node3DResolvedGradient;
@@ -58,10 +59,13 @@ export type CreateNode3DObjectOptions = {
   isDark: boolean;
   isVariant2: boolean;
   nodeCornerRadius: number;
+  nodeElevation?: number;
   outlineOpacity: number;
   outlineWidth: number;
   position: readonly [number, number];
+  progressBarColor?: string;
   progressBarHeight: number;
+  progressBarOpacity?: number;
   progressMode: Node3DProgressMode;
   progressPadding: number;
   renderer: THREE.WebGLRenderer;
@@ -76,6 +80,7 @@ export type CreateNode3DObjectOptions = {
 
 export function createNode3DObject({
   assetBasePath,
+  bodyColor,
   cardDepth,
   fogEnabled,
   frontGradient,
@@ -94,10 +99,13 @@ export function createNode3DObject({
   isDark,
   isVariant2,
   nodeCornerRadius,
+  nodeElevation = 0,
   outlineOpacity,
   outlineWidth,
   position,
+  progressBarColor,
   progressBarHeight,
+  progressBarOpacity = 1,
   progressMode,
   progressPadding,
   renderer,
@@ -114,6 +122,8 @@ export function createNode3DObject({
   const resolvedOutlineOpacity = THREE.MathUtils.clamp(outlineOpacity, 0, 1);
   const resolvedOutlineWidth = THREE.MathUtils.clamp(outlineWidth, 0, 5);
   const resolvedProgressMode: Node3DProgressMode = progressMode === 'outline' ? 'outline' : 'bar';
+  const resolvedProgressBarColor = progressBarColor ?? effects.nodeProgressFill;
+  const resolvedProgressBarOpacity = THREE.MathUtils.clamp(progressBarOpacity, 0, 1);
   const resolvedProgressPadding = THREE.MathUtils.clamp(progressPadding, 0, 3);
   const resolvedProgressBarHeight = THREE.MathUtils.clamp(Math.round(progressBarHeight), 0, 100);
   const nodeCornerRadiusPixels = THREE.MathUtils.clamp(nodeCornerRadius, 0, 50);
@@ -497,7 +507,8 @@ export function createNode3DObject({
         width: '100%',
         height: '100%',
         borderRadius: 'inherit',
-        backgroundColor: effects.nodeProgressFill,
+        backgroundColor: resolvedProgressBarColor,
+        opacity: String(resolvedProgressBarOpacity),
         transform: 'scaleX(0)',
         transformOrigin: 'left center',
         willChange: 'transform',
@@ -573,7 +584,8 @@ export function createNode3DObject({
       path.setAttribute('stroke-linejoin', 'round');
     });
     track.setAttribute('stroke', effects.nodeProgressTrack);
-    fill.setAttribute('stroke', effects.nodeProgressFill);
+    fill.setAttribute('stroke', resolvedProgressBarColor);
+    fill.style.opacity = String(resolvedProgressBarOpacity);
     fill.style.strokeDasharray = '1';
     fill.style.strokeDashoffset = '1';
     fill.style.willChange = 'stroke-dashoffset';
@@ -582,7 +594,7 @@ export function createNode3DObject({
     const object = new CSS3DObject(container);
     object.rotation.x = -Math.PI / 2;
     object.position.set(0, nodeHeight * 0.5 + 0.014, 0);
-    object.scale.set(worldScaleX, worldScaleZ, 1);
+    object.scale.set(worldScaleX, radialSides === undefined ? worldScaleZ : worldScaleX, 1);
     return {
       object,
       setProgress(progress) {
@@ -644,7 +656,7 @@ export function createNode3DObject({
   const isRadial = radialSides !== undefined;
   const group = new THREE.Group();
   const baseBottom = (isVariant2 ? 0.4 : 0.28) - 0.11 + tier * 0.03;
-  group.position.set(position[0], baseBottom + height * 0.5, position[1]);
+  group.position.set(position[0], baseBottom + nodeElevation + height * 0.5, position[1]);
   group.scale.setScalar(THREE.MathUtils.clamp(scale, 0.1, 3));
 
   const nodeGlow = new THREE.Mesh(
@@ -666,7 +678,7 @@ export function createNode3DObject({
   const frontSideMaterial = createCardSideMaterial(height, width, cardDepth, 'x', false, 'down', 0.96, sideXGradient);
   const backSideMaterial = createCardSideMaterial(height, width, cardDepth, 'x', true, 'up', isDark ? 0.74 : 0.84, sideXGradient);
   const bottomMaterial = new THREE.MeshStandardMaterial({
-    color: palette.cardShadow,
+    color: bodyColor ?? palette.cardShadow,
     roughness: 0.66,
     metalness: 0.02,
     fog: fogEnabled,

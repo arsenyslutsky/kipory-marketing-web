@@ -1,7 +1,11 @@
 export { BusinessFlow3D } from './components/BusinessFlow3D';
-export { businessFlow3DHomepageProps } from './presets';
+export {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from './presets';
 export { BusinessFlow3DVariantTwo } from './components/BusinessFlow3DVariants';
 export { defaultColors, defaultFlow } from './config';
+export { homepageFlow } from './homepageFlow';
 export type {
   ConnectorStrokeType,
   FlowConfig,

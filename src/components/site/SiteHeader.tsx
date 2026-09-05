@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
 import { BrandMark } from './BrandMark';
+import { ThemeToggle } from './ThemeToggle';
 
 const navigation = [
   { href: '/contact', label: "Let's Talk" },
@@ -17,6 +18,7 @@ export function SiteHeader() {
         </Link>
 
         <div className="site-header__actions">
+          <ThemeToggle />
           <nav className="site-nav" aria-label="Primary navigation">
             {navigation.map((item) => (
               <Link key={item.href} href={item.href}>{item.label}</Link>

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import controlStyles from '@/components/form-controls/FormControls.module.css';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import styles from '../marketing.module.css';
 
 afterEach(() => {
@@ -15,22 +16,37 @@ it('uses the contact core PNG set instead of mounting WebGL on mobile', async ()
   }) as unknown as MediaQueryList));
   const { default: ContactPage } = await import('./page');
 
-  const { container } = render(<ContactPage />);
-  const image = container.querySelector<HTMLImageElement>(
+  const darkView = render(<ThemeProvider preference="dark"><ContactPage /></ThemeProvider>);
+  const darkImage = darkView.container.querySelector<HTMLImageElement>(
     '[data-mobile-workflow-fallback="contact-core"] img',
   );
 
-  expect(image).toHaveAttribute('src', '/images/workflows/mobile/contact-core-flow.png');
-  expect(image).toHaveAttribute(
-    'srcset',
-    '/images/workflows/mobile/contact-core-flow.png 1x, /images/workflows/mobile/contact-core-flow@2x.png 2x, /images/workflows/mobile/contact-core-flow@3x.png 3x',
+  expect(darkImage?.style.getPropertyValue('--mobile-workflow-dark-image')).toBe(
+    'image-set(url("/images/workflows/mobile/contact-core-flow.png") 1x, url("/images/workflows/mobile/contact-core-flow@2x.png") 2x, url("/images/workflows/mobile/contact-core-flow@3x.png") 3x)',
   );
-  expect(image?.parentElement).toHaveStyle({
+  expect(darkImage).not.toHaveAttribute('src', '/images/workflows/mobile/contact-core-flow.png');
+  expect(darkImage).not.toHaveAttribute('srcset');
+  expect(darkImage).toHaveAttribute('width', '176');
+  expect(darkImage).toHaveAttribute('height', '176');
+  expect(darkImage?.parentElement).toHaveStyle({
     aspectRatio: '176 / 176',
     width: 'min(100%, 176px)',
   });
-  expect(container.querySelector('[data-flow-state]')).not.toBeInTheDocument();
-  expect(container.querySelector('canvas')).not.toBeInTheDocument();
+  expect(darkView.container.querySelector('[data-flow-state]')).not.toBeInTheDocument();
+  expect(darkView.container.querySelector('canvas')).not.toBeInTheDocument();
+
+  darkView.unmount();
+
+  const lightView = render(<ThemeProvider preference="light"><ContactPage /></ThemeProvider>);
+  const lightImage = lightView.container.querySelector<HTMLImageElement>(
+    '[data-mobile-workflow-fallback="contact-core"] img',
+  );
+
+  expect(lightImage?.style.getPropertyValue('--mobile-workflow-light-image')).toBe(
+    'image-set(url("/images/workflows/mobile/contact-core-flow-light.png") 1x, url("/images/workflows/mobile/contact-core-flow-light@2x.png") 2x, url("/images/workflows/mobile/contact-core-flow-light@3x.png") 3x)',
+  );
+  expect(lightImage).not.toHaveAttribute('src', '/images/workflows/mobile/contact-core-flow-light.png');
+  expect(lightImage).not.toHaveAttribute('srcset');
 });
 
 it('replaces a submitted contact inquiry form with an accessible success panel', async () => {

@@ -1,4 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
+import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessCoreNodeFlow } from '../components/BusinessCoreNodeFlow';
 import { businessCoreNodeFlowIconOptions } from '../nodes';
 import {
@@ -22,6 +25,9 @@ const meta = {
     controls: { sort: 'none' },
   },
   argTypes: {
+    ...nodeShadowArgTypes,
+    ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     className: { table: { disable: true } },
     activityStrategy: {
       control: 'inline-radio',
@@ -123,7 +129,7 @@ const meta = {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       table: { category: 'Nodes' },
     },
-    color: { control: 'color', table: { category: 'Nodes' } },
+    color: { table: { disable: true } },
     iconSize: {
       control: { type: 'range', min: 24, max: 80, step: 1 },
       table: { category: 'Nodes' },

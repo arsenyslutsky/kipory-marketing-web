@@ -52,9 +52,10 @@ export function WaitlistInquiry() {
           <MobileWorkflowFallback
             alt="Business core node flow"
             className={styles.contactCoreFlow}
+            darkSrc="/images/workflows/mobile/waitlist-core-flow.png"
             height={176}
+            lightSrc="/images/workflows/mobile/waitlist-core-flow-light.png"
             name="waitlist-core"
-            src="/images/workflows/mobile/waitlist-core-flow.png"
             width={176}
           >
             <BusinessCoreNodeFlow

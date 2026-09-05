@@ -1,27 +1,27 @@
 {
   "light": {
     "scene": {
-      "background": "#f4f4f4",
-      "ground": "#f4f4f4",
-      "fog": "#f4f4f4",
+      "background": "#f3f5ef",
+      "ground": "#e7ebe2",
+      "fog": "#f3f5ef",
       "sky": "#ffffff",
-      "bounce": "#d0d0d0",
+      "bounce": "#111511",
       "key": "#ffffff",
-      "gridMajor": "#aeb7b2",
-      "gridMinor": "#c6cec9",
+      "gridMajor": "#425548",
+      "gridMinor": "#a7b5a8",
       "gridOpacity": 0.44,
-      "icon": "#181818",
-      "card": "#dbe8e1",
-      "cardHighlight": "#ffffff",
-      "cardShadow": "#aebfb6",
-      "cardSide": "#b9c9c1",
-      "cardSideHighlight": "#f9fffb",
-      "cardSideMid": "#b8cbc1",
-      "cardSideShadow": "#71877b",
+      "icon": "#182019",
+      "card": "#cfe0cf",
+      "cardHighlight": "#f8faf5",
+      "cardShadow": "#9cac9d",
+      "cardSide": "#a9c1aa",
+      "cardSideHighlight": "#e9f2e8",
+      "cardSideMid": "#91ad94",
+      "cardSideShadow": "#5f7863",
       "cardBase": "#d2d2d2",
-      "edge": "#202020",
-      "connector": "#555555",
-      "junction": "#fafafa"
+      "edge": "#26342a",
+      "connector": "#33453a",
+      "junction": "#edf2e9"
     },
     "effects": {
       "greenLight": "#449c40",
@@ -35,7 +35,7 @@
       "flare": "#ffffff",
       "flareStops": ["rgba(255,255,255,1)", "rgba(219,242,217,.96)", "rgba(68,156,64,.62)", "rgba(68,156,64,.18)", "rgba(68,156,64,0)"],
       "nodeProgressTrack": "rgba(24,24,24,.18)",
-      "nodeProgressFill": "#449c40"
+      "nodeProgressFill": "#387f35"
     },
     "ui": {
       "pageText": "#151515",

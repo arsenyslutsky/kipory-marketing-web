@@ -1,8 +1,14 @@
 .withText {
   display: inline-flex;
   align-items: center;
+  padding: var(--protocol-chip-padding);
   color: inherit;
+  background: var(--protocol-chip-surface);
+  box-shadow:
+    inset 0 0 0 1px var(--protocol-chip-line),
+    var(--protocol-chip-shadow);
   font: inherit;
+  transition: background-color .2s ease, box-shadow .2s ease;
   vertical-align: middle;
 }
 

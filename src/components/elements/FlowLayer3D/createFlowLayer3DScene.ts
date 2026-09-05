@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
-import { businessFlowPalette } from '@/features/business-flow-palette';
+import { getBusinessFlowPalette } from '@/features/business-flow-palette';
 import {
   createActiveFrameLoop,
   resolveWorkflowRenderScale,
@@ -16,6 +16,7 @@ import { createFlowLayer3DObjects, type FlowLayer3DObjects } from './createFlowL
 import { disposeFlowLayer3DObjectResources } from './disposeFlowLayer3DObjectResources';
 import { resolveFlowLayer3DPath } from './resolveFlowLayer3D';
 import { resolveFlowLayer3DBeamStyle } from './resolveFlowLayer3DBeamStyle';
+import { resolveNodeShadowProps } from './resolveNodeShadowProps';
 import { projectFlowLayer3DArrivals } from './projectFlowLayer3DArrivals';
 import { stepFlowLayer3DBeamRun } from './stepFlowLayer3DBeamRun';
 import type {
@@ -23,8 +24,6 @@ import type {
   FlowLayer3DSceneController,
   FlowLayer3DSceneOptions,
 } from './types';
-
-const flareStops = businessFlowPalette.flareStops;
 
 type BeamSlot = {
   beam: Beam3DObject;
@@ -79,8 +78,18 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     connector,
     container,
     cssLayer,
+    mode = 'dark',
     nodes = [],
     nodeStyle,
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
     onArrival,
     onError,
     onReady,
@@ -89,6 +98,30 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     resolutionScale = 'display',
     worldHeight = 20,
   } = options;
+  const resolvedMode = nodeStyle?.mode ?? mode;
+  const palette = getBusinessFlowPalette(resolvedMode);
+  const nodeShadow = resolveNodeShadowProps({
+    nodeShadowBias,
+    nodeShadowBlurSamples,
+    nodeShadowColor,
+    nodeShadowLightX,
+    nodeShadowLightY,
+    nodeShadowLightZ,
+    nodeShadowNormalBias,
+    nodeShadowOpacity,
+    nodeShadowRadius,
+  }, {
+    nodeShadowBias: -0.0003,
+    nodeShadowBlurSamples: 16,
+    nodeShadowColor: palette.nodeShadow,
+    nodeShadowLightX: -6,
+    nodeShadowLightY: 14,
+    nodeShadowLightZ: -5,
+    nodeShadowNormalBias: 0.025,
+    nodeShadowOpacity: 0.5,
+    nodeShadowRadius: 8,
+  });
+  const flareStops = palette.flareStops;
   const renderer = createRenderer(canvas);
   let cssRenderer: CSS3DRenderer;
   try {
@@ -105,19 +138,23 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   camera.up.set(0, 0, -1);
   camera.lookAt(0, 0, 0);
   const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
-  shadowLight.position.set(-6, 14, -5);
+  shadowLight.position.set(
+    nodeShadow.nodeShadowLightX,
+    nodeShadow.nodeShadowLightY,
+    nodeShadow.nodeShadowLightZ,
+  );
   const shadowDirection = shadowLight.position.clone().normalize();
   shadowLight.castShadow = true;
   shadowLight.shadow.mapSize.set(1024, 1024);
-  shadowLight.shadow.bias = -0.0003;
-  shadowLight.shadow.normalBias = 0.025;
-  shadowLight.shadow.radius = 8;
-  shadowLight.shadow.blurSamples = 16;
+  shadowLight.shadow.bias = nodeShadow.nodeShadowBias;
+  shadowLight.shadow.normalBias = nodeShadow.nodeShadowNormalBias;
+  shadowLight.shadow.radius = nodeShadow.nodeShadowRadius;
+  shadowLight.shadow.blurSamples = nodeShadow.nodeShadowBlurSamples;
 
   const shadowCatcherGeometry = new THREE.PlaneGeometry(80, 80);
   const shadowCatcherMaterial = new THREE.ShadowMaterial({
-    color: 0x000000,
-    opacity: 0.5,
+    color: nodeShadow.nodeShadowColor,
+    opacity: nodeShadow.nodeShadowOpacity,
     transparent: true,
     depthWrite: false,
     toneMapped: false,
@@ -143,6 +180,17 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
   function resolvePath(path: FlowLayer3DBeamRun['path']) {
     const route = resolveFlowLayer3DPath(path, { aspectRatio, worldHeight });
     return route ? resolveFlowPath3D(route.path) : null;
+  }
+
+  function resolveTrailLength(run: FlowLayer3DBeamRun, path: THREE.Curve<THREE.Vector3>) {
+    if (run.trailLengthInPixels === undefined) {
+      return run.trailLength ?? beamStyle.trailLength;
+    }
+
+    const pathLengthInPixels = path.getLength() * measuredHeight / worldHeight;
+    if (pathLengthInPixels <= 0 || !Number.isFinite(pathLengthInPixels)) return 0;
+
+    return Math.min(1, Math.max(0, run.trailLengthInPixels) / pathLengthInPixels);
   }
 
   function rebuildConnectors() {
@@ -214,7 +262,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     }
     slot.run = nextRun;
     slot.beam.setPath(path);
-    slot.beam.setTrailLength(slot.run.trailLength ?? beamStyle.trailLength);
+    slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
     slot.beam.setVisible(true);
   }
 
@@ -258,7 +306,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         },
         flareTexture,
         fogEnabled: false,
-        mode: 'dark',
+        mode: resolvedMode,
         path: fallbackPath,
         style: 'ribbon',
       });
@@ -340,6 +388,8 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
     );
     cssRenderer.setSize(width, height);
     if (sizeChanged) rebuildNodes(height);
+    measuredWidth = width;
+    measuredHeight = height;
     if (aspectChanged || !connectorObjects) {
       rebuildConnectors();
       beamSlots.forEach((slot) => {
@@ -347,6 +397,7 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
         const path = resolvePath(slot.run.path);
         if (!path) return;
         slot.beam.setPath(path);
+        slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
         if (slot.run.arrivals?.length) {
           slot.run = {
             ...slot.run,
@@ -358,9 +409,14 @@ export function createFlowLayer3DScene(options: FlowLayer3DSceneOptions): FlowLa
           };
         }
       });
+    } else if (sizeChanged) {
+      beamSlots.forEach((slot) => {
+        if (!slot.run) return;
+        const path = resolvePath(slot.run.path);
+        if (!path) return;
+        slot.beam.setTrailLength(resolveTrailLength(slot.run, path.curve));
+      });
     }
-    measuredWidth = width;
-    measuredHeight = height;
   }
 
   function handleResize() {

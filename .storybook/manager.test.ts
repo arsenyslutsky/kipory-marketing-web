@@ -15,6 +15,8 @@ it('registers and renders the toolbar when the manager uses classic JSX', () => 
     },
   }).outputText;
   let registeredTool: { render: () => unknown } | undefined;
+  let storyArgs: Record<string, unknown> | undefined = {};
+  let storyArgTypes: Record<string, unknown> | undefined = {};
   const toolbar = () => null;
   const react = {
     createElement: (type: unknown, props: unknown) => ({ type, props }),
@@ -33,8 +35,8 @@ it('registers and renders the toolbar when the manager uses classic JSX', () => 
           },
         },
         types: { TOOL: 'tool' },
-        useArgs: () => [{}],
-        useArgTypes: () => ({}),
+        useArgs: () => [storyArgs],
+        useArgTypes: () => storyArgTypes,
         useParameter: () => ({ keys: ['connectorOpacity'] }),
         useStorybookApi: () => ({
           getCurrentStoryData: () => ({ type: 'story', args: {} }),
@@ -66,6 +68,19 @@ it('registers and renders the toolbar when the manager uses classic JSX', () => 
   expect(registeredTool?.render()).toMatchObject({
     type: toolbar,
     props: { presetKeys: ['connectorOpacity'] },
+  });
+
+  // Storybook clears these while navigating between stories. Do not mount the
+  // save toolbar with absent args, or it crashes the entire manager UI.
+  storyArgs = undefined;
+  expect(registeredTool?.render()).toBeNull();
+  storyArgs = { connectorOpacity: 0.4 };
+  storyArgTypes = undefined;
+  expect(registeredTool?.render()).toBeNull();
+  storyArgTypes = { connectorOpacity: {} };
+  expect(registeredTool?.render()).toMatchObject({
+    type: toolbar,
+    props: { args: { connectorOpacity: 0.4 } },
   });
 });
 

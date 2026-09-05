@@ -14,7 +14,7 @@ describe('shared form-section grid treatment', () => {
     )?.[1];
 
     expect(maskRule).toContain(
-      'linear-gradient(to right, var(--ink) 0, var(--ink) 38%, color-mix(in srgb, var(--ink) 12%, transparent) 72%, transparent 100%)',
+      'linear-gradient(to right, var(--section-mask-surface) 0, var(--section-mask-surface) 38%, color-mix(in srgb, var(--section-mask-surface) 12%, transparent) 72%, transparent 100%)',
     );
     expect(maskRule).not.toContain('linear-gradient(to bottom, transparent 0');
   });

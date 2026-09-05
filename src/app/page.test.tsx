@@ -3,29 +3,30 @@ import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import HomePage from './page';
 import styles from './marketing.module.css';
 
 const {
   glowLinkRender,
-  horizontalHomepageProps,
-  horizontalRender,
-  threeDHomepageProps,
+  horizontalWrapperRender,
+  threeDDarkHomepageProps,
+  threeDHomepageFlow,
+  threeDLightHomepageProps,
   threeDRender,
-  verticalHomepageProps,
-  verticalRender,
+  verticalWrapperRender,
 } = vi.hoisted(() => ({
   glowLinkRender: vi.fn(),
-  horizontalHomepageProps: {
-    beamSpeed: 1.4,
-    height: '38rem',
-    width: '20rem',
+  horizontalWrapperRender: vi.fn(),
+  threeDDarkHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'dark' },
+  threeDHomepageFlow: {
+    root: 'core',
+    nodes: [],
+    branches: {},
   },
-  horizontalRender: vi.fn(),
-  threeDHomepageProps: { cameraZoom: 0.91, mode: 'dark' },
+  threeDLightHomepageProps: { cameraZoom: 1.1, emitterY: -3.5, presetVariant: 'light' },
   threeDRender: vi.fn(),
-  verticalHomepageProps: { height: '45rem', width: '20rem' },
-  verticalRender: vi.fn(),
+  verticalWrapperRender: vi.fn(),
 }));
 
 vi.mock('@/components/site/HeroScrollEffects', () => ({
@@ -34,6 +35,13 @@ vi.mock('@/components/site/HeroScrollEffects', () => ({
   ),
 }));
 vi.mock('@/components/site/BackToTop', () => ({ BackToTop: () => null }));
+vi.mock('@/components/marketing/MaskedBackground.presets', () => ({
+  heroBaseBackgroundDarkProps: { colorFrom: '#0a0c0b', colorTo: '#0a0c0b', style: 'solid', angle: 180 },
+  heroBaseBackgroundLightProps: { colorFrom: '#f3f5ef', colorTo: '#f3f5ef', style: 'solid', angle: 180 },
+  heroBackgroundHomepageProps: { maskWidth: 73, maskHeight: 160 },
+  pillarsBackgroundHomepageProps: { maskWidth: 81, maskHeight: 240, gridSize: 24, gridOpacity: 0.3 },
+  deliveryBackgroundHomepageProps: { maskWidth: 96, maskHeight: 320, gridSize: 28, gridOpacity: 0.16 },
+}));
 vi.mock('@/components/ui/GlowLink', () => ({
   GlowLink: ({ children, href, ...props }: PropsWithChildren<{ href: string }>) => {
     glowLinkRender(props);
@@ -45,32 +53,59 @@ vi.mock('@/features/business-flow-3d', () => ({
     threeDRender(props);
     return <div />;
   },
-  businessFlow3DHomepageProps: threeDHomepageProps,
+  businessFlow3DHomepageDarkProps: threeDDarkHomepageProps,
+  businessFlow3DHomepageLightProps: threeDLightHomepageProps,
+  homepageFlow: threeDHomepageFlow,
 }));
-vi.mock('@/features/business-flow-vertical', () => ({
-  BusinessFlowVertical: (props: Record<string, unknown>) => {
-    verticalRender(props);
-    return <div />;
+vi.mock('./_components/HomepageBusinessFlowVertical', () => ({
+  HomepageBusinessFlowVertical: (props: Record<string, unknown>) => {
+    verticalWrapperRender(props);
+    return <section aria-label="Vertical business flow" />;
   },
-  businessFlowVerticalHomepageProps: verticalHomepageProps,
 }));
-vi.mock('@/features/business-flow-horizontal', () => ({
-  BusinessFlowHorizontal: (props: Record<string, unknown>) => {
-    horizontalRender(props);
+vi.mock('./_components/HomepageBusinessFlowHorizontal', () => ({
+  HomepageBusinessFlowHorizontal: (props: Record<string, unknown>) => {
+    horizontalWrapperRender(props);
     return <figure aria-label="Horizontal business flow" />;
   },
-  businessFlowHorizontalHomepageProps: horizontalHomepageProps,
 }));
 
 beforeEach(() => {
   glowLinkRender.mockClear();
-  horizontalRender.mockClear();
+  horizontalWrapperRender.mockClear();
   threeDRender.mockClear();
-  verticalRender.mockClear();
+  verticalWrapperRender.mockClear();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+it('uses one decorative masked background per landing section without duplicating the section grid', () => {
+  const { container } = render(<HomePage />);
+  const backgrounds = Array.from(container.querySelectorAll('[data-masked-background]'));
+
+  expect(backgrounds.map((background) => background.getAttribute('data-masked-background')))
+    .toEqual(['hero', 'pillars', 'delivery']);
+  for (const background of backgrounds) {
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+  }
+  expect(backgrounds[0].closest('section')).toHaveAttribute('aria-labelledby', 'hero-title');
+  expect(backgrounds[1].closest('section')).toHaveAttribute('id', 'pillars');
+  expect(backgrounds[2].closest('section')).toHaveAttribute('id', 'delivery');
+  expect(container.querySelector('#pillars')).toHaveAttribute('data-grid', 'false');
+  expect(container.querySelector('#delivery')).toHaveAttribute('data-grid', 'false');
+  expect(backgrounds[0]).toHaveStyle({ '--masked-background-size': '73% 160%' });
+  expect(backgrounds[1]).toHaveStyle({
+    '--masked-background-size': '81% 240%',
+    '--masked-background-grid-size': '24px',
+    '--masked-background-grid-opacity': '0.3',
+  });
+  expect(backgrounds[2]).toHaveStyle({
+    '--masked-background-size': '96% 320%',
+    '--masked-background-grid-size': '28px',
+    '--masked-background-grid-opacity': '0.16',
+  });
 });
 
 it('uses density-aware static workflow artwork without mounting WebGL on mobile', () => {
@@ -80,24 +115,45 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
     removeEventListener: vi.fn(),
   }) as unknown as MediaQueryList));
 
-  const { container } = render(<HomePage />);
-  const fallbacks = Array.from(
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+  const darkFallbacks = Array.from(
+    darkView.container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
+  );
+
+  expect(darkFallbacks.map((image) => image.parentElement?.dataset.mobileWorkflowFallback)).toEqual([
+    'hero',
+    'pillars',
+    'delivery',
+  ]);
+  expect(darkFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-dark-image'))).toEqual([
+    'image-set(url("/images/workflows/mobile/hero-flow.png") 1x, url("/images/workflows/mobile/hero-flow@2x.png") 2x, url("/images/workflows/mobile/hero-flow@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/delivery-flow.png") 1x, url("/images/workflows/mobile/delivery-flow@2x.png") 2x, url("/images/workflows/mobile/delivery-flow@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow.png") 1x, url("/images/workflows/mobile/pillars-flow@2x.png") 2x, url("/images/workflows/mobile/pillars-flow@3x.png") 3x)',
+  ]);
+  expect(darkFallbacks.map((image) => [image.getAttribute('width'), image.getAttribute('height')])).toEqual([
+    ['390', '780'],
+    ['360', '608'],
+    ['360', '360'],
+  ]);
+
+  darkView.unmount();
+
+  const { container } = render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const lightFallbacks = Array.from(
     container.querySelectorAll<HTMLImageElement>('[data-mobile-workflow-fallback] img'),
   );
 
-  expect(fallbacks.map((image) => image.getAttribute('src'))).toEqual([
-    '/images/workflows/mobile/hero-flow.png',
-    '/images/workflows/mobile/pillars-flow.png',
-    '/images/workflows/mobile/delivery-flow.png',
+  expect(lightFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-light-image'))).toEqual([
+    'image-set(url("/images/workflows/mobile/hero-flow-light.png") 1x, url("/images/workflows/mobile/hero-flow-light@2x.png") 2x, url("/images/workflows/mobile/hero-flow-light@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/delivery-flow-light.png") 1x, url("/images/workflows/mobile/delivery-flow-light@2x.png") 2x, url("/images/workflows/mobile/delivery-flow-light@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow-light.png") 1x, url("/images/workflows/mobile/pillars-flow-light@2x.png") 2x, url("/images/workflows/mobile/pillars-flow-light@3x.png") 3x)',
   ]);
-  expect(fallbacks.map((image) => image.getAttribute('srcset'))).toEqual([
-    '/images/workflows/mobile/hero-flow.png 1x, /images/workflows/mobile/hero-flow@2x.png 2x, /images/workflows/mobile/hero-flow@3x.png 3x',
-    '/images/workflows/mobile/pillars-flow.png 1x, /images/workflows/mobile/pillars-flow@2x.png 2x, /images/workflows/mobile/pillars-flow@3x.png 3x',
-    '/images/workflows/mobile/delivery-flow.png 1x, /images/workflows/mobile/delivery-flow@2x.png 2x, /images/workflows/mobile/delivery-flow@3x.png 3x',
-  ]);
+  expect([...darkFallbacks, ...lightFallbacks].every((image) => (
+    !image.getAttribute('src')?.startsWith('/images/workflows/mobile/') && !image.hasAttribute('srcset')
+  ))).toBe(true);
   expect(threeDRender).not.toHaveBeenCalled();
-  expect(verticalRender).not.toHaveBeenCalled();
-  expect(horizontalRender).not.toHaveBeenCalled();
+  expect(verticalWrapperRender).not.toHaveBeenCalled();
+  expect(horizontalWrapperRender).not.toHaveBeenCalled();
 });
 
 it('participates in the quiet navigation handoff', () => {
@@ -106,7 +162,7 @@ it('participates in the quiet navigation handoff', () => {
   expect(screen.getByRole('main')).toHaveAttribute('data-route-transition', 'quiet-signal');
 });
 
-it('renders all shared homepage presets and replaces the delivery placeholder', () => {
+it('renders both themed-flow wrappers and replaces the delivery placeholder', () => {
   render(<HomePage />);
 
   const pageSourcePath = './page.tsx';
@@ -115,11 +171,60 @@ it('renders all shared homepage presets and replaces the delivery placeholder', 
   expect(screen.queryByText(/illustration placeholder/i)).not.toBeInTheDocument();
   const horizontalFlow = screen.getByRole('figure', { name: 'Horizontal business flow' });
   expect(horizontalFlow).toBeInTheDocument();
-  expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
-  expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDHomepageProps));
-  expect(verticalRender.mock.calls[0][0]).toEqual(expect.objectContaining(verticalHomepageProps));
-  expect(horizontalRender).toHaveBeenCalledWith(expect.objectContaining(horizontalHomepageProps));
+  expect(horizontalFlow.closest('#pillars')).toBeInTheDocument();
+  expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeNull();
+  const verticalFlow = screen.getByRole('region', { name: 'Vertical business flow' });
+  expect(verticalFlow.closest('#delivery')).toBeInTheDocument();
+  expect(verticalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
+  expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDDarkHomepageProps));
+  expect(verticalWrapperRender).toHaveBeenCalledTimes(1);
+  expect(horizontalWrapperRender).toHaveBeenCalledTimes(1);
+  expect(verticalWrapperRender.mock.calls[0]?.[0]).toEqual({
+    className: styles.pillarsIllustration,
+  });
+  expect(horizontalWrapperRender.mock.calls[0]?.[0]).toEqual({});
   expect(glowLinkRender).toHaveBeenCalledWith(expect.objectContaining(glowLinkHomepageProps));
+});
+
+it('selects an independent hero 3D preset for each resolved theme', () => {
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+
+  expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
+    ...threeDDarkHomepageProps,
+    flow: threeDHomepageFlow,
+    mode: 'dark',
+  }));
+
+  darkView.unmount();
+  threeDRender.mockClear();
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+
+  expect(threeDRender).toHaveBeenLastCalledWith(expect.objectContaining({
+    ...threeDLightHomepageProps,
+    flow: threeDHomepageFlow,
+    mode: 'light',
+  }));
+});
+
+it('uses the exact shared homepage flow object for both homepage themes', () => {
+  const darkView = render(<ThemeProvider preference="dark"><HomePage /></ThemeProvider>);
+  const darkFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  darkView.unmount();
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const lightFlow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  expect(darkFlow).toBe(threeDHomepageFlow);
+  expect(lightFlow).toBe(threeDHomepageFlow);
+  expect(darkFlow).toBe(lightFlow);
+});
+
+it('passes the shared homepage flow without mutation', () => {
+  render(<ThemeProvider preference="light"><HomePage /></ThemeProvider>);
+  const flow = threeDRender.mock.calls.at(-1)?.[0].flow;
+
+  expect(flow).toBe(threeDHomepageFlow);
+  expect(threeDHomepageFlow).toEqual({ root: 'core', nodes: [], branches: {} });
 });
 
 it('routes homepage conversion actions to active destinations', () => {
@@ -178,6 +283,18 @@ it('keeps the pillars content close to its separator', () => {
     });
 });
 
+it('uses shared typography for every homepage section title', () => {
+  render(<HomePage />);
+
+  const pillarsHeader = screen.getByRole('heading', { level: 2, name: 'Our Pillars' }).closest('header');
+  const deliveryHeader = screen
+    .getByRole('heading', { level: 2, name: 'Everything your team needs to move faster - without compromise.' })
+    .closest('header');
+
+  expect(pillarsHeader).not.toHaveStyle({ '--section-header-title-weight': '400' });
+  expect(deliveryHeader).not.toHaveStyle({ '--section-header-title-weight': '400' });
+});
+
 it('places the canonical protocol strip before the hero learn-more link', () => {
   render(<HomePage />);
 
@@ -194,12 +311,13 @@ it('places the canonical protocol strip before the hero learn-more link', () => 
   const pillarsLink = within(hero!).getByRole('link', { name: 'Explore our pillars' });
 
   expect(protocolLabels).toEqual(['REST', 'SSE', 'JSONata', 'MCP', 'Webhook', 'GraphQL']);
-  expect(protocolLists).toHaveLength(2);
-  expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'new-row');
+  expect(protocolLists).toHaveLength(1);
+  expect(protocolRoot).toHaveAttribute('data-coming-soon-layout', 'overlay');
   expect(protocolRoot).toHaveClass(styles.heroProtocolsList);
   expect(protocolReveal).not.toHaveAttribute('data-scroll-parallax');
   expect(protocolReveal?.parentElement).toHaveAttribute('data-scroll-parallax');
-  expect(protocolReveal?.parentElement?.nextElementSibling).toBe(pillarsLink);
+  expect(pillarsLink.closest(`.${styles.heroCopy}`)).toBeNull();
+  expect(pillarsLink.parentElement).toHaveClass(styles.heroInner);
 });
 
 it('uses the accelerated-fit delivery label', () => {
@@ -260,8 +378,8 @@ it('marks moving homepage text groups without marking stable section headers or 
     expect(row).toHaveAttribute('data-scroll-parallax');
   });
   screen.getAllByRole('link', { name: /Explore our pillars|See how teams move faster/ }).forEach((link) => {
-    expect(link).toHaveAttribute('data-scroll-parallax');
-    expect(link).toHaveAttribute('data-scroll-fade', 'false');
+    expect(link.closest('[data-scroll-parallax]')).toBeNull();
+    expect(link).not.toHaveAttribute('data-scroll-fade');
   });
   expect(screen.getByRole('figure', { name: 'Horizontal business flow' })).not.toHaveAttribute('data-scroll-parallax');
 });

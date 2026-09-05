@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import type { ResolvedTheme } from '@/theme/theme';
 import type { FlowPath3D, FlowPath3DDirection } from '../FlowPath3D/types';
 
 export type Connector3DStroke = 'solid' | 'dotted' | 'dashed';
@@ -14,6 +15,7 @@ export type Connector3DProps = {
   fading?: boolean;
   height?: CSSProperties['height'];
   interactive?: boolean;
+  mode?: ResolvedTheme;
   opacity?: number;
   path?: FlowPath3D;
   pathCurve?: number;

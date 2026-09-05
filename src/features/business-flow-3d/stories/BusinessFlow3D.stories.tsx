@@ -1,12 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
+import homepageStyles from '@/app/marketing.module.css';
+import { nodeShadowArgTypes } from '@/features/node-shadow-story-controls';
+import { iconColorArgTypes } from '@/features/icon-color-story-controls';
+import { nodeAppearanceArgTypes } from '@/features/node-appearance-story-controls';
 import { BusinessFlow3D } from '../components/BusinessFlow3D';
 import { defaultColors } from '../config';
-import { businessFlow3DHomepageProps } from '../presets';
+import {
+  businessFlow3DHomepageDarkProps,
+  businessFlow3DHomepageLightProps,
+} from '../presets';
+import { homepageFlow } from '../homepageFlow';
 
 function nodeGradientArgs(mode: 'light' | 'dark') {
   const scene = defaultColors[mode].scene;
   return {
+    nodeBodyColor: scene.cardShadow,
     nodeFrontGradientStartColor: scene.cardHighlight,
     nodeFrontGradientMidColor: scene.card,
     nodeFrontGradientEndColor: scene.cardShadow,
@@ -20,6 +29,14 @@ function nodeGradientArgs(mode: 'light' | 'dark') {
 }
 
 const darkNodeGradientArgs = nodeGradientArgs('dark');
+
+const withHomepageHeroFrame: Decorator = (Story) => (
+  <section className={homepageStyles.hero}>
+    <div className={homepageStyles.heroVisual}>
+      <Story />
+    </div>
+  </section>
+);
 
 const meta = {
   title: 'Animated Illustrations/BusinessFlow3D',
@@ -39,6 +56,9 @@ const meta = {
     controls: { sort: 'none' },
   },
   argTypes: {
+    ...nodeShadowArgTypes,
+    ...iconColorArgTypes,
+    ...nodeAppearanceArgTypes,
     variant: { table: { disable: true } },
     className: { table: { disable: true } },
     onModeChange: { table: { disable: true } },
@@ -82,6 +102,12 @@ const meta = {
       control: { type: 'range', min: 0.25, max: 2, step: 0.05 },
       table: { category: 'Placement & Camera' },
     },
+    cameraTargetOffsetY: {
+      control: { type: 'range', min: -10, max: 10, step: 0.1 },
+      description: 'Shift the camera target vertically without changing scene scale or depth.',
+      name: 'Camera target Y offset',
+      table: { category: 'Placement & Camera' },
+    },
     scrollTilt: {
       control: { type: 'range', min: -90, max: 90, step: 1 },
       table: { category: 'Placement & Camera' },
@@ -106,12 +132,12 @@ const meta = {
     },
     gridMaskRadius: {
       control: { type: 'range', min: 0, max: 1200, step: 10 },
-      description: 'Radius of the white grid highlight in CSS pixels.',
+      description: 'Radius of the theme-aware major-grid emphasis in CSS pixels.',
       table: { category: 'Grid & Fog' },
     },
     gridMaskBlur: {
       control: { type: 'range', min: 0, max: 1200, step: 10 },
-      description: 'Soft falloff beyond the white grid-highlight radius, in CSS pixels.',
+      description: 'Soft falloff beyond the theme-aware major-grid emphasis, in CSS pixels.',
       table: { category: 'Grid & Fog' },
     },
     fogEnabled: {
@@ -146,6 +172,12 @@ const meta = {
       description: 'Uniformly scale nodes around their fixed layout centers without changing connector paths.',
       table: { category: 'Nodes' },
     },
+    nodeElevation: {
+      control: { type: 'range', min: -4, max: 4, step: 0.05 },
+      description: 'Additive world-space elevation applied to every node and its animated base position.',
+      name: 'Node elevation',
+      table: { category: 'Nodes' },
+    },
     nodeDepth: {
       control: { type: 'range', min: 1, max: 64, step: 1 },
       table: { category: 'Nodes' },
@@ -164,30 +196,6 @@ const meta = {
       description: 'Opacity of the SVG artwork on the icon-bearing node face.',
       table: { category: 'Nodes' },
     },
-    nodeFrontGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for the icon-bearing front face.',
-      table: { category: 'Nodes' },
-    },
-    nodeSideXGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for node sides aligned to the X axis.',
-      table: { category: 'Nodes' },
-    },
-    nodeSideZGradientAngle: {
-      control: { type: 'range', min: 0, max: 360, step: 1 },
-      description: 'Gradient angle for node sides aligned to the Z axis.',
-      table: { category: 'Nodes' },
-    },
-    nodeFrontGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeFrontGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeFrontGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideXGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientStartColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientMidColor: { control: 'color', table: { category: 'Nodes' } },
-    nodeSideZGradientEndColor: { control: 'color', table: { category: 'Nodes' } },
     outlineOpacity: {
       control: { type: 'range', min: 0, max: 1, step: 0.05 },
       table: { category: 'Nodes' },
@@ -204,6 +212,12 @@ const meta = {
     },
     connectorWidth: {
       control: { type: 'range', min: 0, max: 5, step: 0.25 },
+      table: { category: 'Connectors' },
+    },
+    connectorElevation: {
+      control: { type: 'range', min: -0.1, max: 4, step: 0.05 },
+      description: 'Requested world-space elevation shared by connectors, junctions, and travelling beams, capped below node bodies.',
+      name: 'Connector elevation',
       table: { category: 'Connectors' },
     },
     connectorOpacity: {
@@ -234,6 +248,18 @@ const meta = {
       name: 'progressWidth',
       control: { type: 'range', min: 0, max: 100, step: 1 },
       description: 'Thickness used by both bar and outline node progress modes.',
+      table: { category: 'Progress' },
+    },
+    progressBarColor: {
+      control: 'color',
+      description: 'Color of the active progress fill. The inactive track remains theme-derived.',
+      name: 'Progress color',
+      table: { category: 'Progress' },
+    },
+    progressBarOpacity: {
+      control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      description: 'Opacity of the active progress fill. The inactive track remains theme-derived.',
+      name: 'Progress opacity',
       table: { category: 'Progress' },
     },
     minDelay: {
@@ -284,6 +310,7 @@ const meta = {
     fogEnabled: true,
     nodeShape: 'rectangle',
     nodeScale: 1,
+    nodeElevation: 0,
     nodeDepth: 12,
     nodeDepthRandom: 0,
     nodeCornerRadius: 10,
@@ -296,6 +323,7 @@ const meta = {
     outlineWidth: 3,
     connectorStroke: 'solid',
     connectorWidth: 2,
+    connectorElevation: 0,
     connectorOpacity: 0.82,
     pathCurve: 0,
     showContinuationConnectors: true,
@@ -319,7 +347,7 @@ export const Workflow1: Story = {
   name: 'Workflow 1',
   args: {
     ...darkNodeGradientArgs,
-    ...businessFlow3DHomepageProps,
+    ...businessFlow3DHomepageDarkProps,
     interactive: true,
     showInterface: true,
     cameraPitch: 45,
@@ -330,9 +358,29 @@ export const Workflow1: Story = {
 };
 
 export const CurrentNextjsApp: Story = {
-  name: 'Current Next.js App',
-  args: businessFlow3DHomepageProps,
+  name: 'Current App (Dark)',
+  decorators: [withHomepageHeroFrame],
+  globals: { theme: 'dark' },
+  args: {
+    ...businessFlow3DHomepageDarkProps,
+    flow: homepageFlow,
+    mode: 'dark',
+  },
   parameters: {
-    homepagePreset: { keys: Object.keys(businessFlow3DHomepageProps) },
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageDarkProps) },
+  },
+};
+
+export const CurrentAppLight: Story = {
+  name: 'Current App (Light)',
+  decorators: [withHomepageHeroFrame],
+  globals: { theme: 'light' },
+  args: {
+    ...businessFlow3DHomepageLightProps,
+    flow: homepageFlow,
+    mode: 'light',
+  },
+  parameters: {
+    homepagePreset: { keys: Object.keys(businessFlow3DHomepageLightProps) },
   },
 };
