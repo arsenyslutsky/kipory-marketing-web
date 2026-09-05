@@ -37,6 +37,8 @@ const uiColorPaths = [
   typographyPath,
   resolve(sourceRoot, 'app/marketing.module.css'),
   resolve(sourceRoot, 'components/marketing/MarketingBlocks.module.css'),
+  resolve(sourceRoot, 'components/marketing/MaskedBackground.module.css'),
+  resolve(sourceRoot, 'components/marketing/HeroBaseBackground.module.css'),
   resolve(sourceRoot, 'components/site/BackToTop.module.css'),
   resolve(sourceRoot, 'components/ui/GlowLink.module.css'),
   resolve(sourceRoot, 'components/ui/SubmissionForm.module.css'),

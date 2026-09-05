@@ -43,6 +43,9 @@ function HomepagePresetTool() {
   if (
     viewMode !== 'story' ||
     !isHomepagePresetStoryId(storyId) ||
+    // Storybook briefly clears args and controls when switching stories.
+    !args ||
+    !argTypes ||
     !Array.isArray(homepagePreset?.keys) ||
     !homepagePreset.keys.every((key) => typeof key === 'string')
   ) {

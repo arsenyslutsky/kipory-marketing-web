@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { HeroBaseBackground } from '@/components/marketing/HeroBaseBackground';
 
 import { ProtocolIconList } from '@/components/icons/ProtocolIconList';
 import { MobileWorkflowFallback } from '@/components/media/MobileWorkflowFallback';
 import { protocolIconListHomepageProps } from '@/components/icons/ProtocolIconList/presets';
-import { SiteContainer } from '@/components/marketing';
+import { MaskedBackground, SiteContainer } from '@/components/marketing';
 import { siteContainerHomepageProps } from '@/components/marketing/presets';
+import { heroBackgroundHomepageProps } from '@/components/marketing/MaskedBackground.presets';
 import { GlowLink } from '@/components/ui/GlowLink';
 import { glowLinkHomepageProps } from '@/components/ui/GlowLink.presets';
 import styles from '../marketing.module.css';
@@ -14,6 +16,7 @@ import { LearnMoreLink } from './LearnMoreLink';
 export function HomepageHero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
+      <HeroBaseBackground />
       <div className={styles.heroVisual} data-hero-workflow aria-hidden="true">
         <MobileWorkflowFallback
           alt=""
@@ -29,6 +32,7 @@ export function HomepageHero() {
         </MobileWorkflowFallback>
       </div>
       <div className={styles.heroShade} />
+      <MaskedBackground {...heroBackgroundHomepageProps} variant="hero" />
       <SiteContainer {...siteContainerHomepageProps} className={styles.heroInner}>
         <div className={styles.heroCopy}>
           <h1 id="hero-title" className={styles.heroTitle} data-scroll-parallax data-scroll-fade="false">

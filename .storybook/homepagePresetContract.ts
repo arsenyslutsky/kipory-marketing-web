@@ -2,6 +2,12 @@ export const HOMEPAGE_PRESET_ENDPOINT = '/__kipory/homepage-presets';
 export const HOMEPAGE_PRESET_SAVE_HEADER = 'X-Kipory-Storybook-Save';
 
 export const HOMEPAGE_PRESET_STORY_IDS = [
+  'marketing-masked-background--hero',
+  'marketing-masked-background--hero-light',
+  'marketing-masked-background--our-pillars',
+  'marketing-masked-background--our-pillars-light',
+  'marketing-masked-background--delivery',
+  'marketing-masked-background--delivery-light',
   'animated-illustrations-businessflow3d--current-nextjs-app',
   'animated-illustrations-businessflow3d--current-app-light',
   'animated-illustrations-businessflowvertical--current-nextjs-app',

@@ -35,6 +35,13 @@ vi.mock('@/components/site/HeroScrollEffects', () => ({
   ),
 }));
 vi.mock('@/components/site/BackToTop', () => ({ BackToTop: () => null }));
+vi.mock('@/components/marketing/MaskedBackground.presets', () => ({
+  heroBaseBackgroundDarkProps: { colorFrom: '#0a0c0b', colorTo: '#0a0c0b', style: 'solid', angle: 180 },
+  heroBaseBackgroundLightProps: { colorFrom: '#f3f5ef', colorTo: '#f3f5ef', style: 'solid', angle: 180 },
+  heroBackgroundHomepageProps: { maskWidth: 73, maskHeight: 160 },
+  pillarsBackgroundHomepageProps: { maskWidth: 81, maskHeight: 240, gridSize: 24, gridOpacity: 0.3 },
+  deliveryBackgroundHomepageProps: { maskWidth: 96, maskHeight: 320, gridSize: 28, gridOpacity: 0.16 },
+}));
 vi.mock('@/components/ui/GlowLink', () => ({
   GlowLink: ({ children, href, ...props }: PropsWithChildren<{ href: string }>) => {
     glowLinkRender(props);
@@ -53,7 +60,7 @@ vi.mock('@/features/business-flow-3d', () => ({
 vi.mock('./_components/HomepageBusinessFlowVertical', () => ({
   HomepageBusinessFlowVertical: (props: Record<string, unknown>) => {
     verticalWrapperRender(props);
-    return <div />;
+    return <section aria-label="Vertical business flow" />;
   },
 }));
 vi.mock('./_components/HomepageBusinessFlowHorizontal', () => ({
@@ -72,6 +79,33 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+it('uses one decorative masked background per landing section without duplicating the section grid', () => {
+  const { container } = render(<HomePage />);
+  const backgrounds = Array.from(container.querySelectorAll('[data-masked-background]'));
+
+  expect(backgrounds.map((background) => background.getAttribute('data-masked-background')))
+    .toEqual(['hero', 'pillars', 'delivery']);
+  for (const background of backgrounds) {
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+  }
+  expect(backgrounds[0].closest('section')).toHaveAttribute('aria-labelledby', 'hero-title');
+  expect(backgrounds[1].closest('section')).toHaveAttribute('id', 'pillars');
+  expect(backgrounds[2].closest('section')).toHaveAttribute('id', 'delivery');
+  expect(container.querySelector('#pillars')).toHaveAttribute('data-grid', 'false');
+  expect(container.querySelector('#delivery')).toHaveAttribute('data-grid', 'false');
+  expect(backgrounds[0]).toHaveStyle({ '--masked-background-size': '73% 160%' });
+  expect(backgrounds[1]).toHaveStyle({
+    '--masked-background-size': '81% 240%',
+    '--masked-background-grid-size': '24px',
+    '--masked-background-grid-opacity': '0.3',
+  });
+  expect(backgrounds[2]).toHaveStyle({
+    '--masked-background-size': '96% 320%',
+    '--masked-background-grid-size': '28px',
+    '--masked-background-grid-opacity': '0.16',
+  });
 });
 
 it('uses density-aware static workflow artwork without mounting WebGL on mobile', () => {
@@ -93,13 +127,13 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
   ]);
   expect(darkFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-dark-image'))).toEqual([
     'image-set(url("/images/workflows/mobile/hero-flow.png") 1x, url("/images/workflows/mobile/hero-flow@2x.png") 2x, url("/images/workflows/mobile/hero-flow@3x.png") 3x)',
-    'image-set(url("/images/workflows/mobile/pillars-flow.png") 1x, url("/images/workflows/mobile/pillars-flow@2x.png") 2x, url("/images/workflows/mobile/pillars-flow@3x.png") 3x)',
     'image-set(url("/images/workflows/mobile/delivery-flow.png") 1x, url("/images/workflows/mobile/delivery-flow@2x.png") 2x, url("/images/workflows/mobile/delivery-flow@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow.png") 1x, url("/images/workflows/mobile/pillars-flow@2x.png") 2x, url("/images/workflows/mobile/pillars-flow@3x.png") 3x)',
   ]);
   expect(darkFallbacks.map((image) => [image.getAttribute('width'), image.getAttribute('height')])).toEqual([
     ['390', '780'],
-    ['360', '360'],
     ['360', '608'],
+    ['360', '360'],
   ]);
 
   darkView.unmount();
@@ -111,8 +145,8 @@ it('uses density-aware static workflow artwork without mounting WebGL on mobile'
 
   expect(lightFallbacks.map((image) => image.style.getPropertyValue('--mobile-workflow-light-image'))).toEqual([
     'image-set(url("/images/workflows/mobile/hero-flow-light.png") 1x, url("/images/workflows/mobile/hero-flow-light@2x.png") 2x, url("/images/workflows/mobile/hero-flow-light@3x.png") 3x)',
-    'image-set(url("/images/workflows/mobile/pillars-flow-light.png") 1x, url("/images/workflows/mobile/pillars-flow-light@2x.png") 2x, url("/images/workflows/mobile/pillars-flow-light@3x.png") 3x)',
     'image-set(url("/images/workflows/mobile/delivery-flow-light.png") 1x, url("/images/workflows/mobile/delivery-flow-light@2x.png") 2x, url("/images/workflows/mobile/delivery-flow-light@3x.png") 3x)',
+    'image-set(url("/images/workflows/mobile/pillars-flow-light.png") 1x, url("/images/workflows/mobile/pillars-flow-light@2x.png") 2x, url("/images/workflows/mobile/pillars-flow-light@3x.png") 3x)',
   ]);
   expect([...darkFallbacks, ...lightFallbacks].every((image) => (
     !image.getAttribute('src')?.startsWith('/images/workflows/mobile/') && !image.hasAttribute('srcset')
@@ -137,7 +171,11 @@ it('renders both themed-flow wrappers and replaces the delivery placeholder', ()
   expect(screen.queryByText(/illustration placeholder/i)).not.toBeInTheDocument();
   const horizontalFlow = screen.getByRole('figure', { name: 'Horizontal business flow' });
   expect(horizontalFlow).toBeInTheDocument();
-  expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
+  expect(horizontalFlow.closest('#pillars')).toBeInTheDocument();
+  expect(horizontalFlow.closest('[data-mobile-hide-visual="true"]')).toBeNull();
+  const verticalFlow = screen.getByRole('region', { name: 'Vertical business flow' });
+  expect(verticalFlow.closest('#delivery')).toBeInTheDocument();
+  expect(verticalFlow.closest('[data-mobile-hide-visual="true"]')).toBeInTheDocument();
   expect(threeDRender.mock.calls[0][0]).toEqual(expect.objectContaining(threeDDarkHomepageProps));
   expect(verticalWrapperRender).toHaveBeenCalledTimes(1);
   expect(horizontalWrapperRender).toHaveBeenCalledTimes(1);

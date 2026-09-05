@@ -1,0 +1,96 @@
+.root {
+  --mask-image: url('/images/masks/section-background.png');
+  --mask-image-mode: luminance;
+  --mask-position: calc(50% + var(--masked-background-offset-x)) calc(50% + var(--masked-background-offset-y));
+  --mask-edge: linear-gradient(to bottom, transparent 7.5%, var(--surface-base) 22%, var(--surface-base) 78%, transparent 92.5%);
+  --mask-side: linear-gradient(to right, transparent 7.5%, var(--surface-base) 22%, var(--surface-base) 78%, transparent 92.5%);
+  position: absolute;
+  inset: 0;
+  /* Child mask offsets use section dimensions, independent of mask size. */
+  container-type: size;
+  opacity: var(--masked-background-opacity);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.root[data-mask-shape='ellipsis'] {
+  --mask-image: radial-gradient(ellipse closest-side, var(--surface-base) 55%, transparent 92.5%);
+  --mask-image-mode: alpha;
+  --mask-edge: linear-gradient(var(--surface-base), var(--surface-base));
+  --mask-side: linear-gradient(var(--surface-base), var(--surface-base));
+}
+
+.root::after,
+.gridMask {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: var(--mask-image), var(--mask-edge), var(--mask-side);
+  mask-image: var(--mask-image), var(--mask-edge), var(--mask-side);
+  mask-mode: var(--mask-image-mode), alpha, alpha;
+  /* Scale the image and its feathering as one shape inside the full-size layer. */
+  -webkit-mask-size: var(--masked-background-size);
+  mask-size: var(--masked-background-size);
+  -webkit-mask-position: var(--mask-position);
+  mask-position: var(--mask-position);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-composite: source-in, source-in;
+  mask-composite: intersect;
+}
+
+.root::after {
+  content: '';
+  z-index: 0;
+  /* Keep the green tint identical across sections, independent of their masks. */
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-alternate) 78%, var(--signal)),
+    color-mix(in srgb, var(--surface-alternate-end) 86%, var(--signal))
+  );
+}
+
+.gridMask { z-index: 1; }
+
+.root[data-mask-inverted='true']::after,
+.root[data-mask-inverted='true'] .gridMask {
+  /* Invert the complete feathered mask, not its individual layers. */
+  -webkit-mask-image: linear-gradient(var(--surface-base), var(--surface-base)), var(--mask-image), var(--mask-edge), var(--mask-side);
+  mask-image: linear-gradient(var(--surface-base), var(--surface-base)), var(--mask-image), var(--mask-edge), var(--mask-side);
+  mask-mode: alpha, var(--mask-image-mode), alpha, alpha;
+  /* Only the content scales; the opaque inversion canvas always fills the section. */
+  -webkit-mask-size: 100% 100%, var(--masked-background-size), var(--masked-background-size), var(--masked-background-size);
+  mask-size: 100% 100%, var(--masked-background-size), var(--masked-background-size), var(--masked-background-size);
+  -webkit-mask-position: center, var(--mask-position), var(--mask-position), var(--mask-position);
+  mask-position: center, var(--mask-position), var(--mask-position), var(--mask-position);
+  -webkit-mask-composite: xor, source-in, source-in;
+  mask-composite: exclude, intersect, intersect;
+}
+
+.root[data-masked-background='hero'] {
+  /* Blend over the opaque WebGL canvas, below hero content at z-index 2. */
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+:global(html[data-theme='light']) .root[data-masked-background='hero'] {
+  mix-blend-mode: multiply;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  opacity: var(--masked-background-grid-opacity);
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--masked-background-grid-size) var(--masked-background-grid-size);
+  /* The dash pattern remains outside mask inversion. */
+  -webkit-mask-image:
+    repeating-linear-gradient(to right, var(--surface-base) 0, var(--surface-base) 3px, transparent 3px, transparent 8px),
+    repeating-linear-gradient(to bottom, var(--surface-base) 0, var(--surface-base) 3px, transparent 3px, transparent 8px);
+  mask-image:
+    repeating-linear-gradient(to right, var(--surface-base) 0, var(--surface-base) 3px, transparent 3px, transparent 8px),
+    repeating-linear-gradient(to bottom, var(--surface-base) 0, var(--surface-base) 3px, transparent 3px, transparent 8px);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}

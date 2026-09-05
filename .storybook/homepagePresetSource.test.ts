@@ -1,6 +1,8 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { runInNewContext } from 'node:vm';
+import ts from 'typescript';
 
 import { expect, it } from 'vitest';
 
@@ -9,6 +11,78 @@ import {
   rewriteHomepagePresetSource,
   saveHomepagePreset,
 } from './homepagePresetSource';
+
+it.each([
+  ['hero', 'heroBackgroundHomepageProps'],
+  ['our-pillars', 'pillarsBackgroundHomepageProps'],
+  ['delivery', 'deliveryBackgroundHomepageProps'],
+  ['hero-light', 'heroBackgroundHomepageProps'],
+  ['our-pillars-light', 'pillarsBackgroundHomepageProps'],
+  ['delivery-light', 'deliveryBackgroundHomepageProps'],
+] as const)('saves the %s background independently and rejects variant changes', async (slug, exportName) => {
+  const storyId = `marketing-masked-background--${slug}` as Parameters<typeof getHomepagePresetTarget>[0];
+  const relativePath = 'src/components/marketing/MaskedBackground.presets.ts';
+  expect(getHomepagePresetTarget(storyId)).toEqual({ relativePath, exportName });
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-background-preset-'));
+  const targetPath = join(projectRoot, relativePath);
+  const evaluatePresets = (source: string) => {
+    const exports: Record<string, Record<string, number | boolean | string>> = {};
+    runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports });
+    return exports;
+  };
+
+  try {
+    const original = await readFile(join(process.cwd(), relativePath), 'utf8');
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, original);
+    const before = evaluatePresets(original);
+    const invert = !before[exportName].invert;
+    await saveHomepagePreset(projectRoot, storyId, { maskWidth: 500, maskHeight: 50, invert, maskShape: 'ellipsis', maskOpacity: 0, maskCenterX: 0, maskCenterY: 100 });
+    const savedSource = await readFile(targetPath, 'utf8');
+    const after = evaluatePresets(savedSource);
+    expect(after[exportName]).toMatchObject({ maskWidth: 500, maskHeight: 50 });
+    expect(after[exportName].invert).toBe(invert);
+    expect(after[exportName]).toMatchObject({ maskShape: 'ellipsis', maskOpacity: 0, maskCenterX: 0, maskCenterY: 100 });
+    for (const name of Object.keys(before).filter(name => name !== exportName)) {
+      expect(after[name]).toEqual(before[name]);
+    }
+    await expect(saveHomepagePreset(projectRoot, storyId, { variant: 'delivery' })).rejects.toThrow('Unknown preset property variant');
+    expect(await readFile(targetPath, 'utf8')).toBe(savedSource);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
+
+it.each(['hero', 'hero-light'] as const)('saves %s base settings atomically without changing the other theme', async slug => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'kipory-hero-base-'));
+  const relativePath = 'src/components/marketing/MaskedBackground.presets.ts';
+  const targetPath = join(projectRoot, relativePath);
+  const storyId = `marketing-masked-background--${slug}` as const;
+  const evaluate = (source: string) => {
+    const exports: Record<string, Record<string, unknown>> = {};
+    runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports });
+    return exports;
+  };
+  try {
+    const original = await readFile(join(process.cwd(), relativePath), 'utf8');
+    await mkdir(dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, original);
+    const before = evaluate(original);
+    const selected = slug === 'hero' ? 'heroBaseBackgroundDarkProps' : 'heroBaseBackgroundLightProps';
+    await saveHomepagePreset(projectRoot, storyId, { maskWidth: 222, colorFrom: '#112233', colorTo: '#445566', style: 'linear', angle: 45 });
+    const saved = await readFile(targetPath, 'utf8');
+    const after = evaluate(saved);
+    expect(after[selected]).toEqual({ colorFrom: '#112233', colorTo: '#445566', style: 'linear', angle: 45 });
+    expect(after.heroBackgroundHomepageProps).toEqual({ ...before.heroBackgroundHomepageProps, maskWidth: 222 });
+    for (const key of Object.keys(before).filter(key => ![selected, 'heroBackgroundHomepageProps'].includes(key))) {
+      expect(after[key]).toEqual(before[key]);
+    }
+    await expect(saveHomepagePreset(projectRoot, storyId, { maskWidth: 333, angle: 'bad' })).rejects.toThrow();
+    expect(await readFile(targetPath, 'utf8')).toBe(saved);
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true });
+  }
+});
 
 const validSource = `import type { Props } from './types';
 
